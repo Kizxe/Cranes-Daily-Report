@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Cranes Daily Report — the 22 device / alarm / trigger groups.
+#
+# DO NOT hand-transcribe the 22 lists. Generate this file by walking the
+# ThingsBoard API once credentials are in .env:
+#
+#     python -m scripts.discover_device_groups > backend/config/device_groups.yaml
+#
+# Then review it and adjust: site_label, system_type, per-key `role`
+# (exactly one key per device must be role: status), and `unit`.
+#
+# On startup the backend mirrors this file into the device_groups / devices /
+# device_keys tables. It is the source of truth for config — edit the file,
+# restart (or POST /api/config/reload), don't edit the DB directly.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# `status_key_default` is used for any device whose keys don't explicitly mark
+# one as role: status. Confirmed decision: status always comes from the sensor's
+# own reported status telemetry key, uniformly across all 22 groups.
+status_key_default: status
+
+groups:
+  # ---- EXAMPLE (delete once the real file is generated) --------------------
+  - name: Computime
+    kind: device                       # device | alarm | trigger
+    tb_group_id: null                  # filled by discover script
+    site_label: "Factory · Penang, Malaysia"
+    system_type: "Chiller Optimization System (COpti)"
+    expected_report_hours: 24
+    devices:
+      - name: CT_RHT_01
+        device_type: RHT
+        tb_device_id: null
+        keys:
+          - { key_name: status, role: status }
+          - { key_name: temperature, role: metric, unit: "°C" }
+          - { key_name: humidity, role: metric, unit: "%" }
+          - { key_name: rssi, role: signal, unit: dBm }
+          - { key_name: prr, role: signal, unit: "%" }
+      - name: Gateway_01
+        device_type: GW
+        tb_device_id: null
+        keys:
+          - { key_name: status, role: status }
+          - { key_name: connection, role: signal }

@@ -1,0 +1,214 @@
+{# Cranes Daily Report — daily_report.html
+   Placeholder that renders real data in the approved design system
+   (navy #0E2340, JetBrains Mono, Source Serif 4). Replace with the approved
+   v3 template when available — keep the context variable names below:
+     date_human, doc_number, generated_at, monitored_sites, total_devices,
+     current_active, attention_needed, sites[], site_details[]
+#}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cranes Daily Report — {{ date_human }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0E2340;
+    --navy-soft: #1c3a5e;
+    --ink: #16202e;
+    --line: #d7dee7;
+    --muted: #5f6b7a;
+    --ok: #1f8a4c;
+    --warn: #b8860b;
+    --bad: #c0392b;
+    --bg-soft: #f4f6f9;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Source Serif 4", Georgia, serif;
+    color: var(--ink);
+    font-size: 10.5px;
+    line-height: 1.45;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  .page { padding: 0 4mm; }
+  .page-break { page-break-before: always; }
+
+  header.report-head, footer.report-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: .12em; text-transform: uppercase; font-size: 8px;
+    color: var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 6px; margin-bottom: 14px;
+  }
+  footer.report-foot { border-bottom: none; border-top: 1px solid var(--line);
+    margin-top: 18px; padding-top: 6px; color: var(--muted); }
+  .brand-mark { font-weight: 700; }
+
+  h1 { font-size: 22px; margin: 2px 0 0; color: var(--navy); font-weight: 700; }
+  .subtitle { color: var(--muted); font-style: italic; margin-bottom: 12px; }
+  h2 { font-family: "JetBrains Mono", monospace; text-transform: uppercase;
+       letter-spacing: .16em; font-size: 9px; color: var(--navy);
+       border-bottom: 1px solid var(--line); padding-bottom: 4px; margin: 18px 0 8px; }
+
+  .stat-row { display: flex; gap: 8px; margin: 10px 0 4px; }
+  .stat {
+    flex: 1; border: 1px solid var(--line); border-top: 3px solid var(--navy);
+    padding: 8px 10px; background: #fff;
+  }
+  .stat .label { font-family: "JetBrains Mono", monospace; font-size: 7.5px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .stat .value { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; }
+  th {
+    font-family: "JetBrains Mono", monospace; font-size: 7px; letter-spacing: .1em;
+    text-transform: uppercase; text-align: left; color: var(--navy);
+    border-bottom: 1.5px solid var(--navy); padding: 5px 6px;
+  }
+  td { border-bottom: 1px solid var(--line); padding: 5px 6px; vertical-align: top; }
+  tbody tr:nth-child(even) { background: var(--bg-soft); }
+
+  .pill { font-family: "JetBrains Mono", monospace; font-size: 7px; font-weight: 700;
+    letter-spacing: .08em; padding: 2px 6px; border-radius: 2px; display: inline-block; }
+  .pill.HEALTHY, .pill.ACTIVE { background: #e4f3ea; color: var(--ok); }
+  .pill.ATTENTION, .pill.STATIC, .pill.STALLED { background: #fbf1dd; color: var(--warn); }
+  .pill.INACTIVE, .pill.CRITICAL, .pill.UNKNOWN { background: #f7e2df; color: var(--bad); }
+
+  .breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+  .breakdown .chip { border: 1px solid var(--line); padding: 5px 8px; min-width: 66px; }
+  .breakdown .chip .t { font-family: "JetBrains Mono", monospace; font-size: 7px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .breakdown .chip .n { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .breakdown .chip .s { font-size: 8px; color: var(--muted); }
+  .note { color: var(--muted); font-style: italic; font-size: 9px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+{# ---------- PAGE 1 : OVERVIEW ---------- #}
+<div class="page">
+  <header class="report-head">
+    <span><span class="brand-mark">SC</span> SquareCloud Malaysia</span>
+    <span>{{ doc_number }}</span>
+  </header>
+
+  <h1>Cranes Daily Report</h1>
+  <div class="subtitle">IoT Device Monitoring · {{ date_human }}</div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="label">Monitored Sites</div><div class="value">{{ monitored_sites }}</div></div>
+    <div class="stat"><div class="label">Total Devices</div><div class="value">{{ total_devices }}</div></div>
+    <div class="stat"><div class="label">Current Active</div><div class="value">{{ current_active }}</div></div>
+    <div class="stat"><div class="label">Attention Needed</div><div class="value">{{ attention_needed }}</div></div>
+  </div>
+
+  <h2>Sites Overview</h2>
+  <table>
+    <thead>
+      <tr><th>Site</th><th>Devices</th><th>No-Data Hrs</th><th>Active %</th>
+          <th>Current Active</th><th>Status</th><th>Remark</th></tr>
+    </thead>
+    <tbody>
+      {% for s in sites %}
+      <tr>
+        <td class="mono">{{ s.name }}</td>
+        <td>{{ s.devices }}</td>
+        <td>{{ "%.1f"|format(s.no_data_hrs) }}</td>
+        <td>{{ "%.1f"|format(s.active_pct) }}%</td>
+        <td>{{ s.current_active }}</td>
+        <td><span class="pill {{ s.health }}">{{ s.health }}</span></td>
+        <td>{% for r in s.remarks %}{{ r.body }}{% if not loop.last %} · {% endif %}{% else %}&mdash;{% endfor %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="note">One folder per day in reports/{{ date }}/ — PDF + snapshot.json.</div>
+
+  <footer class="report-foot">
+    <span>SquareCloud Malaysia — Confidential — {{ doc_number }}</span>
+    <span>Generated {{ generated_at }}</span>
+  </footer>
+</div>
+
+{# ---------- PAGE 2+ : PER-SITE DETAIL ---------- #}
+{% for site in site_details %}
+<div class="page page-break">
+  <header class="report-head">
+    <span><span class="brand-mark">SC</span> SquareCloud Malaysia</span>
+    <span>{{ doc_number }}</span>
+  </header>
+
+  <h1>{{ site.group.name }}</h1>
+  <div class="subtitle">
+    {{ site.group.site_label or "—" }}
+    {% if site.group.system_type %} · {{ site.group.system_type }}{% endif %}
+    · expected reporting {{ site.group.expected_report_hours }}h
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="label">Total Devices</div><div class="value">{{ site.total }}</div></div>
+    <div class="stat"><div class="label">Current Active</div><div class="value">{{ site.current_active }}</div></div>
+    <div class="stat"><div class="label">Device Health</div><div class="value">{{ site.device_health_pct }}%</div></div>
+    <div class="stat"><div class="label">Attention Needed</div><div class="value">{{ site.attention }}</div></div>
+  </div>
+
+  <h2>Device Condition &amp; Recommendation</h2>
+  <table>
+    <thead>
+      <tr><th>Device</th><th>Type</th><th>Status</th><th>Active Hrs</th>
+          <th>Affected Hrs</th><th>Issue Occ.</th></tr>
+    </thead>
+    <tbody>
+      {% for d in site.devices %}
+      <tr>
+        <td class="mono">{{ d.name }}</td>
+        <td>{{ d.device_type or "—" }}</td>
+        <td><span class="pill {{ d.status }}">{{ d.status }}</span></td>
+        <td>{{ "%.1f"|format(d.active_hours) }}</td>
+        <td>{{ "%.1f"|format(d.affected_hours) }}</td>
+        <td>{{ d.issue_occurrences }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if site.remarks %}
+  <h2>Remarks</h2>
+  {% for r in site.remarks %}
+    <div>{{ r.body }} <span class="note">— {{ r.author or "unattributed" }}</span></div>
+  {% endfor %}
+  {% endif %}
+
+  <h2>PIC Follow-Up</h2>
+  <table>
+    <thead>
+      <tr><th>Issue</th><th>Remark</th><th>Assigned PIC</th><th>Date Assigned</th></tr>
+    </thead>
+    <tbody>
+      {% for f in site.followups %}
+      <tr>
+        <td class="mono">{{ f.issue }}</td>
+        <td>{{ f.remark }}</td>
+        <td>{{ f.assigned_pic }}</td>
+        <td class="mono">{{ f.date_assigned }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="note">No follow-up items recorded for {{ date_human }}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <footer class="report-foot">
+    <span>SquareCloud Malaysia — Confidential — {{ doc_number }}</span>
+    <span>{{ date_human }}</span>
+  </footer>
+</div>
+{% endfor %}
+
+</body>
+</html>

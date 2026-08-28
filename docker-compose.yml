@@ -1,0 +1,16 @@
+services:
+  cranes-app:
+    build: .
+    container_name: cranes-daily-report
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+    env_file:
+      - .env                                   # THINGSBOARD_URL / USER / PASS
+    volumes:
+      - ./backend/data:/app/backend/data        # cranes.db — survives rebuilds
+      - ./reports:/app/reports                  # real folder, browsable on the host
+      - ./uploads:/app/uploads                  # imported PDFs
+      - ./backend/config:/app/backend/config    # edit device_groups.yaml without a rebuild
+    restart: unless-stopped

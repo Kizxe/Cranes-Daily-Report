@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cranes Daily Report — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>CRANES DAILY REPORT</h1>
+  <nav>
+    <a href="index.html">Dashboard</a>
+    <a href="site-detail.html">Site Detail</a>
+    <a href="reports.html">Reports</a>
+  </nav>
+</header>
+
+<main>
+  <div style="display:flex; justify-content:space-between; align-items:center">
+    <h2>Live Snapshot — <span id="date"></span></h2>
+    <div>
+      <button id="import" class="">Import Data (snapshot now)</button>
+      <button id="poll" class="secondary">Poll statuses</button>
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <p class="muted" id="hint">
+    Values below are the most recent capture for today. Use "Import Data" to take a
+    fresh snapshot on demand — the scheduled one runs at 23:59.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Group</th><th>Device</th><th>Key</th><th>Value</th><th>Value time</th></tr>
+    </thead>
+    <tbody id="rows"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+  </table>
+</main>
+
+<script src="assets/app.js"></script>
+<script>
+const dateEl = document.getElementById("date");
+dateEl.textContent = today();
+
+async function load() {
+  const data = await api("/captures/" + today());
+  const rows = data.values || [];
+  const tbody = document.getElementById("rows");
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="muted">No snapshot yet for today. Click "Import Data".</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.group}</td>
+        <td>${r.device}</td>
+        <td>${r.key_name}</td>
+        <td>${r.key_name === "status" ? pill(r.value) : (r.value ?? "—")}</td>
+        <td class="muted">${r.value_ts ?? "—"}</td>
+      </tr>`).join("");
+  }
+  const groups = new Set(rows.map(r => r.group));
+  const statuses = rows.filter(r => r.key_name === "status");
+  const active = statuses.filter(r => (r.value || "").toUpperCase() === "ACTIVE").length;
+  document.getElementById("cards").innerHTML = `
+    <div class="card"><div class="l">Groups</div><div class="v">${groups.size}</div></div>
+    <div class="card"><div class="l">Devices reporting status</div><div class="v">${statuses.length}</div></div>
+    <div class="card"><div class="l">Active now</div><div class="v">${active}</div></div>
+    <div class="card"><div class="l">Attention</div><div class="v">${statuses.length - active}</div></div>`;
+}
+
+document.getElementById("import").onclick = async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await api("/captures/run", { method: "POST" });
+    toast(`Snapshot taken: ${r.values} values across ${r.devices} devices`);
+    await load();
+  } catch (err) { toast("Failed: " + err.message); }
+  e.target.disabled = false;
+};
+
+document.getElementById("poll").onclick = async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await api("/downtime/poll", { method: "POST" });
+    toast(`Polled ${r.polled} devices, ${r.changes} status change(s)`);
+  } catch (err) { toast("Failed: " + err.message); }
+  e.target.disabled = false;
+};
+
+load().catch(err => toast("Load failed: " + err.message));
+</script>
+</body>
+</html>

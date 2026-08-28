@@ -1,0 +1,58 @@
+:root {
+  --navy: #0E2340;
+  --line: #d7dee7;
+  --muted: #5f6b7a;
+  --bg: #f4f6f9;
+  --ok: #1f8a4c;
+  --warn: #b8860b;
+  --bad: #c0392b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--bg);
+  color: #16202e;
+  font-size: 13px;
+}
+header.top {
+  background: var(--navy);
+  color: #fff;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+header.top h1 { font-size: 15px; margin: 0; letter-spacing: .08em; }
+header.top nav a { color: #b9c6d6; text-decoration: none; margin-right: 16px; font-size: 12px; }
+header.top nav a:hover, header.top nav a.active { color: #fff; }
+main { padding: 22px; max-width: 1100px; margin: 0 auto; }
+h2 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--navy); }
+button {
+  font-family: inherit;
+  background: var(--navy);
+  color: #fff;
+  border: 0;
+  padding: 9px 16px;
+  cursor: pointer;
+  letter-spacing: .06em;
+}
+button.secondary { background: #fff; color: var(--navy); border: 1px solid var(--navy); }
+button:disabled { opacity: .5; cursor: default; }
+table { width: 100%; border-collapse: collapse; background: #fff; margin: 10px 0; }
+th { text-align: left; font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+     border-bottom: 2px solid var(--navy); padding: 8px; color: var(--navy); }
+td { border-bottom: 1px solid var(--line); padding: 8px; }
+.pill { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 2px; }
+.pill.ACTIVE, .pill.HEALTHY { background: #e4f3ea; color: var(--ok); }
+.pill.STATIC, .pill.STALLED, .pill.ATTENTION { background: #fbf1dd; color: var(--warn); }
+.pill.INACTIVE, .pill.UNKNOWN, .pill.CRITICAL { background: #f7e2df; color: var(--bad); }
+.cards { display: flex; gap: 12px; margin: 14px 0; }
+.card { flex: 1; background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--navy); padding: 12px; }
+.card .l { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.card .v { font-size: 28px; font-weight: 700; color: var(--navy); }
+.toast { position: fixed; right: 20px; bottom: 20px; background: var(--navy); color: #fff; padding: 12px 18px; }
+.muted { color: var(--muted); }
+form.stack { display: grid; gap: 8px; max-width: 520px; background: #fff; padding: 16px; border: 1px solid var(--line); }
+form.stack input, form.stack textarea, form.stack select { font-family: inherit; padding: 7px; border: 1px solid var(--line); }
+a { color: var(--navy); }

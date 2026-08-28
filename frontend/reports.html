@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cranes Daily Report — Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>CRANES DAILY REPORT</h1>
+  <nav>
+    <a href="index.html">Dashboard</a>
+    <a href="site-detail.html">Site Detail</a>
+    <a href="reports.html">Reports</a>
+  </nav>
+</header>
+
+<main>
+  <h2>Generate / Regenerate</h2>
+  <p>
+    <input type="date" id="date">
+    <button id="gen">Generate PDF</button>
+    <a id="preview" href="#" target="_blank"><button class="secondary" type="button">Preview HTML</button></a>
+  </p>
+  <p class="muted">
+    Regenerating is how a remark added after the 23:59 run gets into that day's report.
+  </p>
+
+  <h2>Import an existing PDF</h2>
+  <form id="importForm">
+    <input type="file" id="pdf" accept="application/pdf" required>
+    <button type="submit" class="secondary">Upload &amp; archive</button>
+  </form>
+
+  <h2>Generated Reports</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Doc</th><th>Trigger</th><th>Status</th><th>Generated</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
+  </table>
+
+  <h2>Imported PDFs</h2>
+  <table>
+    <thead><tr><th>File</th><th>Doc</th><th>Report date</th><th>Imported</th></tr></thead>
+    <tbody id="imports"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody>
+  </table>
+</main>
+
+<script src="assets/app.js"></script>
+<script>
+const dateInput = document.getElementById("date");
+dateInput.value = today();
+const setPreview = () => document.getElementById("preview").href = `/api/reports/${dateInput.value}/preview`;
+dateInput.onchange = setPreview; setPreview();
+
+async function loadReports() {
+  const rows = await api("/reports");
+  document.getElementById("rows").innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.report_date}</td><td>${r.doc_number ?? "—"}</td><td>${r.trigger}</td>
+      <td>${pill(r.status === "generated" ? "ACTIVE" : "INACTIVE")} ${r.error ? '<span class="muted">'+r.error+'</span>' : ''}</td>
+      <td class="muted">${r.generated_at}</td>
+      <td><a href="/api/reports/${r.report_date}/pdf" target="_blank">PDF</a></td>
+    </tr>`).join("") || `<tr><td colspan="6" class="muted">None yet.</td></tr>`;
+}
+
+async function loadImports() {
+  const rows = await api("/imports");
+  document.getElementById("imports").innerHTML = rows.map(r => `
+    <tr><td>${r.original_name}</td><td>${r.doc_number ?? "—"}</td>
+    <td>${r.report_date ?? "—"}</td><td class="muted">${r.imported_at}</td></tr>`).join("")
+    || `<tr><td colspan="4" class="muted">None yet.</td></tr>`;
+}
+
+document.getElementById("gen").onclick = async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await api(`/reports/${dateInput.value}/generate`, { method: "POST" });
+    toast(r.status === "generated" ? "Report generated" : "Failed: " + r.error);
+    loadReports();
+  } catch (err) { toast("Failed: " + err.message); }
+  e.target.disabled = false;
+};
+
+document.getElementById("importForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append("file", document.getElementById("pdf").files[0]);
+  const res = await fetch("/api/imports", { method: "POST", body: fd });
+  if (res.ok) { toast("PDF archived"); loadImports(); }
+  else toast("Failed: " + await res.text());
+};
+
+loadReports().catch(err => toast(err.message));
+loadImports().catch(err => toast(err.message));
+</script>
+</body>
+</html>

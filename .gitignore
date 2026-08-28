@@ -1,0 +1,27 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# app data — bind-mounted, real files on the host, not for git
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
+reports/*/
+uploads/pdfs/*
+
+# keep the folders themselves
+!reports/.gitkeep
+!uploads/pdfs/.gitkeep
+!backend/data/.gitkeep
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
