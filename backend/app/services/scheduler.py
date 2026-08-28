@@ -17,7 +17,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from ..config import settings
-from . import downtime_service, report_service, snapshot_service
+from . import downtime_service, ops, report_service, snapshot_service
 
 log = logging.getLogger("cranes.scheduler")
 TZ = ZoneInfo(settings.timezone)
@@ -31,14 +31,16 @@ async def nightly_job() -> None:
     try:
         await snapshot_service.capture_snapshot(trigger="scheduled", capture_date=date)
         await report_service.generate_report(date, trigger="scheduled")
+        ops.record("nightly", "success", "scheduled", date)
         log.info("nightly job done for %s", date)
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        ops.record("nightly", "failed", "scheduled", f"{date}: {e}")
         log.exception("nightly job failed for %s", date)
 
 
 async def downtime_job() -> None:
     try:
-        result = await downtime_service.poll_all_statuses()
+        result = await downtime_service.poll_all_statuses(trigger="scheduled")
         if result["changes"]:
             log.info("downtime poll: %s", result)
     except Exception:  # noqa: BLE001
@@ -67,3 +69,12 @@ def start() -> None:
 def shutdown() -> None:
     if scheduler.running:
         scheduler.shutdown(wait=False)
+
+
+def next_runs() -> dict:
+    if not scheduler.running:
+        return {}
+    out = {}
+    for job in scheduler.get_jobs():
+        out[job.id] = job.next_run_time.isoformat() if job.next_run_time else None
+    return out

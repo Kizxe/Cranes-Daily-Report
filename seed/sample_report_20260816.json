@@ -1,0 +1,60 @@
+{
+  "_purpose": "Sample data shaped like a real day's captured snapshot, reused from the approved report mockups. Build and test the report-generation/Playwright pipeline against this before the ThingsBoard client exists — decouples steps 2-5 of the roadmap from needing live cloud access every time you test.",
+  "report_date": "2026-08-16",
+  "sites_overview": [
+    { "site": "BSC East Wing", "devices": 12, "no_data_hrs": 11.6, "active_pct": 96.0, "status": "healthy",
+      "current_status": "10 Active / 1 Static / 1 Stalled",
+      "remark": "Repeated weak connection at Level 2. Check signal and consider adding a bridge." },
+    { "site": "Computime", "devices": 10, "no_data_hrs": 19.9, "active_pct": 91.7, "status": "attention",
+      "current_status": "7 Active / 1 Static / 1 Stalled / 1 Inactive",
+      "remark": "RHT-04 and RTD CH1 require site inspection. Bridge may improve connection." },
+    { "site": "G Hotel", "devices": 8, "no_data_hrs": 4.3, "active_pct": 97.8, "status": "healthy",
+      "current_status": "7 Active / 1 Stalled",
+      "remark": "Monitor DPM CH1. Inspect wiring or network if status repeats." },
+    { "site": "KPJAP", "devices": 6, "no_data_hrs": 8.5, "active_pct": 94.1, "status": "attention",
+      "current_status": "5 Active / 1 Inactive",
+      "remark": "Inspect UFM 01 power, MQTT configuration and signal coverage." },
+    { "site": "Sanmina", "devices": 4, "no_data_hrs": 0.0, "active_pct": 100.0, "status": "healthy",
+      "current_status": "4 Active",
+      "remark": "No action required. Continue daily monitoring." },
+    { "site": "Robert Bosch", "devices": 2, "no_data_hrs": 48.0, "active_pct": 0.0, "status": "attention",
+      "current_status": "2 Inactive",
+      "remark": "Urgent gateway/network inspection. Replace gateway only after power and network checks." }
+  ],
+  "site_detail_example": {
+    "site": "Computime",
+    "location": "Factory · Penang, Malaysia",
+    "system_type": "Chiller Optimization System (COpti)",
+    "status": "attention",
+    "expected_reporting_hrs": 24,
+    "summary": { "total_devices": 10, "current_active": 7, "device_health_pct": 70, "attention_needed": 3 },
+    "type_breakdown": {
+      "RHT": { "count": 4, "status": "2 attention" },
+      "DPM": { "count": 2, "status": "healthy" },
+      "FLOWMETER": { "count": 1, "status": "healthy" },
+      "RTD": { "count": 2, "status": "1 attention" },
+      "GATEWAY": { "count": 1, "status": "healthy" }
+    },
+    "devices": [
+      { "device": "CT_RHT_01", "type": "RHT", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "RSSI -68 / PRR 100%", "recommendation": "No action. Continue monitoring." },
+      { "device": "CT_RHT_02", "type": "RHT", "status": "static", "active_hrs": 22.8, "affected_hrs": 1.2, "issue_occ": 2, "signal_health": "RSSI -70 / PRR 100%", "recommendation": "Inspect sensor/probe. Replace if static condition repeats after validation." },
+      { "device": "CT_RHT_03", "type": "RHT", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "RSSI -72 / PRR 100%", "recommendation": "No action. Continue monitoring." },
+      { "device": "CT_RHT_04", "type": "RHT", "status": "inactive", "active_hrs": 18.7, "affected_hrs": 5.3, "issue_occ": 3, "signal_health": "RSSI -91 / PRR 48%", "recommendation": "Add or reposition bridge. Replace device if issue remains after coverage improves." },
+      { "device": "DPM Main", "type": "DPM", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "LAN / Good", "recommendation": "No action." },
+      { "device": "DPM West Wing", "type": "DPM", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "LAN / Good", "recommendation": "No action." },
+      { "device": "UFM 01", "type": "UFM", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "RSSI -74 / PRR 99%", "recommendation": "No action." },
+      { "device": "RTD CH1", "type": "RTD", "status": "stalled", "active_hrs": 23.4, "affected_hrs": 0.6, "issue_occ": 4, "signal_health": "RSSI -87 / PRR 62%", "recommendation": "Check bridge coverage and antenna position. Monitor after adjustment." },
+      { "device": "RTD CH2", "type": "RTD", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "RSSI -71 / PRR 100%", "recommendation": "No action." },
+      { "device": "Gateway 01", "type": "GW", "status": "active", "active_hrs": 24.0, "affected_hrs": 0.0, "issue_occ": 0, "signal_health": "LAN / Good", "recommendation": "No action." }
+    ],
+    "status_events_example": [
+      { "device": "CT_RHT_04", "status": "inactive", "start_ts": "2026-08-16T18:42:00+08:00", "end_ts": null, "note": "Still open at day close — carries into tomorrow." },
+      { "device": "RTD CH1", "status": "stalled", "start_ts": "2026-08-16T14:10:00+08:00", "end_ts": "2026-08-16T14:46:00+08:00", "duration_min": 36 }
+    ],
+    "pic_followups": [
+      { "issue": "CT_RHT_04 — Inactive", "remark": "Offline since 18:42 (RSSI -91, PRR 48%). Likely bridge coverage gap after nearby rack relocation; needs on-site signal survey.", "assigned_pic": "Facilities Eng. (Computime)", "target_date": "2026-08-19", "status": "pending_pic" },
+      { "issue": "RTD CH1 — Stalled", "remark": "4 stalled occurrences today; signal weak during peak hours (RSSI -87). Suspect antenna position after nearby equipment change.", "assigned_pic": "IoT Vendor Team", "target_date": "2026-08-20", "status": "scheduled" },
+      { "issue": "CT_RHT_02 — Static", "remark": "Reading unchanged since ~14:00; probe may be stuck or faulty. Needs physical inspection before replacement decision.", "assigned_pic": "Facilities Eng. (Computime)", "target_date": "2026-08-21", "status": "pending_pic" }
+    ]
+  }
+}

@@ -6,14 +6,17 @@ One row per (capture_ts, device, key) in `snapshots`.
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from ..config import settings
 from ..db.database import get_conn, read_conn
+from . import ops
 from .thingsboard_client import ThingsBoardError, tb_client
 
 TZ = ZoneInfo(settings.timezone)
+log = logging.getLogger("cranes.snapshot")
 
 
 def _now() -> datetime:
@@ -74,23 +77,30 @@ async def capture_snapshot(trigger: str = "manual", capture_date: str | None = N
     capture_ts = ts.isoformat()
     capture_date = capture_date or ts.strftime("%Y-%m-%d")
 
-    results = await asyncio.gather(*(_fetch_one(d) for d in devices))
-    rows = [r for sub in results for r in sub]
+    try:
+        results = await asyncio.gather(*(_fetch_one(d) for d in devices))
+        rows = [r for sub in results for r in sub]
+        with get_conn() as conn:
+            conn.executemany(
+                """
+                INSERT INTO snapshots
+                    (capture_ts, capture_date, trigger, device_id, key_name, value, value_ts)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(capture_ts, device_id, key_name) DO UPDATE SET
+                    value = excluded.value, value_ts = excluded.value_ts
+                """,
+                [(capture_ts, capture_date, trigger, d, k, v, vts) for (d, k, v, vts) in rows],
+            )
+        got = sum(1 for (_, _, v, _) in rows if v is not None)
+        ops.record("capture", "success", trigger,
+                   f"{capture_date}: {got}/{len(rows)} values, {len(devices)} devices")
+        log.info("snapshot %s captured %d/%d values from %d devices (trigger=%s)",
+                 capture_date, got, len(rows), len(devices), trigger)
+    except Exception as e:  # noqa: BLE001
+        ops.record("capture", "failed", trigger, f"{capture_date}: {e}")
+        log.exception("snapshot capture failed for %s", capture_date)
+        raise
 
-    with get_conn() as conn:
-        conn.executemany(
-            """
-            INSERT INTO snapshots
-                (capture_ts, capture_date, trigger, device_id, key_name, value, value_ts)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(capture_ts, device_id, key_name) DO UPDATE SET
-                value = excluded.value, value_ts = excluded.value_ts
-            """,
-            [
-                (capture_ts, capture_date, trigger, d, k, v, vts)
-                for (d, k, v, vts) in rows
-            ],
-        )
     return {
         "capture_ts": capture_ts,
         "capture_date": capture_date,

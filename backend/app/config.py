@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     uploads_dir: Path = REPO_ROOT / "uploads" / "pdfs"
     template_dir: Path = REPO_ROOT / "templates"
     frontend_dir: Path = REPO_ROOT / "frontend"
+    logs_dir: Path = REPO_ROOT / "logs"
+    backups_dir: Path = REPO_ROOT / "backups"
+    seed_file: Path = REPO_ROOT / "seed" / "sample_report_20260816.json"
 
     # --- Behaviour ---
     timezone: str = "Asia/Kuala_Lumpur"
@@ -40,10 +43,15 @@ class Settings(BaseSettings):
     downtime_poll_minutes: int = 10
     # Retention: keep everything indefinitely (decided 2026-08-28). No prune job.
     retention_days: int = 0
+    # Set false in tests — APScheduler's AsyncIOScheduler binds the running loop.
+    enable_scheduler: bool = True
 
     @property
     def tb_base(self) -> str:
         return self.thingsboard_url.rstrip("/") + self.thingsboard_api_prefix
+
+    def report_pdf_path(self, date: str) -> Path:
+        return self.reports_dir / date / f"Cranes_Daily_Report_{date}.pdf"
 
 
 @lru_cache

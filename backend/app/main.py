@@ -7,15 +7,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from .api import captures, devices, downtime, imports, remarks, reports
+from .api import captures, devices, downtime, imports, remarks, reports, seed, status
 from .config import settings
 from .db.database import init_db
+from .logging_setup import configure as configure_logging
 from .services import config_sync
 from .services.scheduler import shutdown as sched_shutdown
 from .services.scheduler import start as sched_start
 from .services.thingsboard_client import tb_client
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+configure_logging()
 log = logging.getLogger("cranes")
 
 
@@ -27,18 +28,20 @@ async def lifespan(app: FastAPI):
         log.info("config sync: %s", counts)
     except Exception:  # noqa: BLE001
         log.exception("config sync failed — check device_groups.yaml")
-    settings.reports_dir.mkdir(parents=True, exist_ok=True)
-    settings.uploads_dir.mkdir(parents=True, exist_ok=True)
-    sched_start()
+    for d in (settings.reports_dir, settings.uploads_dir, settings.logs_dir, settings.backups_dir):
+        d.mkdir(parents=True, exist_ok=True)
+    if settings.enable_scheduler:
+        sched_start()
     yield
-    sched_shutdown()
+    if settings.enable_scheduler:
+        sched_shutdown()
     await tb_client.close()
 
 
 app = FastAPI(title="Cranes Daily Report", version="0.1.0", lifespan=lifespan)
 
 for r in (devices.router, captures.router, downtime.router, remarks.router,
-          reports.router, imports.router):
+          reports.router, imports.router, seed.router, status.router):
     app.include_router(r, prefix="/api")
 
 

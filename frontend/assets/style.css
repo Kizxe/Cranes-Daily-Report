@@ -52,6 +52,10 @@ td { border-bottom: 1px solid var(--line); padding: 8px; }
 .card .l { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .card .v { font-size: 28px; font-weight: 700; color: var(--navy); }
 .toast { position: fixed; right: 20px; bottom: 20px; background: var(--navy); color: #fff; padding: 12px 18px; }
+.banner { padding: 9px 12px; border: 1px solid var(--line); background: #fff; margin-bottom: 12px; font-size: 12px; }
+.banner:empty { display: none; }
+.banner.ok { border-left: 3px solid var(--ok); }
+.banner.bad { border-left: 3px solid var(--bad); background: #fbeeec; }
 .muted { color: var(--muted); }
 form.stack { display: grid; gap: 8px; max-width: 520px; background: #fff; padding: 16px; border: 1px solid var(--line); }
 form.stack input, form.stack textarea, form.stack select { font-family: inherit; padding: 7px; border: 1px solid var(--line); }

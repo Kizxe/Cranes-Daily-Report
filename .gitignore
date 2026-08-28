@@ -15,11 +15,15 @@ backend/data/*.db-wal
 backend/data/*.db-shm
 reports/*/
 uploads/pdfs/*
+logs/*
+backups/*
 
 # keep the folders themselves
 !reports/.gitkeep
 !uploads/pdfs/.gitkeep
 !backend/data/.gitkeep
+!logs/.gitkeep
+!backups/.gitkeep
 
 # os / editor
 .DS_Store

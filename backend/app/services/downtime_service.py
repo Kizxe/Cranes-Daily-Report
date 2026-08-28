@@ -85,12 +85,21 @@ async def _poll_one(dev: dict) -> bool:
     return record_status(dev["device_id"], value, source="poll")
 
 
-async def poll_all_statuses() -> dict:
+async def poll_all_statuses(trigger: str = "scheduled") -> dict:
+    from . import ops
+
     devices = _status_devices()
     if not devices:
+        ops.record("poll", "success", trigger, "0 devices with a tb_device_id + status key")
         return {"polled": 0, "changes": 0}
-    results = await asyncio.gather(*(_poll_one(d) for d in devices))
-    return {"polled": len(devices), "changes": sum(1 for r in results if r)}
+    try:
+        results = await asyncio.gather(*(_poll_one(d) for d in devices))
+    except Exception as e:  # noqa: BLE001
+        ops.record("poll", "failed", trigger, str(e))
+        raise
+    changes = sum(1 for r in results if r)
+    ops.record("poll", "success", trigger, f"{len(devices)} polled, {changes} change(s)")
+    return {"polled": len(devices), "changes": changes}
 
 
 def downtime_for_date(device_id: int, date: str) -> list[dict]:

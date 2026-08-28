@@ -13,4 +13,6 @@ services:
       - ./reports:/app/reports                  # real folder, browsable on the host
       - ./uploads:/app/uploads                  # imported PDFs
       - ./backend/config:/app/backend/config    # edit device_groups.yaml without a rebuild
+      - ./logs:/app/logs                        # scheduler.log — check it in the morning
+      - ./backups:/app/backups                  # scripts/backup.py output
     restart: unless-stopped

@@ -18,11 +18,14 @@
 </header>
 
 <main>
+  <div id="banner" class="banner"></div>
+
   <div style="display:flex; justify-content:space-between; align-items:center">
     <h2>Live Snapshot — <span id="date"></span></h2>
     <div>
       <button id="import" class="">Import Data (snapshot now)</button>
       <button id="poll" class="secondary">Poll statuses</button>
+      <button id="seed" class="secondary" title="Load seed/sample_report_20260816.json">Load sample data</button>
     </div>
   </div>
 
@@ -46,12 +49,43 @@
 const dateEl = document.getElementById("date");
 dateEl.textContent = today();
 
+function fmt(run) {
+  if (!run) return "never";
+  return `${run.status} · ${run.ran_at}${run.detail ? " · " + run.detail : ""}`;
+}
+
+async function loadBanner() {
+  try {
+    const s = await api("/status/last-run");
+    const cap = s.last_capture, rep = s.last_report;
+    const bad = (r) => r && r.status === "failed";
+    const el = document.getElementById("banner");
+    el.className = "banner" + (bad(cap) || bad(rep) ? " bad" : (cap ? " ok" : ""));
+    el.innerHTML = `
+      <strong>Last capture:</strong> ${fmt(cap)} &nbsp;|&nbsp;
+      <strong>Last report:</strong> ${fmt(rep)} &nbsp;|&nbsp;
+      <strong>Next nightly:</strong> ${s.next_runs.nightly || "—"}`;
+  } catch (e) { /* banner is best-effort */ }
+}
+
 async function load() {
-  const data = await api("/captures/" + today());
+  let showDate = today();
+  let data = await api("/captures/" + showDate);
+  if (!(data.values || []).length) {
+    // fall back to the most recent snapshot we have (e.g. after loading sample data)
+    try {
+      const s = await api("/status/last-run");
+      if (s.latest_snapshot_ts) {
+        showDate = s.latest_snapshot_ts.slice(0, 10);
+        data = await api("/captures/" + showDate);
+      }
+    } catch (e) { /* keep today */ }
+  }
+  dateEl.textContent = showDate + (showDate === today() ? "" : "  (latest available)");
   const rows = data.values || [];
   const tbody = document.getElementById("rows");
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="muted">No snapshot yet for today. Click "Import Data".</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="muted">No snapshot yet. Click "Import Data" or "Load sample data".</td></tr>`;
   } else {
     tbody.innerHTML = rows.map(r => `
       <tr>
@@ -87,10 +121,22 @@ document.getElementById("poll").onclick = async (e) => {
   try {
     const r = await api("/downtime/poll", { method: "POST" });
     toast(`Polled ${r.polled} devices, ${r.changes} status change(s)`);
+    await loadBanner();
   } catch (err) { toast("Failed: " + err.message); }
   e.target.disabled = false;
 };
 
+document.getElementById("seed").onclick = async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await api("/seed/load", { method: "POST" });
+    toast(`Seed loaded: ${r.devices} devices across ${r.groups} groups (${r.date})`);
+    await load(); await loadBanner();
+  } catch (err) { toast("Failed: " + err.message); }
+  e.target.disabled = false;
+};
+
+loadBanner();
 load().catch(err => toast("Load failed: " + err.message));
 </script>
 </body>

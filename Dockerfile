@@ -9,6 +9,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend
 COPY frontend/ ./frontend
 COPY templates/ ./templates
+COPY seed/ ./seed
+COPY scripts/ ./scripts
+
+RUN mkdir -p reports uploads/pdfs logs backups backend/data
 
 ENV TZ=Asia/Kuala_Lumpur
 EXPOSE 8000

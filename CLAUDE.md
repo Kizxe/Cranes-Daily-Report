@@ -54,3 +54,11 @@ uploads/pdfs/                    # imported PDFs, kept as-received
 8. Containerize (Dockerfile + compose already drafted in this repo — see `Dockerfile` / `docker-compose.yml`).
 
 Work through these roughly in order — step 1 unblocks real testing of everything after it.
+
+## Working solo — guardrails for you, Claude
+There's no second engineer reviewing this, so hold yourself to the checks a reviewer would normally catch:
+- **Build against `seed/sample_report_20260816.json` before the ThingsBoard client exists.** It's the same data already validated in the approved report mockups (sites overview + a full Computime device breakdown + PIC follow-ups). Use it to get the DB schema, report template wiring, and Playwright render pipeline all working end-to-end (steps 2–5) without needing live ThingsBoard credentials for every test run. Swap in the real client last, once the pipeline around it already works.
+- **Write a test alongside every new endpoint or service function**, not after. Nobody else will notice a silent regression later — pytest in a `tests/` folder, run before considering a roadmap step "done."
+- **Log every capture and report run to a file** (`logs/scheduler.log` or similar), not just stdout — the 23:59 job runs unattended overnight, and a silent failure with no one watching is the main real risk of this whole design. Surface "last capture: success/failed, <timestamp>" somewhere visible on the dashboard so a glance in the morning tells you whether last night worked.
+- **Commit after every roadmap step**, not at the end of a session — small, working checkpoints are what let you (or a debugger agent later) roll back to a known-good point instead of untangling several days of changes at once.
+- **Back up `backend/data/cranes.db` and `reports/` periodically** — it's one file and one folder on one machine, no replication. A dated zip copied somewhere off that PC is enough; doesn't need to be fancy.

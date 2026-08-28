@@ -106,7 +106,20 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 CREATE INDEX IF NOT EXISTS idx_reports_date ON reports(report_date);
 
--- 7. imported PDFs (kept as-received) ------------------------------------
+-- ops: one row per job run (capture / report / poll / seed) so the dashboard
+-- can show "last capture: success/failed <ts>" and the debugger agent can tell
+-- whether the scheduler actually fired. Not part of the 7-table data model.
+CREATE TABLE IF NOT EXISTS job_runs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    job             TEXT NOT NULL,               -- capture | report | poll | seed | nightly
+    trigger         TEXT NOT NULL DEFAULT 'scheduled',  -- scheduled | manual | startup
+    status          TEXT NOT NULL,               -- success | failed
+    detail          TEXT,
+    ran_at          TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_job_runs_job ON job_runs(job, ran_at);
+
+-- imported PDFs (kept as-received) ------------------------------------
 CREATE TABLE IF NOT EXISTS imported_pdfs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     original_name   TEXT NOT NULL,

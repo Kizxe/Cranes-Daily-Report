@@ -6,6 +6,7 @@ added after 23:59 gets in by regenerating: POST /api/reports/{date}/generate.
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -14,6 +15,9 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from ..config import settings
 from ..db.database import get_conn, read_conn
 from . import downtime_service as dt
+from . import ops
+
+log = logging.getLogger("cranes.report")
 
 TZ = ZoneInfo(settings.timezone)
 
@@ -142,13 +146,20 @@ def render_html(date: str) -> str:
     return _env.get_template("daily_report.html").render(**ctx)
 
 
+def has_snapshot(date: str) -> bool:
+    with read_conn() as conn:
+        return conn.execute(
+            "SELECT 1 FROM snapshots WHERE capture_date = ? LIMIT 1", (date,)
+        ).fetchone() is not None
+
+
 async def generate_report(date: str, trigger: str = "manual") -> dict:
     from playwright.async_api import async_playwright
 
     out_dir = settings.reports_dir / date
     out_dir.mkdir(parents=True, exist_ok=True)
-    pdf_path = out_dir / f"{doc_number(date)}.pdf"
-    json_path = out_dir / "snapshot.json"
+    pdf_path = settings.report_pdf_path(date)
+    json_path = out_dir / f"snapshot_{date}.json"
 
     ctx = build_context(date)
     json_path.write_text(json.dumps(ctx, indent=2, default=str))
@@ -182,6 +193,9 @@ async def generate_report(date: str, trigger: str = "manual") -> dict:
             """,
             (date, doc_number(date), str(pdf_path), str(json_path), trigger, status, error),
         )
+    ops.record("report", "success" if status == "generated" else "failed", trigger,
+               f"{date}: {error or pdf_path.name}")
+    log.info("report %s for %s (trigger=%s) -> %s", status, date, trigger, error or pdf_path)
     return {"date": date, "status": status, "pdf_path": str(pdf_path), "error": error}
 
 

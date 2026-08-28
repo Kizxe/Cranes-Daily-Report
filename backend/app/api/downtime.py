@@ -20,7 +20,7 @@ def _today() -> str:
 @router.post("/poll")
 async def poll_now() -> dict:
     """Trigger a status poll immediately (normally on a timer)."""
-    return await downtime_service.poll_all_statuses()
+    return await downtime_service.poll_all_statuses(trigger="manual")
 
 
 @router.get("/devices/{device_id}")
