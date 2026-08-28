@@ -24,6 +24,9 @@ log = logging.getLogger("cranes.seed")
 TZ = ZoneInfo(settings.timezone)
 
 ACTIVE = "ACTIVE"
+# Mirrors downtime_service.ACTIVE_STATES; imported lazily would be circular-ish, and the
+# seed only ever emits the four mockup statuses.
+ACTIVE_UPPER = {"ACTIVE", "ONLINE", "OK", "UP"}
 _COUNT_RE = re.compile(r"(\d+)\s+([A-Za-z]+)")
 
 
@@ -142,6 +145,7 @@ def load_seed() -> dict:
 
         groups = 0
         devices = 0
+        dev_remarks = 0
         for gi, site in enumerate(data.get("sites_overview", [])):
             is_detail = site["site"] == detail_site
             gid = _upsert_group(
@@ -159,6 +163,16 @@ def load_seed() -> dict:
                                 d.get("affected_hrs", 0.0), d.get("issue_occ", 0),
                                 d.get("signal_health"), d.get("recommendation"))
                     devices += 1
+                    # The engineer recommendation is a per-device remark. Only non-active
+                    # devices get one — the report auto-fills "No action." for the rest.
+                    rec = (d.get("recommendation") or "").strip()
+                    if rec and d["status"].upper() not in ACTIVE_UPPER:
+                        conn.execute(
+                            "INSERT INTO remarks (group_id, device_id, report_date, body, author)"
+                            " VALUES (?, ?, ?, ?, 'seed')",
+                            (gid, did, day, rec),
+                        )
+                        dev_remarks += 1
             else:
                 # fan the "10 Active / 1 Static / ..." string into placeholder devices
                 counts = _parse_status_counts(site.get("current_status", ""))
@@ -203,7 +217,8 @@ def load_seed() -> dict:
                 )
                 fus += 1
 
-    result = {"date": day, "groups": groups, "devices": devices, "followups": fus}
+    result = {"date": day, "groups": groups, "devices": devices, "followups": fus,
+              "device_remarks": dev_remarks}
     ops.record("seed", "success", "manual", json.dumps(result))
     log.info("seed loaded: %s", result)
     return result

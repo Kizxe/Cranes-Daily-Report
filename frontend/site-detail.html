@@ -26,42 +26,43 @@
     <button id="reload" class="secondary">Reload</button>
   </p>
 
-  <h2>Device Downtime</h2>
+  <h2>Device Condition &amp; Recommendation</h2>
+  <p class="muted">
+    This is the same table the report prints. Active devices read
+    <em>No action.</em> automatically — type a recommendation for the ones that are down.
+    Click a device name to see its downtime events.
+  </p>
   <table>
     <thead>
-      <tr><th>Device</th><th>Active Hrs</th><th>Affected Hrs</th><th>Active %</th><th>Issue Occ.</th></tr>
+      <tr>
+        <th style="width:19%">Device</th><th style="width:9%">Status</th>
+        <th style="width:8%">Active Hrs</th><th style="width:9%">Affected Hrs</th>
+        <th style="width:8%">Active %</th><th style="width:7%">Issue Occ.</th>
+        <th>Engineer recommendation</th>
+      </tr>
     </thead>
-    <tbody id="downtime"><tr><td colspan="5" class="muted">Pick a group.</td></tr></tbody>
+    <tbody id="devices"><tr><td colspan="7" class="muted">Pick a group.</td></tr></tbody>
   </table>
 
-  <h2>Add Remark (site-level)</h2>
+  <h2>Site Remark</h2>
+  <p class="muted">One line about the whole site — this is the REMARK column on page 1 of the report.</p>
   <form class="stack" id="remarkForm">
     <textarea name="body" rows="2" placeholder="Remark for this site / date" required></textarea>
     <input name="author" placeholder="Author (optional)">
     <button>Save remark</button>
   </form>
   <div id="remarks"></div>
-
-  <h2>Add PIC Follow-Up</h2>
-  <form class="stack" id="followForm">
-    <select name="device_id" id="followDevice"><option value="">— device (optional) —</option></select>
-    <input name="issue" placeholder="Issue (e.g. CT_RHT_04 Inactive)" required>
-    <textarea name="remark" rows="2" placeholder="Follow-up remark" required></textarea>
-    <input name="assigned_pic" placeholder="Assigned PIC" required>
-    <input type="date" name="date_assigned" required>
-    <button>Save follow-up</button>
-  </form>
-  <div id="followups"></div>
 </main>
 
 <script src="assets/app.js"></script>
 <script>
 const dateInput = document.getElementById("date");
 dateInput.value = qs("date") || today();
-let groups = [];
+
+const gid = () => +document.getElementById("group").value;
 
 async function loadGroups() {
-  groups = await api("/groups");
+  const groups = await api("/groups");
   const sel = document.getElementById("group");
   sel.innerHTML = groups.map(g => `<option value="${g.id}">${g.name} (${g.device_count})</option>`).join("");
   if (qs("group")) sel.value = qs("group");
@@ -69,30 +70,82 @@ async function loadGroups() {
 }
 
 async function loadAll() {
-  const gid = document.getElementById("group").value;
   const date = dateInput.value;
-  if (!gid) return;
+  if (!document.getElementById("group").value) return;
 
-  const dt = await api(`/downtime/groups/${gid}?date=${date}`);
-  document.getElementById("downtime").innerHTML = dt.devices.map(d => `
-    <tr><td>${d.device}</td><td>${d.active_hours}</td><td>${d.affected_hours}</td>
-    <td>${d.active_pct}%</td><td>${d.issue_occurrences}</td></tr>`).join("")
-    || `<tr><td colspan="5" class="muted">No devices.</td></tr>`;
+  const [dt, recs, remarks] = await Promise.all([
+    api(`/downtime/groups/${gid()}?date=${date}`),
+    api(`/remarks?group_id=${gid()}&report_date=${date}&scope=device`),
+    api(`/remarks?group_id=${gid()}&report_date=${date}&scope=site`),
+  ]);
 
-  const devSel = document.getElementById("followDevice");
-  devSel.innerHTML = `<option value="">— device (optional) —</option>` +
-    dt.devices.map(d => `<option value="${d.device_id}">${d.device}</option>`).join("");
+  const byDevice = Object.fromEntries(recs.map(r => [r.device_id, r]));
 
-  const remarks = await api(`/remarks?group_id=${gid}&report_date=${date}`);
+  document.getElementById("devices").innerHTML = dt.devices.map(d => {
+    // Mirror the report's rule exactly, so nothing you type can be silently overwritten.
+    const cell = d.is_active
+      ? `<textarea disabled rows="2">No action.</textarea>
+         <span class="rec-auto">AUTO</span>`
+      : `<textarea data-device="${d.device_id}" rows="2"
+           placeholder="What should the engineer do?">${(byDevice[d.device_id]?.body || "")}</textarea>
+         <button class="secondary rec-save" data-device="${d.device_id}">Save</button>`;
+    return `<tr>
+      <td><a href="#" class="dev-events" data-device="${d.device_id}"
+             data-name="${d.device}">${d.device}</a></td>
+      <td>${pill(d.status)}</td>
+      <td>${d.active_hours}</td><td>${d.affected_hours}</td>
+      <td>${d.active_pct}%</td><td>${d.issue_occurrences}</td>
+      <td>${cell}</td>
+    </tr>
+    <tr class="events-row" id="ev-${d.device_id}" hidden><td colspan="7"></td></tr>`;
+  }).join("") || `<tr><td colspan="7" class="muted">No devices.</td></tr>`;
+
   document.getElementById("remarks").innerHTML = remarks.map(r =>
     `<p>• ${r.body} <span class="muted">— ${r.author || "unattributed"}</span></p>`).join("")
-    || `<p class="muted">No remarks.</p>`;
-
-  const fus = await api(`/followups?group_id=${gid}&report_date=${date}`);
-  document.getElementById("followups").innerHTML = fus.map(f =>
-    `<p>• <strong>${f.issue}</strong>: ${f.remark} <span class="muted">→ ${f.assigned_pic} (${f.date_assigned})</span></p>`).join("")
-    || `<p class="muted">No follow-ups.</p>`;
+    || `<p class="muted">No site remark yet.</p>`;
 }
+
+async function saveRecommendation(deviceId) {
+  const ta = document.querySelector(`textarea[data-device="${deviceId}"]`);
+  const body = ta.value.trim();
+  if (!body) {
+    // Clearing the box removes the recommendation; the report then prints a dash.
+    const existing = await api(`/remarks?device_id=${deviceId}&report_date=${dateInput.value}`);
+    for (const r of existing) await api(`/remarks/${r.id}`, { method: "DELETE" });
+    toast("Recommendation cleared");
+    return;
+  }
+  await api("/remarks", { method: "POST", body: JSON.stringify({
+    group_id: gid(), report_date: dateInput.value, device_id: deviceId, body, author: null,
+  })});
+  toast("Recommendation saved");
+}
+
+async function toggleEvents(deviceId, name) {
+  const row = document.getElementById(`ev-${deviceId}`);
+  if (!row.hidden) { row.hidden = true; return; }
+  const evs = await api(`/downtime/events/${deviceId}?limit=50`);
+  const rows = evs.map(e => `<tr>
+      <td>${pill(e.status)}</td><td>${(e.start_ts || "").replace("T", " ").slice(0, 19)}</td>
+      <td>${e.end_ts ? e.end_ts.replace("T", " ").slice(0, 19) : "— ongoing"}</td>
+      <td>${e.duration_seconds != null ? (e.duration_seconds / 3600).toFixed(2) : "—"}</td>
+    </tr>`).join("") || `<tr><td colspan="4" class="muted">No status changes recorded.</td></tr>`;
+  row.querySelector("td").innerHTML = `
+    <strong>Downtime events — ${name}</strong>
+    <table><thead><tr><th>Status</th><th>Start</th><th>End</th><th>Duration (hr)</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  row.hidden = false;
+}
+
+document.getElementById("devices").addEventListener("click", (e) => {
+  const save = e.target.closest(".rec-save");
+  if (save) { saveRecommendation(+save.dataset.device).catch(err => toast("Failed: " + err.message)); return; }
+  const link = e.target.closest(".dev-events");
+  if (link) {
+    e.preventDefault();
+    toggleEvents(+link.dataset.device, link.dataset.name).catch(err => toast("Failed: " + err.message));
+  }
+});
 
 document.getElementById("reload").onclick = loadAll;
 document.getElementById("group").onchange = loadAll;
@@ -102,27 +155,11 @@ document.getElementById("remarkForm").onsubmit = async (e) => {
   e.preventDefault();
   const f = new FormData(e.target);
   await api("/remarks", { method: "POST", body: JSON.stringify({
-    group_id: +document.getElementById("group").value,
-    report_date: dateInput.value,
+    group_id: gid(), report_date: dateInput.value, device_id: null,
     body: f.get("body"), author: f.get("author") || null,
   })});
   e.target.reset();
   toast("Remark saved");
-  loadAll();
-};
-
-document.getElementById("followForm").onsubmit = async (e) => {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  await api("/followups", { method: "POST", body: JSON.stringify({
-    group_id: +document.getElementById("group").value,
-    report_date: dateInput.value,
-    device_id: f.get("device_id") ? +f.get("device_id") : null,
-    issue: f.get("issue"), remark: f.get("remark"),
-    assigned_pic: f.get("assigned_pic"), date_assigned: f.get("date_assigned"),
-  })});
-  e.target.reset();
-  toast("Follow-up saved");
   loadAll();
 };
 

@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     downtime_poll_minutes: int = 10
     # Retention: keep everything indefinitely (decided 2026-08-28). No prune job.
     retention_days: int = 0
+
+    # --- Report: DOWNTIME EVENTS table caps -------------------------------
+    # A flapping device can produce dozens of events a day. Cap what the PDF prints;
+    # nothing is lost — GET /api/downtime/events/{device_id} still has them all.
+    report_max_events_per_device: int = 8
+    report_max_events_per_site: int = 40
+    # 0 = print every event. Raise to ~60 to suppress sub-minute poll flaps.
+    report_min_event_seconds: int = 0
     # Set false in tests — APScheduler's AsyncIOScheduler binds the running loop.
     enable_scheduler: bool = True
 

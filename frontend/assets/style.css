@@ -60,3 +60,12 @@ td { border-bottom: 1px solid var(--line); padding: 8px; }
 form.stack { display: grid; gap: 8px; max-width: 520px; background: #fff; padding: 16px; border: 1px solid var(--line); }
 form.stack input, form.stack textarea, form.stack select { font-family: inherit; padding: 7px; border: 1px solid var(--line); }
 a { color: var(--navy); }
+
+/* per-device engineer recommendation editor (site-detail) */
+td textarea { width: 100%; font-family: inherit; font-size: 12px; padding: 5px;
+              border: 1px solid var(--line); resize: vertical; }
+td textarea:disabled { background: #f7f8fa; color: var(--muted); }
+.rec-auto { font-size: 10px; letter-spacing: .1em; color: var(--muted); }
+.rec-save { margin-top: 5px; padding: 4px 10px; font-size: 11px; }
+.events-row td { background: #f7f8fa; }
+.events-row table { margin-top: 8px; }

@@ -9,12 +9,16 @@ class RemarkIn(BaseModel):
     report_date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     body: str
     author: str | None = None
+    # None = a site-level remark (many per day, shown on the report cover).
+    # Set = that device's engineer recommendation (at most one per day; POST upserts).
+    device_id: int | None = None
 
 
 class RemarkOut(RemarkIn):
     id: int
     created_at: str
     updated_at: str
+    device_name: str | None = None
 
 
 class FollowupIn(BaseModel):

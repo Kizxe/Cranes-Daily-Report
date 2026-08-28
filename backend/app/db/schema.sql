@@ -66,9 +66,13 @@ CREATE INDEX IF NOT EXISTS idx_status_events_device ON status_events(device_id, 
 CREATE INDEX IF NOT EXISTS idx_status_events_open ON status_events(device_id) WHERE end_ts IS NULL;
 
 -- 4. Manual remarks (site-level) -------------------------------------------
+-- device_id NULL = site-level remark (many per day, shown on page 1).
+-- device_id set = that device's engineer recommendation (at most one per day; the
+-- uq_remarks_device_date partial index in database.py::_migrate enforces it).
 CREATE TABLE IF NOT EXISTS remarks (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     group_id        INTEGER NOT NULL REFERENCES device_groups(id) ON DELETE CASCADE,
+    device_id       INTEGER REFERENCES devices(id) ON DELETE CASCADE,
     report_date     TEXT NOT NULL,               -- YYYY-MM-DD this remark belongs to
     body            TEXT NOT NULL,
     author          TEXT,

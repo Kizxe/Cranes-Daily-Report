@@ -2,7 +2,7 @@
 
 Localhost/LAN app that pulls device telemetry from ThingsBoard for 22
 device/alarm/trigger groups, snapshots every key daily at 23:59 (plus on demand),
-detects active↔inactive downtime windows, takes manual remarks + PIC follow-ups,
+detects active↔inactive downtime windows, takes a site remark + per-device recommendations,
 and renders a daily PDF into `reports/YYYY-MM-DD/`.
 
 Architecture, schema and decisions live in **[CLAUDE.md](CLAUDE.md)** — read that first.
@@ -101,7 +101,8 @@ is set so the 23:59 job fires at local time.
 | GET  | `/api/captures/{date}` | latest snapshot values for a date |
 | POST | `/api/downtime/poll` | poll all device statuses now |
 | GET  | `/api/downtime/groups/{id}?date=` | per-device day summary |
-| GET/POST/PUT/DELETE | `/api/remarks`, `/api/followups` | remarks + PIC follow-ups |
+| GET/POST/PUT/DELETE | `/api/remarks` | site remarks (`device_id` null) + per-device recommendations (`device_id` set; POST upserts). `?scope=site\|device` filters |
+| GET/POST/DELETE | `/api/followups` | retired — kept so existing PIC follow-up rows stay readable; nothing writes or renders them |
 | POST | `/api/reports/{date}/generate` | (re)generate that day's PDF (409 if no snapshot; `?allow_empty=true` to override) |
 | GET  | `/api/reports/{date}/preview` | render report HTML (no PDF) |
 | GET  | `/api/reports/{date}/pdf` | download the PDF |

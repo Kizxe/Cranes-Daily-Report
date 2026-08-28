@@ -21,10 +21,39 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Additive, idempotent column patches for databases created before a column existed.
+
+    schema.sql is all CREATE TABLE IF NOT EXISTS, so it can never add a column to a table
+    that is already on disk. Each patch checks PRAGMA table_info first, so this is safe to
+    run on every startup. Runs after executescript, so the tables are guaranteed to exist.
+    """
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(remarks)")}
+    if "device_id" not in cols:
+        # NULL = site-level remark (unchanged behaviour). Non-NULL = that device's engineer
+        # recommendation. The ADD COLUMN is legal under foreign_keys=ON only because the
+        # default is NULL.
+        conn.execute(
+            "ALTER TABLE remarks ADD COLUMN device_id INTEGER "
+            "REFERENCES devices(id) ON DELETE CASCADE"
+        )
+    # Kept out of schema.sql: on a pre-migration DB the column doesn't exist yet, and
+    # executescript runs as one blob — the whole script would abort.
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_remarks_device_date "
+        "ON remarks(device_id, report_date) WHERE device_id IS NOT NULL"
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_remarks_device ON remarks(device_id)")
+
+
 def init_db() -> None:
     """Create tables if they don't exist. Safe to call on every startup."""
-    with _connect() as conn:
+    conn = _connect()
+    try:
         conn.executescript(_SCHEMA_PATH.read_text())
+        _migrate(conn)
+    finally:
+        conn.close()
 
 
 @contextmanager

@@ -1,212 +1,366 @@
-{# Cranes Daily Report — daily_report.html
-   Placeholder that renders real data in the approved design system
-   (navy #0E2340, JetBrains Mono, Source Serif 4). Replace with the approved
-   v3 template when available — keep the context variable names below:
-     date_human, doc_number, generated_at, monitored_sites, total_devices,
-     current_active, attention_needed, sites[], site_details[]
+{# Cranes Daily Report — the approved design.
+
+   Geometry is taken from the approved sample (Cranes_Daily_Report_1.pdf): A4 at
+   96dpi, 48px top padding, 59px side padding, 677px content column. Font sizes in
+   the sample are round PDF points; CSS px = pt / 0.75.
+
+   Pages are pre-fitted by services/report_layout.py — this file renders `pages`,
+   it does not decide what lands where. If you change a size or padding here, update
+   the constants there and re-run tests/test_report_layout.py.
 #}
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Cranes Daily Report — {{ date_human }}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+{% if font_css() %}
+<style>{{ font_css() }}</style>
+{% else %}
+{# Fallback only — templates/fonts/ is empty. Needs live internet at render time. #}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:wght@400;700&display=block" rel="stylesheet">
+{% endif %}
 <style>
   :root {
-    --navy: #0E2340;
-    --navy-soft: #1c3a5e;
-    --ink: #16202e;
-    --line: #d7dee7;
-    --muted: #5f6b7a;
-    --ok: #1f8a4c;
-    --warn: #b8860b;
-    --bad: #c0392b;
-    --bg-soft: #f4f6f9;
+    --navy:#0e1b36;  --ink:#1a1a1a;
+    --muted:#6b7078; --muted-2:#8a8f98; --muted-3:#9aa0a8;
+    --line:#e7e9ec;  --line-2:#d8dbe0;  --line-3:#eceef0;
+    --ok:#1f8a4c;    --ok-bg:#e3f5ea;
+    --warn:#b8730f;  --warn-bg:#fdf1de;
+    --bad:#b3261e;   --bad-bg:#fbe6e5;
+    --draft-bg:#fdf6e3; --draft-br:#efe0b0; --draft-dot:#d99a1f; --draft-fg:#9a7b1f;
+    --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin:0; padding:0; background:#fff; }
   body {
-    font-family: "Source Serif 4", Georgia, serif;
-    color: var(--ink);
-    font-size: 10.5px;
-    line-height: 1.45;
+    font-family: var(--serif); color: var(--ink);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
-  .page { padding: 0 4mm; }
-  .page-break { page-break-before: always; }
 
-  header.report-head, footer.report-foot {
-    display: flex; justify-content: space-between; align-items: center;
-    font-family: "JetBrains Mono", monospace;
-    letter-spacing: .12em; text-transform: uppercase; font-size: 8px;
-    color: var(--navy);
-    border-bottom: 2px solid var(--navy);
-    padding-bottom: 6px; margin-bottom: 14px;
+  /* ---- the page box: identical in print and on screen, so the HTML preview
+         paginates exactly like the PDF ------------------------------------ */
+  @page { size: 210mm 297mm; margin: 0; }
+  .page {
+    position: relative; width: 210mm; height: 297mm;
+    padding: 48px 59px 0; background:#fff;
+    overflow: visible;            /* spill visibly rather than drop a row silently */
+    break-after: page; page-break-after: always;
   }
-  footer.report-foot { border-bottom: none; border-top: 1px solid var(--line);
-    margin-top: 18px; padding-top: 6px; color: var(--muted); }
-  .brand-mark { font-weight: 700; }
-
-  h1 { font-size: 22px; margin: 2px 0 0; color: var(--navy); font-weight: 700; }
-  .subtitle { color: var(--muted); font-style: italic; margin-bottom: 12px; }
-  h2 { font-family: "JetBrains Mono", monospace; text-transform: uppercase;
-       letter-spacing: .16em; font-size: 9px; color: var(--navy);
-       border-bottom: 1px solid var(--line); padding-bottom: 4px; margin: 18px 0 8px; }
-
-  .stat-row { display: flex; gap: 8px; margin: 10px 0 4px; }
-  .stat {
-    flex: 1; border: 1px solid var(--line); border-top: 3px solid var(--navy);
-    padding: 8px 10px; background: #fff;
+  .page:last-of-type { break-after: auto; page-break-after: auto; }
+  @media screen {
+    body { background:#8a8f98; padding:24px 0; }
+    .page { margin:0 auto 24px; box-shadow:0 2px 12px rgba(0,0,0,.35); }
   }
-  .stat .label { font-family: "JetBrains Mono", monospace; font-size: 7.5px;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-  .stat .value { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1.1; }
 
-  table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; }
-  th {
-    font-family: "JetBrains Mono", monospace; font-size: 7px; letter-spacing: .1em;
-    text-transform: uppercase; text-align: left; color: var(--navy);
-    border-bottom: 1.5px solid var(--navy); padding: 5px 6px;
+  /* ---- repeating chrome, pinned to the same spot on every page ---------- */
+  .head {
+    position:absolute; top:48px; left:59px; right:59px; height:59px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--line-2);
   }
-  td { border-bottom: 1px solid var(--line); padding: 5px 6px; vertical-align: top; }
-  tbody tr:nth-child(even) { background: var(--bg-soft); }
+  .mark { display:flex; align-items:center; gap:14px; }
+  .sc {
+    width:39px; height:39px; border:1px solid var(--ink); border-radius:5px;
+    display:flex; align-items:center; justify-content:center;
+    font:700 13.3px/1 var(--mono); letter-spacing:.04em;
+  }
+  .wordmark { font:700 17.3px/1 var(--mono); letter-spacing:.23em; }
+  .docno { font:400 13.3px/1 var(--mono); letter-spacing:.10em; color:var(--muted-2); }
+  .foot {
+    position:absolute; left:59px; right:59px; bottom:40px; padding-top:9px;
+    border-top:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    font:400 10.7px/1 var(--mono); letter-spacing:.05em; color:var(--muted-3);
+  }
+  .body { padding-top:62px; }   /* clears the absolutely-positioned .head */
 
-  .pill { font-family: "JetBrains Mono", monospace; font-size: 7px; font-weight: 700;
-    letter-spacing: .08em; padding: 2px 6px; border-radius: 2px; display: inline-block; }
-  .pill.HEALTHY, .pill.ACTIVE { background: #e4f3ea; color: var(--ok); }
-  .pill.ATTENTION, .pill.STATIC, .pill.STALLED { background: #fbf1dd; color: var(--warn); }
-  .pill.INACTIVE, .pill.CRITICAL, .pill.UNKNOWN { background: #f7e2df; color: var(--bad); }
+  /* ---- cover ------------------------------------------------------------ */
+  h1 { font:700 45px/1.08 var(--serif); margin:26px 0 0; letter-spacing:-.005em; }
+  .subtitle { font:400 14.7px/1 var(--mono); letter-spacing:.09em; color:var(--muted); margin-top:14px; }
+  .draft {
+    margin-top:29px; padding:13px 19px; border-radius:7px;
+    background:var(--draft-bg); border:1px solid var(--draft-br);
+    font:400 13.3px/1 var(--mono); letter-spacing:.114em; color:var(--draft-fg);
+  }
+  .draft .dot { color:var(--draft-dot); }
 
-  .breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
-  .breakdown .chip { border: 1px solid var(--line); padding: 5px 8px; min-width: 66px; }
-  .breakdown .chip .t { font-family: "JetBrains Mono", monospace; font-size: 7px;
-    letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .breakdown .chip .n { font-size: 16px; font-weight: 700; color: var(--navy); }
-  .breakdown .chip .s { font-size: 8px; color: var(--muted); }
-  .note { color: var(--muted); font-style: italic; font-size: 9px; margin-top: 4px; }
+  .stats { display:flex; margin-top:34px; }
+  .stats .s { flex:1; }
+  .stats .l { font:400 12px/1 var(--mono); letter-spacing:.14em; color:var(--muted-2); }
+  .stats .v { font:700 34.7px/1 var(--serif); margin-top:11px; }
+
+  .sec { display:flex; align-items:center; gap:13px; margin:38px 0 22px; }
+  .sec .dash { width:21px; height:3px; background:var(--ink); flex:none; }
+  .sec .lbl { font:700 14.7px/1 var(--mono); letter-spacing:.18em; white-space:nowrap; }
+  .sec .rule { flex:1; height:1px; background:var(--line-2); }
+
+  /* ---- tables ----------------------------------------------------------- */
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  thead th {
+    background:var(--navy); color:#fff; text-align:left; vertical-align:middle;
+    font:600 10.7px/1.3 var(--mono); letter-spacing:.08em; padding:0 0 0 10.3px;
+  }
+  tbody td {
+    padding:9px 10px 9px 10.3px; vertical-align:top;
+    border-bottom:1px solid var(--line);
+    font:400 11.5px/1.5 var(--mono);
+  }
+  tbody tr:last-child td { border-bottom:1px solid var(--line-2); }
+
+  .pill {
+    display:inline-block; border-radius:5px; padding:4px 11px;
+    font:700 10px/1 var(--mono); letter-spacing:.06em;
+  }
+  .pill.HEALTHY { background:var(--ok-bg);  color:var(--ok); }
+  .pill.ATTENTION { background:var(--bad-bg); color:var(--bad); }
+
+  .sev-ok { color:var(--ok); } .sev-warn { color:var(--warn); }
+  .sev-bad { color:var(--bad); } .sev-muted { color:var(--muted-3); }
+
+  .sitename { font:700 11.5px/1.4 var(--mono); }
+  .sitename a { color:inherit; text-decoration:none; }
+  .foot-note { margin-top:16px; font:italic 400 11.3px/1 var(--mono); color:var(--muted-3); }
+
+  /* ---- site page -------------------------------------------------------- */
+  .site-card {
+    display:flex; height:145px; border:1px solid var(--line-2); border-radius:7px;
+    margin-top:4px;
+  }
+  .site-card > div { flex:1; padding:22px; }
+  .site-card > div + div { border-left:1px solid var(--line-2); }
+  .cap { font:400 12px/1 var(--mono); letter-spacing:.14em; color:var(--muted-2); }
+  .site-card h2 { font:700 20px/1.25 var(--serif); margin:10px 0 0; }
+  .site-card .sub { font:400 12.7px/1.4 var(--mono); color:var(--muted); margin-top:6px; }
+  .site-card .pill { margin-top:11px; }
+  .expect { font:400 12px/1 var(--mono); color:var(--muted); margin-top:11px; }
+
+  .health-card {
+    position:relative; border:1px solid var(--ink); border-radius:14px;
+    padding:25px; margin-top:34px;
+  }
+  .health-card .tab {
+    position:absolute; top:-16px; left:50%; transform:translateX(-50%);
+    background:#fff; border:1px solid var(--ink); border-radius:999px;
+    padding:8px 26px; font:700 13.3px/1 var(--mono); letter-spacing:.12em; white-space:nowrap;
+  }
+  .in-sec { border-top:1px solid var(--line-3); margin-top:14px; padding-top:11px; text-align:center; }
+  .in-sec:first-of-type { border-top:0; margin-top:4px; }
+  .in-sec .lbl { font:400 11.3px/1 var(--mono); letter-spacing:.16em; color:var(--muted-2); }
+
+  .quad { display:flex; margin-top:12px; text-align:left; }
+  .quad .s { flex:1; }
+  .quad .l { font:400 11px/1 var(--mono); letter-spacing:.12em; color:var(--muted-2); }
+  .quad .v { font:700 22.7px/1 var(--serif); margin-top:9px; }
+  .quad .v .pct { font-size:14.7px; }
+
+  .chips { display:flex; margin-top:12px; text-align:left; }
+  .chips .c { flex:1; }
+  .chips .t { font:400 11px/1 var(--mono); letter-spacing:.1em; color:var(--muted-2); }
+  .chips .n { font:700 18.7px/1 var(--serif); margin-top:8px; }
+  .chips .s { font:400 10.7px/1 var(--mono); margin-top:7px; }
+
+  /* In-card tables run narrower than the cover table, so the header drops a size to
+     keep "AFFECTED HRS" / "ISSUE OCC." from colliding with their neighbours. */
+  .in-sec table { margin-top:10px; text-align:left; }
+  .in-sec thead th { height:30px; font-size:9.2px; letter-spacing:.05em; padding-left:8px; }
+  .in-sec tbody td { font-size:9.2px; line-height:1.45; padding:5px 8px; }
+
+  .spill {
+    display:inline-block; border-radius:5px; padding:3px 7px;
+    font:700 8.4px/1.3 var(--mono); letter-spacing:.05em; text-align:left;
+  }
+  .spill.sev-ok { background:var(--ok-bg); color:var(--ok); }
+  .spill.sev-warn { background:var(--warn-bg); color:var(--warn); }
+  .spill.sev-bad { background:var(--bad-bg); color:var(--bad); }
+
+  .empty { font:italic 400 9.2px/1.5 var(--mono); color:var(--muted-3); }
+  .card-name { text-align:center; margin-top:11px; font:italic 400 10.7px/1 var(--mono); color:var(--muted-3); }
 </style>
 </head>
 <body>
 
-{# ---------- PAGE 1 : OVERVIEW ---------- #}
-<div class="page">
-  <header class="report-head">
-    <span><span class="brand-mark">SC</span> SquareCloud Malaysia</span>
-    <span>{{ doc_number }}</span>
-  </header>
+{%- macro chrome(number) -%}
+  <div class="head">
+    <div class="mark"><span class="sc">SC</span><span class="wordmark">SQUARECLOUD MALAYSIA</span></div>
+    <div class="docno">{{ doc_number }}</div>
+  </div>
+  <div class="foot">
+    <span>SQUARECLOUD MALAYSIA — CONFIDENTIAL — {{ doc_number }}</span>
+    <span>{{ number }} / {{ total_pages }}</span>
+  </div>
+{%- endmacro -%}
 
+{% for pg in pages %}
+<div class="page"{% if pg.anchor %} id="{{ pg.anchor }}"{% endif %}>
+{{ chrome(pg.number) }}
+<div class="body">
+
+{% if pg.kind == 'cover' %}
   <h1>Cranes Daily Report</h1>
   <div class="subtitle">IoT Device Monitoring · {{ date_human }}</div>
 
-  <div class="stat-row">
-    <div class="stat"><div class="label">Monitored Sites</div><div class="value">{{ monitored_sites }}</div></div>
-    <div class="stat"><div class="label">Total Devices</div><div class="value">{{ total_devices }}</div></div>
-    <div class="stat"><div class="label">Current Active</div><div class="value">{{ current_active }}</div></div>
-    <div class="stat"><div class="label">Attention Needed</div><div class="value">{{ attention_needed }}</div></div>
-  </div>
-
-  <h2>Sites Overview</h2>
-  <table>
-    <thead>
-      <tr><th>Site</th><th>Devices</th><th>No-Data Hrs</th><th>Active %</th>
-          <th>Current Active</th><th>Status</th><th>Remark</th></tr>
-    </thead>
-    <tbody>
-      {% for s in sites %}
-      <tr>
-        <td class="mono">{{ s.name }}</td>
-        <td>{{ s.devices }}</td>
-        <td>{{ "%.1f"|format(s.no_data_hrs) }}</td>
-        <td>{{ "%.1f"|format(s.active_pct) }}%</td>
-        <td>{{ s.current_active }}</td>
-        <td><span class="pill {{ s.health }}">{{ s.health }}</span></td>
-        <td>{% for r in s.remarks %}{{ r.body }}{% if not loop.last %} · {% endif %}{% else %}&mdash;{% endfor %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="note">One folder per day in reports/{{ date }}/ — PDF + snapshot.json.</div>
-
-  <footer class="report-foot">
-    <span>SquareCloud Malaysia — Confidential — {{ doc_number }}</span>
-    <span>Generated {{ generated_at }}</span>
-  </footer>
-</div>
-
-{# ---------- PAGE 2+ : PER-SITE DETAIL ---------- #}
-{% for site in site_details %}
-<div class="page page-break">
-  <header class="report-head">
-    <span><span class="brand-mark">SC</span> SquareCloud Malaysia</span>
-    <span>{{ doc_number }}</span>
-  </header>
-
-  <h1>{{ site.group.name }}</h1>
-  <div class="subtitle">
-    {{ site.group.site_label or "—" }}
-    {% if site.group.system_type %} · {{ site.group.system_type }}{% endif %}
-    · expected reporting {{ site.group.expected_report_hours }}h
-  </div>
-
-  <div class="stat-row">
-    <div class="stat"><div class="label">Total Devices</div><div class="value">{{ site.total }}</div></div>
-    <div class="stat"><div class="label">Current Active</div><div class="value">{{ site.current_active }}</div></div>
-    <div class="stat"><div class="label">Device Health</div><div class="value">{{ site.device_health_pct }}%</div></div>
-    <div class="stat"><div class="label">Attention Needed</div><div class="value">{{ site.attention }}</div></div>
-  </div>
-
-  <h2>Device Condition &amp; Recommendation</h2>
-  <table>
-    <thead>
-      <tr><th>Device</th><th>Type</th><th>Status</th><th>Active Hrs</th>
-          <th>Affected Hrs</th><th>Issue Occ.</th></tr>
-    </thead>
-    <tbody>
-      {% for d in site.devices %}
-      <tr>
-        <td class="mono">{{ d.name }}</td>
-        <td>{{ d.device_type or "—" }}</td>
-        <td><span class="pill {{ d.status }}">{{ d.status }}</span></td>
-        <td>{{ "%.1f"|format(d.active_hours) }}</td>
-        <td>{{ "%.1f"|format(d.affected_hours) }}</td>
-        <td>{{ d.issue_occurrences }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  {% if site.remarks %}
-  <h2>Remarks</h2>
-  {% for r in site.remarks %}
-    <div>{{ r.body }} <span class="note">— {{ r.author or "unattributed" }}</span></div>
-  {% endfor %}
+  {% if is_draft %}
+  <div class="draft"><span class="dot">●</span> DRAFT — SAMPLE DATA, NO CAPTURE RECORDED FOR THIS DATE</div>
   {% endif %}
 
-  <h2>PIC Follow-Up</h2>
+  <div class="stats">
+    <div class="s"><div class="l">MONITORED SITES</div><div class="v">{{ monitored_sites }}</div></div>
+    <div class="s"><div class="l">TOTAL DEVICES</div><div class="v">{{ total_devices }}</div></div>
+    <div class="s"><div class="l">CURRENT ACTIVE</div><div class="v sev-ok">{{ current_active }}</div></div>
+    <div class="s"><div class="l">ATTENTION NEEDED</div><div class="v sev-bad">{{ attention_needed }}</div></div>
+  </div>
+
+  <div class="sec"><span class="dash"></span><span class="lbl">SITES OVERVIEW</span><span class="rule"></span></div>
+
   <table>
-    <thead>
-      <tr><th>Issue</th><th>Remark</th><th>Assigned PIC</th><th>Date Assigned</th></tr>
-    </thead>
+    <colgroup>
+      <col style="width:108px"><col style="width:61px"><col style="width:74px">
+      <col style="width:61px"><col style="width:129px"><col>
+    </colgroup>
+    <thead><tr>
+      <th>SITE</th><th>DEVICES</th><th>NO DATA HRS</th><th>ACTIVE %</th>
+      <th>CURRENT STATUS</th><th>REMARK</th>
+    </tr></thead>
     <tbody>
-      {% for f in site.followups %}
+    {% for s in sites %}
       <tr>
-        <td class="mono">{{ f.issue }}</td>
-        <td>{{ f.remark }}</td>
-        <td>{{ f.assigned_pic }}</td>
-        <td class="mono">{{ f.date_assigned }}</td>
+        <td>
+          <div class="sitename"><a href="#{{ s.anchor }}">{{ s.name }}</a></div>
+          <div style="margin-top:7px"><span class="pill {{ s.health }}">{{ s.health }}</span></div>
+        </td>
+        <td>{{ s.devices }}</td>
+        <td>{{ s.no_data_hrs|hrs }}</td>
+        <td class="sev-{{ 'ok' if s.active_pct >= 95 else 'bad' }}">{{ s.active_pct|hrs }}%</td>
+        <td>{{ s.status_breakdown }}</td>
+        <td class="sev-{{ s.remark_severity }}">{{ s.remark or "—" }}</td>
       </tr>
-      {% else %}
-      <tr><td colspan="4" class="note">No follow-up items recorded for {{ date_human }}.</td></tr>
-      {% endfor %}
+    {% else %}
+      <tr><td colspan="6" class="empty">No sites configured.</td></tr>
+    {% endfor %}
     </tbody>
   </table>
 
-  <footer class="report-foot">
-    <span>SquareCloud Malaysia — Confidential — {{ doc_number }}</span>
-    <span>{{ date_human }}</span>
-  </footer>
+  <div class="foot-note">* Click a site name above to jump directly to its detailed device report.</div>
+
+{% else %}
+  {% set site = pg.site %}
+
+  {% if pg.first %}
+  <div class="site-card">
+    <div>
+      <div class="cap">SITE</div>
+      <h2>{{ site.group.name }}</h2>
+      <div class="sub">{{ site.group.site_label or "—" }}</div>
+      <span class="pill {{ site.health }}">{{ site.health }}</span>
+    </div>
+    <div>
+      <div class="cap">SYSTEM TYPE</div>
+      <h2>{{ site.group.system_type or "—" }}</h2>
+      <div class="sub">Device Health · Daily Reporting</div>
+    </div>
+  </div>
+  <div class="expect">Expected device reporting: {{ site.group.expected_report_hours }} hours</div>
+  {% endif %}
+
+  <div class="health-card">
+    <div class="tab">DEVICE HEALTH{% if not pg.first %} (CONT.){% endif %}</div>
+
+    {% if pg.first %}
+    <div class="in-sec">
+      <div class="lbl">SUMMARY</div>
+      <div class="quad">
+        <div class="s"><div class="l">TOTAL DEVICES</div><div class="v">{{ site.total }}</div></div>
+        <div class="s"><div class="l">CURRENT ACTIVE</div><div class="v sev-ok">{{ site.current_active }}</div></div>
+        <div class="s"><div class="l">DEVICE HEALTH</div>
+          <div class="v sev-{{ site.device_health_severity }}">{{ site.device_health_pct }}<span class="pct">%</span></div></div>
+        <div class="s"><div class="l">ATTENTION NEEDED</div><div class="v sev-bad">{{ site.attention }}</div></div>
+      </div>
+    </div>
+
+    <div class="in-sec">
+      <div class="lbl">DEVICE TYPE BREAKDOWN</div>
+      <div class="chips">
+        {% for b in site.breakdown %}
+        <div class="c">
+          <div class="t">{{ b.type }}</div>
+          <div class="n">{{ b.count }}</div>
+          <div class="s sev-{{ b.severity }}">{{ b.note }}</div>
+        </div>
+        {% else %}
+        <div class="c empty">No devices configured.</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if pg.devices %}
+    <div class="in-sec">
+      <div class="lbl">DEVICE CONDITION AND RECOMMENDATION{% if not pg.first %} (CONTINUED){% endif %}</div>
+      <table>
+        <colgroup>
+          <col style="width:108px"><col style="width:40px"><col style="width:58px">
+          <col style="width:52px"><col style="width:58px"><col style="width:48px"><col>
+        </colgroup>
+        <thead><tr>
+          <th>DEVICE</th><th>TYPE</th><th>STATUS</th><th>ACTIVE HRS</th>
+          <th>AFFECTED HRS</th><th>ISSUE OCC.</th><th>ENGINEER RECOMMENDATION</th>
+        </tr></thead>
+        <tbody>
+        {% for d in pg.devices %}
+          <tr>
+            <td><strong>{{ d.name }}</strong></td>
+            <td>{{ d.device_type or "—" }}</td>
+            <td><span class="spill sev-{{ d.severity }}"><span class="dot">●</span><br>{{ d.status }}</span></td>
+            <td>{{ d.active_hours|hrs }}</td>
+            <td>{{ d.affected_hours|hrs }}</td>
+            <td>{{ d.issue_occurrences }}</td>
+            <td class="sev-{{ 'muted' if d.recommendation_auto else d.severity }}">{{ d.recommendation or "—" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if pg.events_start %}
+    <div class="in-sec">
+      <div class="lbl">DOWNTIME EVENTS</div>
+      <table>
+        <colgroup>
+          <col style="width:160px"><col style="width:100px"><col style="width:100px">
+          <col style="width:100px"><col>
+        </colgroup>
+        <thead><tr>
+          <th>DEVICE</th><th>DATE</th><th>START</th><th>END</th><th>DURATION (HR)</th>
+        </tr></thead>
+        <tbody>
+        {% for e in pg.events %}
+          <tr>
+            <td><strong>{{ e.device }}</strong> <span class="sev-{{ e.severity }}">{{ e.status }}</span></td>
+            <td>{{ e.date }}</td>
+            <td>{{ e.start }}</td>
+            <td>{{ e.end }}</td>
+            <td>{{ "%.2f"|format(e.duration_hours) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="empty">No downtime events recorded for {{ date_human }}.</td></tr>
+        {% endfor %}
+        {% if site.events_truncated %}
+          <tr><td colspan="5" class="empty">+{{ site.events_truncated }} more event(s) omitted.</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+  {# The site-level remark is not repeated here — it already has a column of its own
+     on the cover page, and an unbudgeted block down here overruns the footer. #}
+  <div class="card-name">{{ site.group.name }}</div>
+{% endif %}
+
+</div>
 </div>
 {% endfor %}
 

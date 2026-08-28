@@ -37,18 +37,27 @@ def device_downtime(device_id: int, date: str = Query(default_factory=_today)) -
 def group_downtime(group_id: int, date: str = Query(default_factory=_today)) -> dict:
     with read_conn() as conn:
         devices = conn.execute(
-            "SELECT id, name FROM devices WHERE group_id = ? ORDER BY sort_order, name",
+            "SELECT id, name, device_type FROM devices WHERE group_id = ? "
+            "ORDER BY sort_order, name",
             (group_id,),
         ).fetchall()
-    return {
-        "group_id": group_id,
-        "date": date,
-        "devices": [
-            {"device_id": d["id"], "device": d["name"],
-             **downtime_service.day_summary(d["id"], date)}
-            for d in devices
-        ],
-    }
+    # One map for the whole group — the site-detail page needs status to decide which
+    # recommendations are auto-filled, and it must agree with the report.
+    status_of = downtime_service.current_status_map(date)
+    out = []
+    for d in devices:
+        status = status_of.get(d["id"], "UNKNOWN")
+        summ = downtime_service.day_summary(d["id"], date)
+        summ.pop("events", None)
+        out.append({
+            "device_id": d["id"], "device": d["name"],
+            "device_type": d["device_type"],
+            "status": status,
+            "severity": downtime_service.severity(status),
+            "is_active": status in downtime_service.ACTIVE_STATES,
+            **summ,
+        })
+    return {"group_id": group_id, "date": date, "devices": out}
 
 
 @router.get("/events/{device_id}")
