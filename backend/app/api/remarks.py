@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
 
+from .. import clock
 from ..db.database import get_conn, read_conn
 from ..models.schemas import FollowupIn, FollowupOut, RemarkIn, RemarkOut
 
@@ -40,9 +41,10 @@ def create_remark(payload: RemarkIn):
     with get_conn() as conn:
         if payload.device_id is None:
             cur = conn.execute(
-                "INSERT INTO remarks (group_id, device_id, report_date, body, author)"
-                " VALUES (?, NULL, ?, ?, ?)",
-                (payload.group_id, payload.report_date, payload.body, payload.author),
+                "INSERT INTO remarks (group_id, device_id, report_date, body, author,"
+                " created_at, updated_at) VALUES (?, NULL, ?, ?, ?, ?, ?)",
+                (payload.group_id, payload.report_date, payload.body, payload.author,
+                 clock.now_iso(), clock.now_iso()),
             )
             new_id = cur.lastrowid
         else:
@@ -57,15 +59,16 @@ def create_remark(payload: RemarkIn):
                 )
             conn.execute(
                 """
-                INSERT INTO remarks (group_id, device_id, report_date, body, author)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO remarks (group_id, device_id, report_date, body, author,
+                                     created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(device_id, report_date) WHERE device_id IS NOT NULL
                 DO UPDATE SET body = excluded.body,
                               author = excluded.author,
-                              updated_at = datetime('now')
+                              updated_at = excluded.updated_at
                 """,
                 (payload.group_id, payload.device_id, payload.report_date,
-                 payload.body, payload.author),
+                 payload.body, payload.author, clock.now_iso(), clock.now_iso()),
             )
             new_id = conn.execute(
                 "SELECT id FROM remarks WHERE device_id = ? AND report_date = ?",
@@ -87,8 +90,8 @@ def update_remark(remark_id: int, payload: RemarkIn):
         if not conn.execute("SELECT 1 FROM remarks WHERE id = ?", (remark_id,)).fetchone():
             raise HTTPException(404, "remark not found")
         conn.execute(
-            "UPDATE remarks SET body = ?, author = ?, updated_at = datetime('now') WHERE id = ?",
-            (payload.body, payload.author, remark_id),
+            "UPDATE remarks SET body = ?, author = ?, updated_at = ? WHERE id = ?",
+            (payload.body, payload.author, clock.now_iso(), remark_id),
         )
         row = conn.execute(
             "SELECT r.*, d.name AS device_name FROM remarks r "

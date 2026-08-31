@@ -1,13 +1,8 @@
 """job_runs bookkeeping — 'did last night's capture actually work?'"""
 from __future__ import annotations
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
-from ..config import settings
+from ..clock import now_iso
 from ..db.database import get_conn, read_conn
-
-TZ = ZoneInfo(settings.timezone)
 
 
 def record(job: str, status: str, trigger: str = "scheduled", detail: str | None = None) -> None:
@@ -17,7 +12,7 @@ def record(job: str, status: str, trigger: str = "scheduled", detail: str | None
     with get_conn() as conn:
         conn.execute(
             "INSERT INTO job_runs (job, trigger, status, detail, ran_at) VALUES (?, ?, ?, ?, ?)",
-            (job, trigger, status, detail, datetime.now(TZ).isoformat(timespec="seconds")),
+            (job, trigger, status, detail, now_iso()),
         )
 
 

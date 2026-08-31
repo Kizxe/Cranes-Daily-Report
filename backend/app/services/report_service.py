@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from markupsafe import Markup
 
+from .. import clock
 from ..config import settings
 from ..db.database import get_conn, read_conn
 from . import downtime_service as dt
@@ -346,10 +347,12 @@ async def generate_report(date: str, trigger: str = "manual") -> dict:
         conn.execute(
             """
             INSERT INTO reports
-                (report_date, doc_number, pdf_path, snapshot_json_path, trigger, status, error)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                (report_date, doc_number, pdf_path, snapshot_json_path, trigger, status,
+                 error, generated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (date, doc_number(date), str(pdf_path), str(json_path), trigger, status, error),
+            (date, doc_number(date), str(pdf_path), str(json_path), trigger, status, error,
+             clock.now_iso()),
         )
     ops.record("report", "success" if status == "generated" else "failed", trigger,
                f"{date}: {error or pdf_path.name}")

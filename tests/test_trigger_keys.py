@@ -176,14 +176,26 @@ def test_each_site_loads_from_its_own_file(tmp_path, monkeypatch):
     assert [(r["site"], r["n"]) for r in rows] == [("Computime", 1), ("NUMed", 2)]
 
 
-def test_job_runs_are_stamped_in_local_time():
-    """The morning glance at 'last capture' must read local time, not SQLite's UTC."""
+def test_written_timestamps_are_local_not_utc(client):
+    """SQLite's datetime('now') default is UTC — 8h off here. Nothing may rely on it."""
     from backend.app.services import ops
 
     ops.record("capture", "success", "manual", "test")
-    ran_at = datetime.fromisoformat(ops.last_run("capture")["ran_at"])
-    assert ran_at.utcoffset() is not None, "ran_at lost its timezone"
-    assert abs((datetime.now(dt.TZ) - ran_at).total_seconds()) < 60
+    stamps = [ops.last_run("capture")["ran_at"]]
+
+    with get_conn() as conn:
+        gid = conn.execute(
+            "INSERT INTO device_groups (name) VALUES ('TZ Site') RETURNING id"
+        ).fetchone()["id"]
+    r = client.post("/api/remarks", json={"group_id": gid, "report_date": "2026-08-31",
+                                         "body": "check the gateway"})
+    assert r.status_code == 201
+    stamps += [r.json()["created_at"], r.json()["updated_at"]]
+
+    for raw in stamps:
+        ts = datetime.fromisoformat(raw)
+        assert ts.utcoffset() is not None, f"{raw} lost its timezone"
+        assert abs((datetime.now(dt.TZ) - ts).total_seconds()) < 60, f"{raw} is not local time"
 
 
 def test_forget_seed_removes_only_the_sample_sites(site):
