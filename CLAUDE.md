@@ -58,6 +58,18 @@ recommendation replaced it.
   Still never derived from last-seen/heartbeat timing.
   `role: status` = `deviceStatus_` when the sensor has one, else `active_` normalised
   true/false -> ACTIVE/INACTIVE (`downtime_service.normalize_status`).
+- **ACTIVE HRS / AFFECTED HRS come from `forTotalUse_<sensor>`** = `[inactive_ms, active_ms]`,
+  the pair the ThingsBoard "Total Active / Total Inactive Time" table shows and the same one
+  carried in `ActiveInActive_`. It is cumulative (4455h on one sensor), so `day_summary`
+  differences it against the previous day's capture — TB's own accounting, scoped to the day.
+  `status_events` is the fallback only when there is no baseline to difference.
+  `scripts/backfill_counters.py --date <yesterday>` recovers a missing baseline from TB history.
+  **ISSUE OCC. is `<sensor> 1D`**, the trigger's daily fault count (resets at midnight; matches
+  the Fault Counter device's `<Site>_device_fault_data` breakdown device for device).
+- **The Fault Counter device** `71af5410-df0d-11f0-a0b2-1366f3bd8252` holds per-site daily fault
+  totals (`Numed_fault_counter_all/dpm/rht/rtd/ufm`, `Numed_top_fault_device`, `_category`,
+  `Numed_device_fault_data`). No timestamps, so it CANNOT fill the DOWNTIME EVENTS table —
+  that still needs `status_events` from the poll loop.
 - **Don't use the trigger's `Active Device` / `Inactive Device` counters.** The rule chain
   computes them over its own subset (19+4 against a 34-sensor roster on NUMed) and they drift
   minute to minute. Report counts are derived from our own roster instead.

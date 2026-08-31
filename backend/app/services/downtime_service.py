@@ -298,6 +298,13 @@ def _total_use(conn, device_id: int, date: str) -> tuple[float, float] | None:
 def counter_hours(device_id: int, date: str) -> dict | None:
     """Active / affected hours for one day, from ThingsBoard's own running counters.
 
+    This is THE source for the report's ACTIVE HRS / AFFECTED HRS whenever a baseline
+    exists, including when the day's difference is zero. A handful of NUMed sensors
+    (UFM, both RTD channels, DPM CH1/CH2) sit frozen at [0, 0] and so print 0.0/0.0
+    even while reporting INACTIVE — that is what the ThingsBoard dashboard shows for
+    them too, and it points at their rule chain, not at this code. status_events is
+    used only when there is no baseline to difference at all.
+
     `forTotalUse_<sensor>` is [inactive_ms, active_ms] accumulated since the counters
     last reset — 4455 hours on one NUMed sensor — so it can't go straight into a daily
     column. Differencing it against the previous day's capture gives exactly the hours
@@ -317,12 +324,6 @@ def counter_hours(device_id: int, date: str) -> dict | None:
     d_inactive, d_active = cur[0] - prev[0], cur[1] - prev[1]
     if d_inactive < 0 or d_active < 0:
         return None                      # counters were reset between the two captures
-
-    if d_active == 0 and d_inactive == 0:
-        # Some sensors' counters never move — UFM sits at [0, 0] while reporting
-        # NO DATA all day. A zero difference isn't "0 hours affected", it's no
-        # information, so let status_events answer instead.
-        return None
 
     active_h, affected_h = d_active / 3_600_000, d_inactive / 3_600_000
     # The baseline is whatever value the key last carried before the previous day ended.

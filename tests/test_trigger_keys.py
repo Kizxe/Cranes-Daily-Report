@@ -299,8 +299,13 @@ def test_stale_baseline_is_rejected_rather_than_printing_impossible_hours(site):
     assert dt.counter_hours(did, "2026-08-31")["active_hours"] == 24.0
 
 
-def test_counters_stuck_at_zero_fall_back_to_events(site):
-    """UFM reports NO DATA all day with forTotalUse_ [0,0] — that is not 0h affected."""
+def test_frozen_counters_still_come_from_the_counter(site):
+    """A [0,0] counter reports 0.0/0.0 — the counter is the source whenever it exists.
+
+    UFM and both RTD channels are frozen at [0,0] on NumedTrigger while reporting
+    INACTIVE / NO DATA. The ThingsBoard dashboard shows 0 for them as well, so the
+    report follows the counter rather than substituting its own number.
+    """
     did = site["Numed_DPM_4"]
     with get_conn() as conn:
         conn.execute(
@@ -308,9 +313,8 @@ def test_counters_stuck_at_zero_fall_back_to_events(site):
             " VALUES (?, 'forTotalUse_Numed_DPM_4', 'total_use', ?)", (did, TRIGGER_ID))
     _capture(did, "2026-08-30", "forTotalUse_Numed_DPM_4", "[0, 0]")
     _capture(did, "2026-08-31", "forTotalUse_Numed_DPM_4", "[0, 0]")
-
-    assert dt.counter_hours(did, "2026-08-31") is None
     dt.record_status(did, "NO DATA", source="test", ts="2026-08-31T00:00:00+08:00")
+
     s = dt.day_summary(did, "2026-08-31")
-    assert s["source"] == "events"
-    assert s["affected_hours"] > 23, "a day of NO DATA must show as affected hours"
+    assert s["source"] == "counter"
+    assert (s["active_hours"], s["affected_hours"]) == (0.0, 0.0)

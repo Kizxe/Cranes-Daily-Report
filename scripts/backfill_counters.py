@@ -65,17 +65,19 @@ async def _history(source: dict, start_ms: int, end_ms: int) -> dict[str, list[d
     return out
 
 
-async def run(date: str, site: str | None, dry_run: bool) -> None:
+async def run(date: str, site: str | None, dry_run: bool, lookback: int) -> None:
     try:
-        await _run(date, site, dry_run)
+        await _run(date, site, dry_run, lookback)
     finally:
         await tb_client.close()
 
 
-async def _run(date: str, site: str | None, dry_run: bool) -> None:
+async def _run(date: str, site: str | None, dry_run: bool, lookback: int) -> None:
     day_end = datetime.fromisoformat(f"{date}T23:59:59").replace(tzinfo=TZ)
-    # A week back is plenty: these counters are written on every status change.
-    start_ms = int((day_end - timedelta(days=7)).timestamp() * 1000)
+    # A busy sensor writes these on every status change, but a quiet one can go months
+    # without a single write — Meatrol DPM last moved in January. Look back far enough
+    # to find the value that was actually standing at the end of `date`.
+    start_ms = int((day_end - timedelta(days=lookback)).timestamp() * 1000)
     end_ms = int(day_end.timestamp() * 1000)
     capture_ts = day_end.isoformat()
 
@@ -120,8 +122,11 @@ def main() -> None:
     ap.add_argument("--date", required=True, help="the day to backfill, YYYY-MM-DD")
     ap.add_argument("--site", help="limit to one site")
     ap.add_argument("--dry-run", action="store_true", help="show what would be written")
+    ap.add_argument("--lookback-days", type=int, default=400,
+                    help="how far back to search for the value standing at the end of "
+                         "--date (default 400; a quiet sensor may not write for months)")
     args = ap.parse_args()
-    asyncio.run(run(args.date, args.site, args.dry_run))
+    asyncio.run(run(args.date, args.site, args.dry_run, args.lookback_days))
 
 
 if __name__ == "__main__":

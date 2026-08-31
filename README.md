@@ -224,7 +224,7 @@ is set so the 23:59 job fires at local time.
 | POST | `/api/captures/run?date=YYYY-MM-DD` | manual snapshot ("Import Data") |
 | GET  | `/api/captures/{date}` | latest snapshot values for a date |
 | POST | `/api/downtime/poll` | poll all device statuses now |
-| GET  | `/api/downtime/groups/{id}?date=` | per-device day summary |
+| GET  | `/api/downtime/groups/{id}?date=` | per-device day summary (`source`: counter \| events) |
 | GET/POST/PUT/DELETE | `/api/remarks` | site remarks (`device_id` null) + per-device recommendations (`device_id` set; POST upserts). `?scope=site\|device` filters |
 | GET/POST/DELETE | `/api/followups` | retired — kept so existing PIC follow-up rows stay readable; nothing writes or renders them |
 | POST | `/api/reports/{date}/generate` | (re)generate that day's PDF (409 if no snapshot; `?allow_empty=true` to override) |
@@ -255,7 +255,9 @@ off at 23:59, add an OS-level cron / Task Scheduler entry as backup:
 ## Still needs live wiring
 
 1. 21 of the 22 sites — NUMed is done. One `discover_device_groups` run each.
-2. `ISSUE OCC.` and `AFFECTED HRS` in the report are computed from `status_events`,
-   which only exist from the first poll onward. The trigger device already publishes
-   its own counters (`IssueOcc_<sensor>` to-date, `<sensor> 1D` for the day) and they
-   are captured into `snapshots` — decide which of the two the report should print.
+2. Five NUMed sensors (DPM CH1/CH2, RTD CH1/CH2, UFM) have `forTotalUse_` frozen at
+   `[0, 0]` on NumedTrigger, so they print 0.0 active / 0.0 affected even while
+   reporting INACTIVE or NO DATA. The ThingsBoard dashboard shows the same zeros —
+   the fix belongs in that rule chain, not here.
+3. `NumedmostInactiveDevice` and `NumedtimeInHours` on the Fault Counter device are
+   empty (`None` / `0`); they look purpose-built for the downtime summary.
