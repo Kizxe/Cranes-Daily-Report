@@ -318,6 +318,12 @@ def counter_hours(device_id: int, date: str) -> dict | None:
     if d_inactive < 0 or d_active < 0:
         return None                      # counters were reset between the two captures
 
+    if d_active == 0 and d_inactive == 0:
+        # Some sensors' counters never move — UFM sits at [0, 0] while reporting
+        # NO DATA all day. A zero difference isn't "0 hours affected", it's no
+        # information, so let status_events answer instead.
+        return None
+
     active_h, affected_h = d_active / 3_600_000, d_inactive / 3_600_000
     # The baseline is whatever value the key last carried before the previous day ended.
     # If that key hadn't been written for a while, the difference spans more than one
