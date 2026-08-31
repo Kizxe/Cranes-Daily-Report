@@ -245,6 +245,7 @@ This is the table to keep open while working on the report.
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
 | **DOWNTIME EVENTS** | `status_events` | built by the poll loop; capped per device/site so a flapping device can't flood the PDF |
+| **DEVICE TYPE BREAKDOWN** chip | derived | a device counts as attention if its status is `bad` **or** it went down `report_attention_issue_count` times today (default 5) — a device that flapped 10 times isn't Healthy just because it's up when the report runs |
 | Site **HEALTHY / ATTENTION** | derived | a site escalates only on a `bad` status. `STATIC`/`STALLED` are warnings, not attention |
 
 **Why the hours are a difference, not the raw counter.** `forTotalUse_` accumulates since

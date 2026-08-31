@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     report_max_events_per_site: int = 40
     # 0 = print every event. Raise to ~60 to suppress sub-minute poll flaps.
     report_min_event_seconds: int = 0
+    # DEVICE TYPE BREAKDOWN: a device that went down this many times today counts as
+    # attention even if it is active right now — a device that flapped 10 times is not
+    # "Healthy" just because it happens to be up when the report runs. 0 disables it.
+    report_attention_issue_count: int = 5
     # Set false in tests — APScheduler's AsyncIOScheduler binds the running loop.
     enable_scheduler: bool = True
 

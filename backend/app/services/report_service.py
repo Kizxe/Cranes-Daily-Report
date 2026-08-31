@@ -122,6 +122,20 @@ def _fmt_status_breakdown(statuses: list[str]) -> str:
     return " / ".join(f"{n} {s.title()}" for s, n in ordered) or "—"
 
 
+def _needs_attention(device: dict) -> bool:
+    """Whether one device counts against its type's chip.
+
+    Two ways in. The obvious one is a bad status right now. The other is repeated
+    downtime: a device that dropped `report_attention_issue_count` times today has a
+    real problem even if the poll happens to catch it up — NUMed's LT JORDAN Front
+    went down 10 times and still reported ACTIVE when the report ran.
+    """
+    if device["severity"] != "ok":
+        return True
+    threshold = settings.report_attention_issue_count
+    return bool(threshold) and (device.get("issue_occurrences") or 0) >= threshold
+
+
 def _type_breakdown(devices: list[dict]) -> list[dict]:
     """The DEVICE TYPE BREAKDOWN chip row: one chip per device_type, in first-seen order."""
     out: list[dict] = []
@@ -134,7 +148,7 @@ def _type_breakdown(devices: list[dict]) -> list[dict]:
             seen[t] = chip
             out.append(chip)
         chip["count"] += 1
-        if d["severity"] != "ok":
+        if _needs_attention(d):
             chip["attention"] += 1
     for chip in out:
         chip["note"] = f"{chip['attention']} attention" if chip["attention"] else "Healthy"

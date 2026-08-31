@@ -95,3 +95,43 @@ async def test_wide_site_paginates_without_dropping_devices():
         text = " ".join((p.extract_text() or "") for p in pdf.pages).replace("\n", " ")
     for i in range(40):
         assert f"WD_{i:02d}" in text, f"WD_{i:02d} fell off the report"
+
+
+# --- DEVICE TYPE BREAKDOWN: repeated downtime counts as attention -------------
+from backend.app.config import settings as _settings  # noqa: E402
+from backend.app.services.report_service import _needs_attention, _type_breakdown  # noqa: E402
+
+
+def _dev(dtype, severity="ok", issues=0):
+    return {"device_type": dtype, "severity": severity, "issue_occurrences": issues}
+
+
+def test_repeated_downtime_counts_as_attention_even_when_active():
+    """A device that dropped 5+ times today is not Healthy just because it is up now."""
+    assert _needs_attention(_dev("RHT", issues=5)) is True
+    assert _needs_attention(_dev("RHT", issues=10)) is True
+    assert _needs_attention(_dev("RHT", issues=4)) is False
+    # A bad status still counts on its own, whatever the issue count.
+    assert _needs_attention(_dev("UFM", severity="bad", issues=0)) is True
+
+
+def test_type_breakdown_counts_flapping_devices():
+    chips = {c["type"]: c for c in _type_breakdown([
+        _dev("RHT", issues=10),          # active but flapping -> attention
+        _dev("RHT", issues=1),           # fine
+        _dev("DPM", issues=0),
+        _dev("UFM", severity="bad"),     # down right now
+    ])}
+    assert (chips["RHT"]["count"], chips["RHT"]["attention"]) == (2, 1)
+    assert chips["RHT"]["note"] == "1 attention" and chips["RHT"]["severity"] == "bad"
+    assert chips["DPM"]["note"] == "Healthy" and chips["DPM"]["severity"] == "ok"
+    assert chips["UFM"]["note"] == "1 attention"
+
+
+def test_attention_threshold_is_configurable_and_disablable(monkeypatch):
+    monkeypatch.setattr(_settings, "report_attention_issue_count", 3)
+    assert _needs_attention(_dev("RHT", issues=3)) is True
+
+    monkeypatch.setattr(_settings, "report_attention_issue_count", 0)
+    assert _needs_attention(_dev("RHT", issues=99)) is False, "0 must disable the rule"
+    assert _needs_attention(_dev("RHT", severity="bad", issues=0)) is True
