@@ -1,6 +1,14 @@
-"""Load device_groups.yaml and mirror it into device_groups / devices / device_keys.
+"""Load the site config and mirror it into device_groups / devices / device_keys.
 
-The YAML file is the source of truth for config. This runs on startup and via
+Config is ONE FILE PER SITE: `backend/config/sites/<site>.yaml`, each holding a single
+site (name, trigger device, devices, keys). `backend/config/device_groups.yaml` holds
+only the shared defaults now; any `groups:` still inline there are loaded too, so an
+older single-file config keeps working, but a site's own file wins on name.
+
+Sites are ordered by `sort_order` when set, else alphabetically by file name — that
+order is what the report and the dashboard list follows.
+
+The files are the source of truth for config. This runs on startup and via
 POST /api/config/reload. It upserts (never deletes) so a stale DB row from a
 removed device stays until cleaned manually — safer for an audit tool.
 """
@@ -12,10 +20,39 @@ from ..config import settings
 from ..db.database import get_conn
 
 
+def _site_files() -> list:
+    if not settings.sites_dir.is_dir():
+        return []
+    return sorted(
+        p for p in settings.sites_dir.iterdir()
+        if p.suffix in (".yaml", ".yml") and not p.name.startswith(("_", "."))
+    )
+
+
 def load_yaml() -> dict:
-    if not settings.device_groups_config.exists():
-        return {"groups": [], "status_key_default": "status"}
-    return yaml.safe_load(settings.device_groups_config.read_text()) or {}
+    """Merge device_groups.yaml (defaults + any legacy inline groups) with sites/*.yaml."""
+    doc = {}
+    if settings.device_groups_config.exists():
+        doc = yaml.safe_load(settings.device_groups_config.read_text()) or {}
+    groups = list(doc.get("groups") or [])
+
+    for path in _site_files():
+        site = yaml.safe_load(path.read_text()) or {}
+        # A site file may hold the bare site, or {groups: [...]} as the discover
+        # script's dry-run prints it. Both are accepted.
+        for g in (site.get("groups") or [site]):
+            if not g.get("name"):
+                raise ValueError(f"{path.name}: site has no `name`")
+            g.setdefault("_file", path.name)
+            # The site's own file replaces a same-named group left in device_groups.yaml.
+            groups = [x for x in groups if x.get("name") != g["name"]]
+            groups.append(g)
+
+    groups.sort(key=lambda g: (g.get("sort_order") is None, g.get("sort_order") or 0,
+                               g.get("_file") or "", g["name"]))
+    doc["groups"] = groups
+    doc.setdefault("status_key_default", "status")
+    return doc
 
 
 def _source_device(key: dict, trigger_id: str | None) -> str | None:

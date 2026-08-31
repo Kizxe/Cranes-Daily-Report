@@ -222,3 +222,28 @@ def load_seed() -> dict:
     ops.record("seed", "success", "manual", json.dumps(result))
     log.info("seed loaded: %s", result)
     return result
+
+
+def forget_seed() -> dict:
+    """Delete every site the seed created, and everything hanging off them.
+
+    The sample sites (BSC East Wing, Computime, ...) are there to exercise the
+    pipeline offline. Once real sites are configured they only muddy the report —
+    each one has no snapshot for today, so it prints as "Unknown / ATTENTION".
+    Config-synced sites are untouched: only names present in the seed file go.
+
+    ON DELETE CASCADE on devices / device_keys / snapshots / status_events /
+    remarks / pic_followups means deleting the group row clears the rest.
+    """
+    payload = json.loads(settings.seed_file.read_text())
+    names = [s["site"] for s in payload.get("sites_overview", [])]
+    with get_conn() as conn:
+        gone = []
+        for name in names:
+            row = conn.execute(
+                "SELECT id FROM device_groups WHERE name = ?", (name,)
+            ).fetchone()
+            if row:
+                conn.execute("DELETE FROM device_groups WHERE id = ?", (row["id"],))
+                gone.append(name)
+    return {"removed": gone, "count": len(gone)}

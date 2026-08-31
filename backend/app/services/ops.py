@@ -1,14 +1,23 @@
 """job_runs bookkeeping — 'did last night's capture actually work?'"""
 from __future__ import annotations
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from ..config import settings
 from ..db.database import get_conn, read_conn
+
+TZ = ZoneInfo(settings.timezone)
 
 
 def record(job: str, status: str, trigger: str = "scheduled", detail: str | None = None) -> None:
+    # ran_at is written here, in local time, NOT by the column's datetime('now')
+    # default — SQLite's is UTC, which would print the 23:59 job as 15:59 on the
+    # dashboard and make a missed run impossible to spot at a glance.
     with get_conn() as conn:
         conn.execute(
-            "INSERT INTO job_runs (job, trigger, status, detail) VALUES (?, ?, ?, ?)",
-            (job, trigger, status, detail),
+            "INSERT INTO job_runs (job, trigger, status, detail, ran_at) VALUES (?, ?, ?, ?, ?)",
+            (job, trigger, status, detail, datetime.now(TZ).isoformat(timespec="seconds")),
         )
 
 

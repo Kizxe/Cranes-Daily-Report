@@ -25,7 +25,7 @@ Runs containerized on a local PC, reachable over the LAN (not just localhost on 
 
 ## Folder structure
 ```
-backend/{app/{api,services,models,db}, config/device_groups.yaml, data/cranes.db}
+backend/{app/{api,services,models,db}, config/sites/<site>.yaml, config/device_groups.yaml, data/cranes.db}
 frontend/{index.html, site-detail.html, reports.html, assets/}
 templates/daily_report.html      # approved v3 report template
 reports/YYYY-MM-DD/              # one folder per day — PDF + snapshot JSON
@@ -73,7 +73,7 @@ recommendation replaced it.
 - Retention policy for old `reports/` folders and raw snapshots (prune after N days, or keep indefinitely?).
 
 ## Build order
-1. Draft `backend/config/device_groups.yaml` for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists. One site per run:
+1. Draft the site config for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists. **One file per site**, `backend/config/sites/<site>.yaml`; `device_groups.yaml` now holds only shared defaults. One site per run, so a re-run can't disturb the other 21:
    `python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write`
    (`--list-triggers` first). **NUMed done 2026-08-31** — 33 sensors, `Robert Bosch Recovery`
    excluded as another site's. Still to review there: `Numed`, `Numed Setpoints`,

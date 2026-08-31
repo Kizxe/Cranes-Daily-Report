@@ -57,9 +57,11 @@ SITE = {
 
 @pytest.fixture
 def site(tmp_path, monkeypatch):
-    path = tmp_path / "device_groups.yaml"
-    path.write_text(yaml.safe_dump(SITE))
-    monkeypatch.setattr(config_sync.settings, "device_groups_config", path)
+    """The site as its own sites/<name>.yaml, which is how config ships."""
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    (sites / "numed.yaml").write_text(yaml.safe_dump(SITE["groups"][0]))
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
     config_sync.sync_from_yaml()
     with read_conn() as conn:
         return {r["name"]: r["id"] for r in conn.execute("SELECT id, name FROM devices")}
@@ -143,3 +145,63 @@ async def test_future_transition_timestamp_falls_back_to_poll_time(site, monkeyp
             (site["Numed_DPM_4"],),
         ).fetchone()
     assert datetime.fromisoformat(row["start_ts"]) <= datetime.now(dt.TZ)
+
+
+def test_each_site_loads_from_its_own_file(tmp_path, monkeypatch):
+    """One file per site, ordered by sort_order then file name; no cross-talk."""
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    (sites / "numed.yaml").write_text(yaml.safe_dump(SITE["groups"][0]))
+    (sites / "computime.yaml").write_text(yaml.safe_dump({
+        "name": "Computime",
+        "sort_order": 0,
+        "trigger": {"device_name": "ComputimeTrigger", "tb_device_id": "trigger-uuid-0002"},
+        "devices": [{"name": "CT_RHT_01", "device_type": "RHT", "keys": [
+            {"key_name": "deviceStatus_CT_RHT_01", "role": "status", "source": "trigger"}]}],
+    }))
+    (sites / "_draft.yaml").write_text(yaml.safe_dump({"name": "NotReady", "devices": []}))
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
+
+    groups = config_sync.load_yaml()["groups"]
+    assert [g["name"] for g in groups] == ["Computime", "NUMed"], "sort_order must win"
+    # A leading underscore parks a site file without loading it.
+    assert "NotReady" not in [g["name"] for g in groups]
+
+    config_sync.sync_from_yaml()
+    with read_conn() as conn:
+        rows = conn.execute(
+            """SELECT g.name AS site, COUNT(d.id) AS n FROM device_groups g
+               LEFT JOIN devices d ON d.group_id = g.id GROUP BY g.id ORDER BY g.sort_order"""
+        ).fetchall()
+    assert [(r["site"], r["n"]) for r in rows] == [("Computime", 1), ("NUMed", 2)]
+
+
+def test_job_runs_are_stamped_in_local_time():
+    """The morning glance at 'last capture' must read local time, not SQLite's UTC."""
+    from backend.app.services import ops
+
+    ops.record("capture", "success", "manual", "test")
+    ran_at = datetime.fromisoformat(ops.last_run("capture")["ran_at"])
+    assert ran_at.utcoffset() is not None, "ran_at lost its timezone"
+    assert abs((datetime.now(dt.TZ) - ran_at).total_seconds()) < 60
+
+
+def test_forget_seed_removes_only_the_sample_sites(site):
+    """--forget must clear the samples and leave configured sites alone."""
+    from backend.app.services import seed_service
+
+    seed_service.load_seed()
+    with read_conn() as conn:
+        before = {r["name"] for r in conn.execute("SELECT name FROM device_groups")}
+    assert "NUMed" in before and len(before) > 1
+
+    removed = seed_service.forget_seed()
+    with read_conn() as conn:
+        after = {r["name"] for r in conn.execute("SELECT name FROM device_groups")}
+        orphans = conn.execute(
+            "SELECT COUNT(*) n FROM devices WHERE group_id NOT IN "
+            "(SELECT id FROM device_groups)"
+        ).fetchone()["n"]
+    assert after == {"NUMed"}, "a configured site was deleted with the seed"
+    assert removed["count"] == len(before) - 1
+    assert orphans == 0, "deleting a group left its devices behind"

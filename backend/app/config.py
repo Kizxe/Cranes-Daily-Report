@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # --- Paths (all under the repo root, bind-mounted in Docker) ---
     db_path: Path = REPO_ROOT / "backend" / "data" / "cranes.db"
     device_groups_config: Path = REPO_ROOT / "backend" / "config" / "device_groups.yaml"
+    # One file per site: backend/config/sites/<site>.yaml. device_groups.yaml keeps
+    # the shared defaults; a site listed in both is taken from its own file.
+    sites_dir: Path = REPO_ROOT / "backend" / "config" / "sites"
     reports_dir: Path = REPO_ROOT / "reports"
     uploads_dir: Path = REPO_ROOT / "uploads" / "pdfs"
     template_dir: Path = REPO_ROOT / "templates"

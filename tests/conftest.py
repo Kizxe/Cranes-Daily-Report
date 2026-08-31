@@ -19,6 +19,9 @@ os.environ["THINGSBOARD_URL"] = "https://tb.example.test"
 _cfg = _tmp / "device_groups.yaml"
 _cfg.write_text("status_key_default: status\ngroups: []\n")
 os.environ["DEVICE_GROUPS_CONFIG"] = str(_cfg)
+_sites = _tmp / "sites"
+_sites.mkdir()
+os.environ["SITES_DIR"] = str(_sites)
 os.environ["ENABLE_SCHEDULER"] = "false"
 
 import pytest  # noqa: E402

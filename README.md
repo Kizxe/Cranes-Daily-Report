@@ -20,7 +20,7 @@ backend/app/
   db/                schema.sql (7 data tables + job_runs/imported_pdfs) + sqlite helpers
   services/
     thingsboard_client.py   async ThingsBoard PE REST client
-    config_sync.py          device_groups.yaml -> DB
+    config_sync.py          sites/*.yaml -> DB
     seed_service.py         seed/sample_report_*.json -> DB (offline pipeline testing)
     snapshot_service.py     scheduled + manual snapshots
     downtime_service.py     status polling -> status_events, day summaries
@@ -29,13 +29,15 @@ backend/app/
     ops.py                  job_runs bookkeeping ("did last night work?")
     scheduler.py            23:59 nightly job + status poll interval
   api/               devices, captures, downtime, remarks, reports, imports, seed, status
-backend/config/device_groups.yaml   the 22 groups (generate, don't hand-type)
+backend/config/sites/<site>.yaml     ONE FILE PER SITE (generate, don't hand-type)
+backend/config/device_groups.yaml    shared defaults only
 seed/sample_report_20260816.json    approved-mockup data for offline dev
 frontend/            index (dashboard) · site-detail · reports
 templates/daily_report.html         report template (swap for approved v3)
 tests/               pytest — run before calling a roadmap step done
 scripts/
-  discover_device_groups.py   walks ThingsBoard to build the yaml
+  discover_device_groups.py   walks a site's trigger device -> sites/<site>.yaml
+  inspect_db.py               read-only look inside cranes.db
   load_seed.py                load sample data (+ --report to render its PDF)
   backup.py                   dated zip of cranes.db + reports/ into backups/
 logs/  backups/                bind-mounted, git-ignored
@@ -43,38 +45,160 @@ logs/  backups/                bind-mounted, git-ignored
 .claude/agents/      debugger
 ```
 
-## First run — offline (no ThingsBoard yet)
+## Running it — the daily walkthrough
 
-Per CLAUDE.md's guardrails, get the pipeline working against the sample data first.
+Everything below is run from the repo root with the venv active:
 
 ```bash
-cd "Cranes Daily Report"
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r backend/requirements.txt
-playwright install chromium          # one-time, for PDF rendering
+cd /Users/irfan/CDR
+source .venv/bin/activate            # then plain `python`, `uvicorn`, `pytest` work
+```
 
-python -m scripts.load_seed --report  # loads 6 sites / 42 devices, renders the PDF
-python -m pytest -q                    # 15 tests
+### 1. Start the app
 
+```bash
 uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000 — the dashboard has a **Load sample data** button and a
-banner showing last capture / last report / next nightly run. The generated PDF is
-in `reports/2026-08-16/`.
+On startup it creates the DB if missing, mirrors `backend/config/sites/*.yaml` into it,
+and starts two scheduled jobs: the **23:59 nightly** (capture + report) and a **status
+poll every 10 min**. Watch for this line — it tells you the config actually loaded:
 
-## Going live with ThingsBoard
-
-```bash
-cp .env.example .env                  # fill in THINGSBOARD_URL / USERNAME / PASSWORD
-python -m scripts.discover_device_groups --write
-#   then review backend/config/device_groups.yaml:
-#   set each device's `role: status` key, plus site_label / system_type.
-#   restart, or: curl -X POST localhost:8000/api/config/reload
+```
+INFO cranes: config sync: {'groups': 1, 'devices': 33, 'keys': 215}
 ```
 
-Confirm the PE REST paths in `thingsboard_client.py` against the live instance
-(PE ≈ CE but not guaranteed identical).
+Open **http://localhost:8000** (or `http://<this-pc-ip>:8000` from another machine on
+the LAN). Leave it running; open a second terminal for everything below.
+
+### 2. Add a site
+
+One file per site in `backend/config/sites/`. Generate it, don't hand-type it:
+
+```bash
+python -m scripts.discover_device_groups --list-triggers          # 27 sites available
+python -m scripts.discover_device_groups --trigger ComputimeTrigger --name Computime --write
+```
+
+That writes `backend/config/sites/computime.yaml` and touches no other site. Then open
+it and fill in the two things ThingsBoard doesn't know — `site_label` and `system_type`
+(they print on the site's report page) — plus `sort_order` if you want it higher in the
+list. A later re-run preserves all three.
+
+Drop sensors that aren't really devices, and re-run:
+
+```bash
+python -m scripts.discover_device_groups --trigger ComputimeTrigger --name Computime \
+    --exclude "Some Flag,Another Flag" --write
+```
+
+Load the change without restarting:
+
+```bash
+curl -X POST localhost:8000/api/config/reload
+```
+
+### 3. Pull data and check it
+
+```bash
+curl -X POST localhost:8000/api/captures/run     # snapshot every key now ("Import Data")
+curl -X POST localhost:8000/api/downtime/poll    # read statuses, write status_events
+```
+
+The nightly job does both automatically; these are for when you want to see it now.
+
+### 4. Look inside the database
+
+`cranes.db` is one SQLite file. Read it without SQL:
+
+```bash
+python -m scripts.inspect_db                    # sites, captures, job runs, reports, remarks
+python -m scripts.inspect_db --site NUMed       # every device: status, active/affected hrs
+python -m scripts.inspect_db --device 295       # one device: its keys, values, downtime events
+python -m scripts.inspect_db --date 2026-08-30  # any of the above, for another day
+python -m scripts.inspect_db --sql "SELECT name, device_type FROM devices LIMIT 5"
+```
+
+It is read-only and safe to run while the server is up. Start with the plain command:
+the **JOB RUNS** block is the "did last night actually work?" answer, and **CAPTURES**
+shows how many values came back (`215/215` = every key answered).
+
+For raw SQL: `sqlite3 backend/data/cranes.db` (`.tables`, `.schema devices`, `.quit`).
+The 7 tables are documented in `backend/app/db/schema.sql`.
+
+### 5. Write the remarks
+
+The report has two kinds, both enterable from the site page in the browser:
+
+- **Site remark** — the REMARK column on page 1. Many per day.
+- **Engineer recommendation** — one per device per day. Devices left blank print
+  `No action.` automatically, so you only fill in the ones with a problem.
+
+```bash
+curl -X POST localhost:8000/api/remarks -H 'content-type: application/json' \
+  -d '{"group_id":43,"report_date":"2026-08-31","body":"Check the Level 2 gateway."}'
+```
+
+Add `"device_id": 295` to make it that device's recommendation instead.
+
+### 6. Generate and read the report
+
+```bash
+curl -X POST localhost:8000/api/reports/2026-08-31/generate
+open reports/2026-08-31/Cranes_Daily_Report_2026-08-31.pdf
+```
+
+Each day gets a folder: the PDF, the `report.html` it was rendered from, and
+`snapshot_YYYY-MM-DD.json` (the raw values it was built from — the audit trail).
+
+To iterate on layout without re-rendering a PDF, open
+`http://localhost:8000/api/reports/2026-08-31/preview` in the browser.
+
+A remark added after 23:59 doesn't need a new capture — just regenerate that day:
+`curl -X POST localhost:8000/api/reports/2026-08-31/generate` (or `/regen-report`).
+
+### 7. Every morning
+
+```bash
+python -m scripts.inspect_db     # JOB RUNS: capture + report both 'ok' for last night?
+```
+
+Or glance at the dashboard banner, which shows the same thing. If the machine was off
+at 23:59, see *Missed 23:59 run* below.
+
+## Working offline (no ThingsBoard)
+
+Sample data matching the approved report mockups, for testing the pipeline:
+
+```bash
+python -m scripts.load_seed --report   # 6 sample sites / 42 devices + renders the PDF
+python -m scripts.load_seed --forget   # remove them again
+```
+
+Run `--forget` once real sites are configured: a sample site has no snapshot for today,
+so it prints as "Unknown / ATTENTION" on every report and inflates the cover-page counts.
+
+## Tests
+
+```bash
+pytest -q          # 42 tests
+```
+
+Run before calling a roadmap step done. Tests use a throwaway DB and their own empty
+config, so they never touch `cranes.db` or `backend/config/`.
+
+## First-time setup
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r backend/requirements.txt
+playwright install chromium          # one-time, for PDF rendering
+cp .env.example .env                 # THINGSBOARD_URL / USERNAME / PASSWORD
+```
+
+> If you move or rename the repo folder, the venv's scripts keep pointing at the old
+> path and `uvicorn: no such file` appears. Recreate it, or `sed -i '' 's|<old>|<new>|g'`
+> across `.venv/bin/*` and `.venv/pyvenv.cfg`.
 
 ## Docker
 
@@ -94,7 +218,7 @@ is set so the 23:59 job fires at local time.
 | GET  | `/api/status/last-run` | last capture/report/poll + next scheduled runs (dashboard banner) |
 | GET  | `/api/status/runs` | recent `job_runs` rows |
 | GET  | `/api/groups`, `/api/groups/{id}/devices` | configured groups/devices |
-| POST | `/api/config/reload` | re-sync `device_groups.yaml` into the DB |
+| POST | `/api/config/reload` | re-sync `backend/config/sites/*.yaml` into the DB |
 | POST | `/api/seed/load` | load the sample data (offline dev) |
 | GET  | `/api/devices/{id}/live` | pull current values straight from ThingsBoard |
 | POST | `/api/captures/run?date=YYYY-MM-DD` | manual snapshot ("Import Data") |
@@ -130,8 +254,8 @@ off at 23:59, add an OS-level cron / Task Scheduler entry as backup:
 
 ## Still needs live wiring
 
-1. Run `scripts/discover_device_groups.py` against the real ThingsBoard PE
-   instance; review the generated yaml (esp. the `role: status` key per device).
-2. Confirm the PE REST paths in `thingsboard_client.py`.
-3. Replace `templates/daily_report.html` with the approved v3 template
-   (keep the context variable names — see the comment at the top of the file).
+1. 21 of the 22 sites — NUMed is done. One `discover_device_groups` run each.
+2. `ISSUE OCC.` and `AFFECTED HRS` in the report are computed from `status_events`,
+   which only exist from the first poll onward. The trigger device already publishes
+   its own counters (`IssueOcc_<sensor>` to-date, `<sensor> 1D` for the day) and they
+   are captured into `snapshots` — decide which of the two the report should print.

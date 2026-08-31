@@ -1,4 +1,7 @@
-"""Build-order step 1: read a site's trigger device and emit its block for device_groups.yaml.
+"""Build-order step 1: read a site's trigger device into its own config file.
+
+Config is one file per site — `backend/config/sites/<site>.yaml`. This script writes
+exactly one of them per run, so re-running a site can never disturb the other 21.
 
     # what trigger devices exist?
     python -m scripts.discover_device_groups --list-triggers
@@ -6,7 +9,7 @@
     # see what a site would produce, without touching the config
     python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed
 
-    # merge it into backend/config/device_groups.yaml (other sites are preserved)
+    # write backend/config/sites/numed.yaml (every other site's file is untouched)
     python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write
 
     # drop sensors that aren't really devices at this site
@@ -41,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import pathlib
 import re
 import sys
 
@@ -78,35 +82,35 @@ TYPE_PATTERNS: list[tuple[str, str]] = [
 # this the file loses its explanation the first time the script rewrites it.
 HEADER = """\
 # ─────────────────────────────────────────────────────────────────────────────
-# Cranes Daily Report — the 22 device / alarm / trigger groups.
+# {site} — one site of the 22. GENERATED, do not hand-transcribe:
 #
-# GENERATED — do not hand-transcribe. One site at a time, from its trigger device:
+#     python -m scripts.discover_device_groups --trigger {trigger} --name {site} --write
 #
-#     python -m scripts.discover_device_groups --list-triggers
-#     python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
 #
-# A re-run replaces only that site and preserves site_label / system_type /
-# expected_report_hours, which don't exist in ThingsBoard and are filled in by hand.
-#
-# Status does NOT come from the sensor's own device. Each site has one trigger device
-# whose rule chain computes status for every sensor and writes it back as one key per
+# Status does NOT come from the sensor's own device. This site's trigger device
+# ({trigger}) computes status for every sensor and writes it back as one key per
 # sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
 # deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
-# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a key
-# means "read it off that device"; config_sync stores it as tb_source_device_id.
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
 #
-# Exactly one key per device carries role: status — deviceStatus_ when the sensor has
-# one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
 #
-# On startup the backend mirrors this file into the device_groups / devices /
-# device_keys tables. It is the source of truth for config — edit the file,
-# restart (or POST /api/config/reload), don't edit the DB directly.
-#
-# For OFFLINE work (no ThingsBoard yet) don't use this file — load the sample
-# instead:  python -m scripts.load_seed --report   (see CLAUDE.md guardrails).
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
 # ─────────────────────────────────────────────────────────────────────────────
 
 """
+
+# Fields a re-run must not clobber — they're hand-filled, ThingsBoard has no idea.
+PRESERVED = ("site_label", "system_type", "expected_report_hours", "sort_order")
+
+
+def slugify(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "site"
 
 
 def _uuid(entity: dict) -> str | None:
@@ -200,28 +204,21 @@ async def build_site(trigger_name: str, site_name: str, exclude: set[str]) -> di
     }
 
 
-def merge_into_config(site: dict) -> None:
-    """Replace this one site in device_groups.yaml, leaving every other site alone."""
-    path = settings.device_groups_config
-    doc = yaml.safe_load(path.read_text()) or {}
-    doc.setdefault("status_key_default", "status")
-    groups = doc.get("groups") or []
+def write_site_file(site: dict) -> pathlib.Path:
+    """Write backend/config/sites/<slug>.yaml. No other site's file is touched."""
+    path = settings.sites_dir / f"{slugify(site['name'])}.yaml"
+    path.parent.mkdir(parents=True, exist_ok=True)
 
-    for i, g in enumerate(groups):
-        if g.get("name") == site["name"]:
-            # Keep the hand-written fields a re-run can't rediscover.
-            for field in ("site_label", "system_type", "expected_report_hours"):
-                if g.get(field) is not None:
-                    site[field] = g[field]
-            groups[i] = site
-            break
-    else:
-        groups.append(site)
+    if path.exists():
+        existing = yaml.safe_load(path.read_text()) or {}
+        for field in PRESERVED:
+            if existing.get(field) is not None:
+                site[field] = existing[field]
 
-    doc["groups"] = groups
-    path.write_text(HEADER + yaml.safe_dump(doc, sort_keys=False, allow_unicode=True))
-    print(f"wrote {path} ({len(groups)} site(s), "
-          f"{sum(len(g.get('devices') or []) for g in groups)} devices)", file=sys.stderr)
+    header = HEADER.format(site=site["name"], trigger=site["trigger"]["device_name"])
+    path.write_text(header + yaml.safe_dump(site, sort_keys=False, allow_unicode=True))
+    print(f"wrote {path} ({len(site.get('devices') or [])} devices)", file=sys.stderr)
+    return path
 
 
 async def _run(args) -> None:
@@ -233,9 +230,9 @@ async def _run(args) -> None:
         site = await build_site(args.trigger, args.name or args.trigger, exclude)
         print(f"  {len(site['devices'])} sensor(s) for {site['name']}", file=sys.stderr)
         if args.write:
-            merge_into_config(site)
+            write_site_file(site)
         else:
-            print(yaml.safe_dump({"groups": [site]}, sort_keys=False, allow_unicode=True))
+            print(yaml.safe_dump(site, sort_keys=False, allow_unicode=True))
     finally:
         await tb_client.close()
 
@@ -249,7 +246,7 @@ def main() -> None:
     ap.add_argument("--name", help="site name for the report (defaults to --trigger)")
     ap.add_argument("--exclude", help="comma-separated sensor names to leave out")
     ap.add_argument("--write", action="store_true",
-                    help="merge this site into device_groups.yaml (other sites preserved)")
+                    help="write backend/config/sites/<site>.yaml (other sites untouched)")
     args = ap.parse_args()
 
     if not args.list_triggers and not args.trigger:
