@@ -5,7 +5,10 @@ device/alarm/trigger groups, snapshots every key daily at 23:59 (plus on demand)
 detects active↔inactive downtime windows, takes a site remark + per-device recommendations,
 and renders a daily PDF into `reports/YYYY-MM-DD/`.
 
-Architecture, schema and decisions live in **[CLAUDE.md](CLAUDE.md)** — read that first.
+**[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** explains how the whole system fits together —
+the ThingsBoard trigger-device model, the ten tables, and where every number on the PDF comes
+from. Start there if you're new to the codebase. **[CLAUDE.md](CLAUDE.md)** records the decisions
+and why they were made. This file is the runbook: how to actually drive it.
 
 ## Stack
 FastAPI + Uvicorn · SQLite (WAL) · APScheduler · plain HTML/CSS/JS · Playwright

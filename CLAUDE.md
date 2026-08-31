@@ -4,6 +4,10 @@ Read this at the start of every session in this repo. It's the architecture plan
 
 Full reference doc (diagrams, schema, API table, folder tree): https://claude.ai/code/artifact/e66b2af0-a138-43a6-b700-ae355671a0c7
 
+How the built system actually fits together — directory map, the trigger-device data model,
+where each report number comes from: `docs/ARCHITECTURE.md`
+(shareable page: https://claude.ai/code/artifact/9cb3f082-1fa1-44e8-a76e-c5b32e9d30cb)
+
 ## What this is
 A localhost app that pulls device telemetry from ThingsBoard for 22 device/alarm/trigger groups, snapshots every key daily at 23:59 (plus on-demand via an "Import Data" button), detects active↔inactive downtime windows, takes a site remark plus a per-device engineer recommendation, and renders a daily PDF report (matching an already-approved design system: JetBrains Mono, Source Serif 4) saved into `reports/YYYY-MM-DD/` so it's just a folder someone can open.
 
