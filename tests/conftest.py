@@ -13,6 +13,12 @@ os.environ["DB_PATH"] = str(_tmp / "test.db")
 os.environ["REPORTS_DIR"] = str(_tmp / "reports")
 os.environ["LOGS_DIR"] = str(_tmp / "logs")
 os.environ["THINGSBOARD_URL"] = "https://tb.example.test"
+# Tests get their own empty config. Without this they read the repo's real
+# device_groups.yaml, so adding a site to it would break unrelated tests — and a
+# capture would try to reach the live ThingsBoard.
+_cfg = _tmp / "device_groups.yaml"
+_cfg.write_text("status_key_default: status\ngroups: []\n")
+os.environ["DEVICE_GROUPS_CONFIG"] = str(_cfg)
 os.environ["ENABLE_SCHEDULER"] = "false"
 
 import pytest  # noqa: E402

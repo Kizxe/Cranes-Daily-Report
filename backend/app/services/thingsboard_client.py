@@ -71,6 +71,11 @@ class ThingsBoardClient:
             await self._login()
 
     async def _request(self, method: str, path: str, **kw: Any) -> Any:
+        if self._http.is_closed:
+            # close() runs on app shutdown; a later call (a second app lifespan in
+            # one process, or a manual capture during shutdown) must not die on a
+            # closed pool.
+            self._http = httpx.AsyncClient(timeout=30.0)
         await self._ensure_token()
         headers = kw.pop("headers", {})
         headers["X-Authorization"] = f"Bearer {self._token}"
@@ -107,13 +112,23 @@ class ThingsBoardClient:
         )
 
     # --- values --------------------------------------------------------
+    # A trigger device carries every sensor's keys, so a "one device" read can be
+    # hundreds of keys. Comma-joined they overflow the request line and TB answers
+    # 400 with an HTML error page, so split into batches.
+    KEY_BATCH = 30
+
     async def latest_timeseries(self, device_id: str, keys: list[str]) -> dict[str, list[dict]]:
         """{'status': [{'ts': 1690000000000, 'value': 'ACTIVE'}], ...}"""
-        return await self._request(
-            "GET",
-            f"/plugins/telemetry/DEVICE/{device_id}/values/timeseries",
-            params={"keys": ",".join(keys)},
-        )
+        out: dict[str, list[dict]] = {}
+        for i in range(0, len(keys), self.KEY_BATCH):
+            out.update(
+                await self._request(
+                    "GET",
+                    f"/plugins/telemetry/DEVICE/{device_id}/values/timeseries",
+                    params={"keys": ",".join(keys[i : i + self.KEY_BATCH])},
+                )
+            )
+        return out
 
     async def latest_attributes(self, device_id: str, keys: list[str] | None = None) -> list[dict]:
         params = {"keys": ",".join(keys)} if keys else {}

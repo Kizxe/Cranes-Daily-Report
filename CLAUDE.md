@@ -33,7 +33,7 @@ uploads/pdfs/                    # imported PDFs, kept as-received
 ```
 
 ## Data model (7 tables)
-`device_groups` → `devices` → `device_keys` (the 22-group config) · `snapshots` (value per key per capture, tagged scheduled/manual) · `status_events` (start_ts/end_ts/duration per status change — downtime source of truth) · `remarks` + `pic_followups` · `reports` (log of generated PDFs).
+`device_groups` → `devices` → `device_keys` (the 22-group config; `device_keys.tb_source_device_id` = which TB device reports the key, i.e. the site's trigger device, NULL = the device's own `tb_device_id`) · `snapshots` (value per key per capture, tagged scheduled/manual) · `status_events` (start_ts/end_ts/duration per status change — downtime source of truth) · `remarks` + `pic_followups` · `reports` (log of generated PDFs).
 
 `remarks.device_id` is NULL for a site remark (many per day, the REMARK column on page 1)
 and set for a device's engineer recommendation (at most one per day — a partial unique
@@ -45,8 +45,23 @@ remain so existing rows survive, but nothing writes or renders them. The per-dev
 recommendation replaced it.
 
 ## Confirmed decisions
-- **Status source**: every device's status comes from the sensor's own reported status telemetry key, uniformly across all 22 groups — never derived from last-seen/heartbeat timing.
-- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key.
+- **Status source** (revised 2026-08-31 against the live instance — supersedes "the sensor's
+  own status key"): status is **not** on the sensor's device. Each site has ONE **trigger
+  device** (`NumedTrigger`, `ComputimeTrigger`, `BSC Trigger`, ... — 27 of them, `--list-triggers`)
+  whose rule chain computes status for every sensor at that site and writes it back as one key
+  per sensor per family:
+  `active_<sensor>` (bool — the roster, every sensor has one) · `deviceStatus_<sensor>`
+  (ACTIVE | STATIC | NO DATA | ... — only ~2/3 of sensors) · `deviceSeverity_<sensor>`
+  (OK | NON-CRITICAL | CRITICAL, maps 1:1 to the report's pills) · `activeTs_` / `InactiveTs_<sensor>`
+  (epoch ms of the last transition) · `IssueOcc_<sensor>` and `<sensor> 1D` (issue counts,
+  to-date and today) · `ActiveInActive_<sensor>` (`["A_<ts>","N_hh:mm:ss", activeMs, inactiveMs]`).
+  Still never derived from last-seen/heartbeat timing.
+  `role: status` = `deviceStatus_` when the sensor has one, else `active_` normalised
+  true/false -> ACTIVE/INACTIVE (`downtime_service.normalize_status`).
+- **Don't use the trigger's `Active Device` / `Inactive Device` counters.** The rule chain
+  computes them over its own subset (19+4 against a 34-sensor roster on NUMed) and they drift
+  minute to minute. Report counts are derived from our own roster instead.
+- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows.
 - **Report timing**: generated right at 23:59 off that snapshot, no built-in wait for late remarks. A remark added after 23:59 gets in via manually regenerating that day's report (`POST /api/reports/{date}/generate`), not by delaying the scheduled run.
 - **ThingsBoard instance**: ThingsBoard PE, cloud-hosted — not on the same PC as this app. So no `host.docker.internal` / local Docker bridge needed, just outbound HTTPS. PE's REST API closely matches CE's but isn't guaranteed identical — confirm the exact base URL / login flow when writing `thingsboard_client.py`.
 - **Docker**: bind-mount (not named volumes) for `reports/`, `uploads/`, `backend/data/`, and `backend/config/` so they're real, editable files on the host, not sealed inside the container. Bind the app to `0.0.0.0` so it's reachable over the LAN. Set `TZ=Asia/Kuala_Lumpur` explicitly — containers default to UTC and the 23:59 job would silently fire at the wrong time otherwise. `restart: unless-stopped`.
@@ -58,7 +73,12 @@ recommendation replaced it.
 - Retention policy for old `reports/` folders and raw snapshots (prune after N days, or keep indefinitely?).
 
 ## Build order
-1. Draft `backend/config/device_groups.yaml` for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists.
+1. Draft `backend/config/device_groups.yaml` for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists. One site per run:
+   `python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write`
+   (`--list-triggers` first). **NUMed done 2026-08-31** — 33 sensors, `Robert Bosch Recovery`
+   excluded as another site's. Still to review there: `Numed`, `Numed Setpoints`,
+   `Numed Flowmeter`, `Numed Recovery`, `Meatrol DPM` look like system flags rather than
+   devices — drop with `--exclude` if so. 21 sites to go.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.

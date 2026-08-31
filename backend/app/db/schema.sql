@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS device_keys (
     key_name        TEXT NOT NULL,               -- telemetry/attribute key on TB
     role            TEXT NOT NULL DEFAULT 'metric',  -- status | metric | signal
     unit            TEXT,
+    -- Which TB device actually reports this key. NULL = the device's own
+    -- tb_device_id. Set to the site's trigger device for the active_/deviceStatus_
+    -- families, which live there and not on the sensor itself.
+    tb_source_device_id TEXT,
     UNIQUE (device_id, key_name)
 );
 CREATE INDEX IF NOT EXISTS idx_device_keys_device ON device_keys(device_id);

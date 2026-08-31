@@ -45,6 +45,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_remarks_device ON remarks(device_id)")
 
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(device_keys)")}
+    if "tb_source_device_id" not in cols:
+        # Status keys live on the site's trigger device, not the sensor. NULL keeps
+        # the old behaviour (read the key off the device's own tb_device_id).
+        conn.execute("ALTER TABLE device_keys ADD COLUMN tb_source_device_id TEXT")
+
 
 def init_db() -> None:
     """Create tables if they don't exist. Safe to call on every startup."""

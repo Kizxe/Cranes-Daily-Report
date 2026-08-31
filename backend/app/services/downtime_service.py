@@ -4,8 +4,15 @@ Poll each device's status key every `downtime_poll_minutes`. Write a
 `status_events` row only when the status differs from the currently-open event
 for that device. Closing an event fills end_ts + duration_seconds.
 
-Status comes from the sensor's own reported status telemetry key (role: status),
-uniformly across all 22 groups — never derived from last-seen timing.
+Status is a key the ThingsBoard rule chain computes and writes to the site's TRIGGER
+device — `deviceStatus_<sensor>` (ACTIVE / STATIC / NO DATA / ...), or the
+`active_<sensor>` boolean for sensors that have no deviceStatus_ key. Never derived
+from last-seen timing. `device_keys.tb_source_device_id` says which TB device to read
+each key off, so one poll is one batched call per trigger device.
+
+The trigger also reports activeTs_/InactiveTs_ per sensor — the exact moment of the
+last transition. When they're configured, an event starts at that moment rather than
+at poll time, so a 5–15 min poll interval no longer rounds off downtime windows.
 """
 from __future__ import annotations
 
@@ -26,10 +33,26 @@ ACTIVE_STATES = {"ACTIVE", "ONLINE", "OK", "UP"}
 # Which statuses escalate a site to ATTENTION on the cover page. STATIC and STALLED
 # are warnings, not attention — that is what the approved report does (BSC East Wing
 # runs 1 Static + 1 Stalled and still prints HEALTHY).
-ATTENTION_STATES = {"INACTIVE", "OFFLINE", "DOWN", "UNKNOWN"}
+# "NO DATA" is what the trigger reports for a sensor sending nothing at all; the rule
+# chain grades it CRITICAL, same as INACTIVE.
+ATTENTION_STATES = {"INACTIVE", "OFFLINE", "DOWN", "UNKNOWN", "NO DATA"}
 
 # A clipped day runs 00:00:00 -> 23:59:59, so full coverage is 86399s, not 86400.
 DAY_SECONDS = 86399
+
+
+def normalize_status(value: str | None) -> str:
+    """Raw telemetry value -> the status vocabulary status_events stores.
+
+    `deviceStatus_` keys already speak it (ACTIVE / STATIC / NO DATA). Sensors without
+    one fall back to the `active_` boolean, which arrives as the string "true"/"false".
+    """
+    s = (value or "UNKNOWN").strip().upper()
+    if s == "TRUE":
+        return "ACTIVE"
+    if s == "FALSE":
+        return "INACTIVE"
+    return s
 
 
 def severity(status: str) -> str:
@@ -88,23 +111,53 @@ def current_status_map(date: str) -> dict[int, str]:
     out: dict[int, str] = {}
     for device_id in ids:
         key = status_key.get(device_id, "status")
-        out[device_id] = (latest.get((device_id, key)) or "UNKNOWN").upper()
+        out[device_id] = normalize_status(latest.get((device_id, key)))
     return out
 
 
 def _status_devices() -> list[dict]:
+    """One row per device: its status key, the transition-ts keys, and where to read them.
+
+    tb_source_device_id points at the site's trigger device for trigger-sourced keys and
+    is NULL for a device that reports its own status, in which case the device's own
+    tb_device_id is used.
+    """
     with read_conn() as conn:
-        return [
-            dict(r)
-            for r in conn.execute(
-                """
-                SELECT d.id AS device_id, d.tb_device_id, k.key_name AS status_key
-                FROM devices d
-                JOIN device_keys k ON k.device_id = d.id AND k.role = 'status'
-                WHERE d.tb_device_id IS NOT NULL
-                """
-            ).fetchall()
-        ]
+        rows = conn.execute(
+            """
+            SELECT d.id AS device_id,
+                   COALESCE(k.tb_source_device_id, d.tb_device_id) AS source_id,
+                   k.key_name AS status_key,
+                   (SELECT key_name FROM device_keys
+                     WHERE device_id = d.id AND role = 'active_ts') AS active_ts_key,
+                   (SELECT key_name FROM device_keys
+                     WHERE device_id = d.id AND role = 'inactive_ts') AS inactive_ts_key
+            FROM devices d
+            JOIN device_keys k ON k.device_id = d.id AND k.role = 'status'
+            WHERE COALESCE(k.tb_source_device_id, d.tb_device_id) IS NOT NULL
+            """
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _transition_ts(dev: dict, status: str, data: dict, now: str) -> str:
+    """When the change actually happened, per the trigger's activeTs_/InactiveTs_ key.
+
+    Falls back to poll time when the key isn't configured, is missing, or reports a
+    moment in the future — the report must never open an event that hasn't happened.
+    """
+    key = dev["active_ts_key"] if status in ACTIVE_STATES else dev["inactive_ts_key"]
+    points = data.get(key) or [] if key else []
+    if not points:
+        return now
+    try:
+        ms = int(float(points[0].get("value")))
+    except (TypeError, ValueError):
+        return now
+    if ms <= 0:
+        return now
+    moment = datetime.fromtimestamp(ms / 1000, TZ)
+    return moment.isoformat() if moment < datetime.fromisoformat(now) else now
 
 
 def _open_event(conn, device_id: int):
@@ -117,7 +170,7 @@ def _open_event(conn, device_id: int):
 
 def record_status(device_id: int, status: str, source: str = "poll", ts: str | None = None) -> bool:
     """Insert a new event if status changed. Returns True if an event was written."""
-    status = (status or "UNKNOWN").upper()
+    status = normalize_status(status)
     now = ts or _now_iso()
     with get_conn() as conn:
         current = _open_event(conn, device_id)
@@ -137,16 +190,27 @@ def record_status(device_id: int, status: str, source: str = "poll", ts: str | N
     return True
 
 
-async def _poll_one(dev: dict) -> bool:
+async def _poll_source(source_id: str, devices: list[dict]) -> int:
+    """Poll every device whose keys live on one TB device. Returns events written."""
+    keys = []
+    for d in devices:
+        keys += [k for k in (d["status_key"], d["active_ts_key"], d["inactive_ts_key"]) if k]
     try:
-        data = await tb_client.latest_timeseries(dev["tb_device_id"], [dev["status_key"]])
+        data = await tb_client.latest_timeseries(source_id, sorted(set(keys)))
     except ThingsBoardError:
-        return False
-    points = data.get(dev["status_key"]) or []
-    if not points:
-        return False
-    value = str(points[0].get("value"))
-    return record_status(dev["device_id"], value, source="poll")
+        return 0
+
+    now = _now_iso()
+    changes = 0
+    for d in devices:
+        points = data.get(d["status_key"]) or []
+        if not points:
+            continue
+        status = normalize_status(str(points[0].get("value")))
+        if record_status(d["device_id"], status, source="poll",
+                         ts=_transition_ts(d, status, data, now)):
+            changes += 1
+    return changes
 
 
 async def poll_all_statuses(trigger: str = "scheduled") -> dict:
@@ -154,14 +218,20 @@ async def poll_all_statuses(trigger: str = "scheduled") -> dict:
 
     devices = _status_devices()
     if not devices:
-        ops.record("poll", "success", trigger, "0 devices with a tb_device_id + status key")
+        ops.record("poll", "success", trigger, "0 devices with a status key and a TB source")
         return {"polled": 0, "changes": 0}
+
+    by_source: dict[str, list[dict]] = {}
+    for d in devices:
+        by_source.setdefault(d["source_id"], []).append(d)
     try:
-        results = await asyncio.gather(*(_poll_one(d) for d in devices))
+        results = await asyncio.gather(
+            *(_poll_source(src, devs) for src, devs in by_source.items())
+        )
     except Exception as e:  # noqa: BLE001
         ops.record("poll", "failed", trigger, str(e))
         raise
-    changes = sum(1 for r in results if r)
+    changes = sum(results)
     ops.record("poll", "success", trigger, f"{len(devices)} polled, {changes} change(s)")
     return {"polled": len(devices), "changes": changes}
 

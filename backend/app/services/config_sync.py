@@ -18,6 +18,20 @@ def load_yaml() -> dict:
     return yaml.safe_load(settings.device_groups_config.read_text()) or {}
 
 
+def _source_device(key: dict, trigger_id: str | None) -> str | None:
+    """Which TB device reports this key. NULL = the device's own tb_device_id.
+
+    `source: trigger` means the key lives on the site's trigger device — that is where
+    the rule chain writes active_/deviceStatus_/... for every sensor at the site. An
+    explicit `tb_source_device_id` on the key wins over both.
+    """
+    if key.get("tb_source_device_id"):
+        return key["tb_source_device_id"]
+    if key.get("source") == "trigger":
+        return trigger_id
+    return None
+
+
 def sync_from_yaml() -> dict:
     cfg = load_yaml()
     groups = cfg.get("groups", []) or []
@@ -55,6 +69,7 @@ def sync_from_yaml() -> dict:
                 "SELECT id FROM device_groups WHERE name = ?", (g["name"],)
             ).fetchone()["id"]
             counts["groups"] += 1
+            trigger_id = (g.get("trigger") or {}).get("tb_device_id")
 
             for sort_d, d in enumerate(g.get("devices", []) or []):
                 conn.execute(
@@ -91,17 +106,20 @@ def sync_from_yaml() -> dict:
                 for k in keys:
                     conn.execute(
                         """
-                        INSERT INTO device_keys (device_id, key_name, role, unit)
-                        VALUES (:device_id, :key_name, :role, :unit)
+                        INSERT INTO device_keys
+                            (device_id, key_name, role, unit, tb_source_device_id)
+                        VALUES (:device_id, :key_name, :role, :unit, :source)
                         ON CONFLICT(device_id, key_name) DO UPDATE SET
                             role = excluded.role,
-                            unit = excluded.unit
+                            unit = excluded.unit,
+                            tb_source_device_id = excluded.tb_source_device_id
                         """,
                         {
                             "device_id": device_id,
                             "key_name": k["key_name"],
                             "role": k.get("role", "metric"),
                             "unit": k.get("unit"),
+                            "source": _source_device(k, trigger_id),
                         },
                     )
                     counts["keys"] += 1

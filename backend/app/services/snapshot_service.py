@@ -23,45 +23,53 @@ def _now() -> datetime:
     return datetime.now(TZ)
 
 
-def _configured_devices() -> list[dict]:
+def _fetch_plan() -> tuple[list[dict], int]:
+    """[{tb_device_id, keys: [(device_id, key_name)]}], plus the count of devices in it.
+
+    Keys are grouped by the TB device that actually reports them, not by our device
+    row: a site's status keys all live on its trigger device, so one site collapses
+    into a single batched read instead of one call per sensor.
+    """
     with read_conn() as conn:
         rows = conn.execute(
             """
-            SELECT d.id AS device_id, d.name, d.tb_device_id,
-                   g.name AS group_name
+            SELECT d.id AS device_id, k.key_name,
+                   COALESCE(k.tb_source_device_id, d.tb_device_id) AS source_id
             FROM devices d
+            JOIN device_keys k ON k.device_id = d.id
             JOIN device_groups g ON g.id = d.group_id
-            ORDER BY g.sort_order, d.sort_order
+            WHERE COALESCE(k.tb_source_device_id, d.tb_device_id) IS NOT NULL
+            ORDER BY g.sort_order, d.sort_order, k.key_name
             """
         ).fetchall()
-        keys = conn.execute(
-            "SELECT device_id, key_name FROM device_keys"
-        ).fetchall()
-    by_device: dict[int, list[str]] = {}
-    for k in keys:
-        by_device.setdefault(k["device_id"], []).append(k["key_name"])
-    return [
-        {**dict(r), "keys": by_device.get(r["device_id"], [])}
-        for r in rows
-    ]
+
+    by_source: dict[str, list[tuple[int, str]]] = {}
+    for r in rows:
+        by_source.setdefault(r["source_id"], []).append((r["device_id"], r["key_name"]))
+    # Devices we can actually read, not every row in `devices` — a seeded or retired
+    # device with no TB source must not inflate "captured N devices".
+    device_count = len({r["device_id"] for r in rows})
+    return (
+        [{"tb_device_id": src, "keys": pairs} for src, pairs in by_source.items()],
+        device_count,
+    )
 
 
-async def _fetch_one(dev: dict) -> list[tuple]:
-    """Return rows (device_id, key_name, value, value_ts) for one device."""
-    if not dev["tb_device_id"] or not dev["keys"]:
-        return []
+async def _fetch_source(source: dict) -> list[tuple]:
+    """Return rows (device_id, key_name, value, value_ts) for one TB device."""
+    names = [k for _, k in source["keys"]]
     try:
-        data = await tb_client.latest_timeseries(dev["tb_device_id"], dev["keys"])
+        data = await tb_client.latest_timeseries(source["tb_device_id"], names)
     except ThingsBoardError:
-        return [(dev["device_id"], k, None, None) for k in dev["keys"]]
+        return [(dev_id, key, None, None) for dev_id, key in source["keys"]]
     out = []
-    for key in dev["keys"]:
+    for dev_id, key in source["keys"]:
         points = data.get(key) or []
         if points:
             p = points[0]
-            out.append((dev["device_id"], key, str(p.get("value")), _ms_to_iso(p.get("ts"))))
+            out.append((dev_id, key, str(p.get("value")), _ms_to_iso(p.get("ts"))))
         else:
-            out.append((dev["device_id"], key, None, None))
+            out.append((dev_id, key, None, None))
     return out
 
 
@@ -72,13 +80,13 @@ def _ms_to_iso(ms: int | None) -> str | None:
 
 
 async def capture_snapshot(trigger: str = "manual", capture_date: str | None = None) -> dict:
-    devices = _configured_devices()
+    sources, device_count = _fetch_plan()
     ts = _now()
     capture_ts = ts.isoformat()
     capture_date = capture_date or ts.strftime("%Y-%m-%d")
 
     try:
-        results = await asyncio.gather(*(_fetch_one(d) for d in devices))
+        results = await asyncio.gather(*(_fetch_source(s) for s in sources))
         rows = [r for sub in results for r in sub]
         with get_conn() as conn:
             conn.executemany(
@@ -93,9 +101,10 @@ async def capture_snapshot(trigger: str = "manual", capture_date: str | None = N
             )
         got = sum(1 for (_, _, v, _) in rows if v is not None)
         ops.record("capture", "success", trigger,
-                   f"{capture_date}: {got}/{len(rows)} values, {len(devices)} devices")
-        log.info("snapshot %s captured %d/%d values from %d devices (trigger=%s)",
-                 capture_date, got, len(rows), len(devices), trigger)
+                   f"{capture_date}: {got}/{len(rows)} values, {device_count} devices")
+        log.info("snapshot %s captured %d/%d values for %d devices from %d TB device(s) "
+                 "(trigger=%s)", capture_date, got, len(rows), device_count,
+                 len(sources), trigger)
     except Exception as e:  # noqa: BLE001
         ops.record("capture", "failed", trigger, f"{capture_date}: {e}")
         log.exception("snapshot capture failed for %s", capture_date)
@@ -105,7 +114,7 @@ async def capture_snapshot(trigger: str = "manual", capture_date: str | None = N
         "capture_ts": capture_ts,
         "capture_date": capture_date,
         "trigger": trigger,
-        "devices": len(devices),
+        "devices": device_count,
         "values": len(rows),
     }
 
