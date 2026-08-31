@@ -93,8 +93,10 @@ async function loadAll() {
       <td><a href="#" class="dev-events" data-device="${d.device_id}"
              data-name="${d.device}">${d.device}</a></td>
       <td>${pill(d.status)}</td>
-      <td>${d.active_hours}</td><td>${d.affected_hours}</td>
-      <td>${d.active_pct}%</td><td>${d.issue_occurrences}</td>
+      <td class="num">${d.active_hours.toFixed(1)}</td>
+      <td class="num">${d.affected_hours.toFixed(1)}</td>
+      <td class="num">${d.active_pct.toFixed(1)}%</td>
+      <td class="num${d.issue_occurrences >= 5 ? " flag" : ""}">${d.issue_occurrences}</td>
       <td>${cell}</td>
     </tr>
     <tr class="events-row" id="ev-${d.device_id}" hidden><td colspan="7"></td></tr>`;

@@ -56,11 +56,25 @@ dateInput.onchange = setPreview; setPreview();
 
 async function loadReports() {
   const rows = await api("/reports");
-  document.getElementById("rows").innerHTML = rows.map(r => `
+  // A day's report is regenerated whenever a late remark arrives, so one date can
+  // have a dozen rows. Only the newest matters — the rest are listed as a count.
+  const latest = new Map();
+  for (const r of rows) {
+    const seen = latest.get(r.report_date);
+    if (!seen) latest.set(r.report_date, { ...r, runs: 1 });
+    else {
+      seen.runs += 1;
+      if (r.generated_at > seen.generated_at) Object.assign(seen, r, { runs: seen.runs });
+    }
+  }
+  const list = [...latest.values()].sort((a, b) => b.report_date.localeCompare(a.report_date));
+
+  document.getElementById("rows").innerHTML = list.map(r => `
     <tr>
       <td>${r.report_date}</td><td>${r.doc_number ?? "—"}</td><td>${r.trigger}</td>
-      <td>${pill(r.status === "generated" ? "ACTIVE" : "INACTIVE")} ${r.error ? '<span class="muted">'+r.error+'</span>' : ''}</td>
-      <td class="muted">${r.generated_at}</td>
+      <td>${pill(r.status)} ${r.error ? '<span class="muted">' + r.error + "</span>" : ""}</td>
+      <td class="muted">${r.generated_at.replace("T", " ").slice(0, 19)}${
+        r.runs > 1 ? ` <span class="muted">(${r.runs} runs)</span>` : ""}</td>
       <td><a href="/api/reports/${r.report_date}/pdf" target="_blank">PDF</a></td>
     </tr>`).join("") || `<tr><td colspan="6" class="muted">None yet.</td></tr>`;
 }

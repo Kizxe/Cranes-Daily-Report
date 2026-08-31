@@ -37,16 +37,17 @@ uploads/pdfs/                    # imported PDFs, kept as-received
 ```
 
 ## Data model (7 tables)
-`device_groups` → `devices` → `device_keys` (the 22-group config; `device_keys.tb_source_device_id` = which TB device reports the key, i.e. the site's trigger device, NULL = the device's own `tb_device_id`) · `snapshots` (value per key per capture, tagged scheduled/manual) · `status_events` (start_ts/end_ts/duration per status change — downtime source of truth) · `remarks` + `pic_followups` · `reports` (log of generated PDFs).
+`device_groups` → `devices` → `device_keys` (the 22-group config; `device_keys.tb_source_device_id` = which TB device reports the key, i.e. the site's trigger device, NULL = the device's own `tb_device_id`) · `snapshots` (value per key per capture, tagged scheduled/manual) · `status_events` (start_ts/end_ts/duration per status change — downtime source of truth) · `remarks` · `reports` (log of generated PDFs) · `job_runs` · `imported_pdfs`.
 
 `remarks.device_id` is NULL for a site remark (many per day, the REMARK column on page 1)
 and set for a device's engineer recommendation (at most one per day — a partial unique
 index in `db/database.py::_migrate` enforces it). Active devices store nothing; the
 report auto-fills `No action.` for them.
 
-**`pic_followups` is retired** (2026-08-28) — the table and the `/api/followups` routes
-remain so existing rows survive, but nothing writes or renders them. The per-device
-recommendation replaced it.
+**`pic_followups` was removed** (2026-08-31). It was retired on 2026-08-28 when the
+per-device recommendation replaced it; the table was empty, so the dead routes, schemas
+and table definition are gone. An existing database keeps its empty table — nothing
+reads it.
 
 ## Confirmed decisions
 - **Status source** (revised 2026-08-31 against the live instance — supersedes "the sensor's
@@ -107,7 +108,7 @@ Work through these roughly in order — step 1 unblocks real testing of everythi
 
 ## Working solo — guardrails for you, Claude
 There's no second engineer reviewing this, so hold yourself to the checks a reviewer would normally catch:
-- **Build against `seed/sample_report_20260816.json` before the ThingsBoard client exists.** It's the same data already validated in the approved report mockups (sites overview + a full Computime device breakdown + PIC follow-ups). Use it to get the DB schema, report template wiring, and Playwright render pipeline all working end-to-end (steps 2–5) without needing live ThingsBoard credentials for every test run. Swap in the real client last, once the pipeline around it already works.
+- **The sample-data loader is gone** (removed 2026-08-31). It had served its purpose — the live pipeline works — and it kept being re-run by accident, landing six fake sites in real reports. Tests build the site they need with `tests/factories.py::make_site()` instead, which is clearer than cross-referencing a fixture file.
 - **Write a test alongside every new endpoint or service function**, not after. Nobody else will notice a silent regression later — pytest in a `tests/` folder, run before considering a roadmap step "done."
 - **Log every capture and report run to a file** (`logs/scheduler.log` or similar), not just stdout — the 23:59 job runs unattended overnight, and a silent failure with no one watching is the main real risk of this whole design. Surface "last capture: success/failed, <timestamp>" somewhere visible on the dashboard so a glance in the morning tells you whether last night worked.
 - **Commit after every roadmap step**, not at the end of a session — small, working checkpoints are what let you (or a debugger agent later) roll back to a known-good point instead of untangling several days of changes at once.

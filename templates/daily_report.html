@@ -165,7 +165,12 @@
      keep "AFFECTED HRS" / "ISSUE OCC." from colliding with their neighbours. */
   .in-sec table { margin-top:10px; text-align:left; }
   .in-sec thead th { height:30px; font-size:9.2px; letter-spacing:.05em; padding-left:8px; }
-  .in-sec tbody td { font-size:9.2px; line-height:1.45; padding:5px 8px; }
+  .in-sec tbody td {
+    font-size:9.2px; line-height:1.45; padding:5px 8px;
+    /* TYPE holds one unbreakable word ("Flowmeter", "Setpoints"). Without this it
+       spills into the neighbouring column instead of wrapping. */
+    overflow-wrap:anywhere;
+  }
 
   .spill {
     display:inline-block; border-radius:5px; padding:3px 7px;
@@ -300,8 +305,8 @@
       <div class="lbl">DEVICE CONDITION AND RECOMMENDATION{% if not pg.first %} (CONTINUED){% endif %}</div>
       <table>
         <colgroup>
-          <col style="width:108px"><col style="width:40px"><col style="width:58px">
-          <col style="width:52px"><col style="width:58px"><col style="width:48px"><col>
+          <col style="width:108px"><col style="width:68px"><col style="width:80px">
+          <col style="width:46px"><col style="width:58px"><col style="width:40px"><col>
         </colgroup>
         <thead><tr>
           <th>DEVICE</th><th>TYPE</th><th>STATUS</th><th>ACTIVE HRS</th>

@@ -44,9 +44,10 @@ th { text-align: left; font-size: 10px; letter-spacing: .1em; text-transform: up
      border-bottom: 2px solid var(--navy); padding: 8px; color: var(--navy); }
 td { border-bottom: 1px solid var(--line); padding: 8px; }
 .pill { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 2px; }
-.pill.ACTIVE, .pill.HEALTHY { background: #e4f3ea; color: var(--ok); }
+.pill.ACTIVE, .pill.HEALTHY, .pill.GENERATED { background: #e4f3ea; color: var(--ok); }
 .pill.STATIC, .pill.STALLED, .pill.ATTENTION { background: #fbf1dd; color: var(--warn); }
-.pill.INACTIVE, .pill.UNKNOWN, .pill.CRITICAL { background: #f7e2df; color: var(--bad); }
+.pill.INACTIVE, .pill.UNKNOWN, .pill.CRITICAL, .pill.NO-DATA, .pill.OFFLINE,
+.pill.DOWN, .pill.FAILED { background: #f7e2df; color: var(--bad); }
 .cards { display: flex; gap: 12px; margin: 14px 0; }
 .card { flex: 1; background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--navy); padding: 12px; }
 .card .l { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -69,3 +70,35 @@ td textarea:disabled { background: #f7f8fa; color: var(--muted); }
 .rec-save { margin-top: 5px; padding: 4px 10px; font-size: 11px; }
 .events-row td { background: #f7f8fa; }
 .events-row table { margin-top: 8px; }
+
+/* ---- dashboard --------------------------------------------------------- */
+.toolbar { display: flex; justify-content: space-between; align-items: center;
+           gap: 12px; flex-wrap: wrap; margin: 16px 0 4px; }
+.toolbar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.banner { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.banner b { color: var(--navy); font-weight: 500; }
+
+.card.alert { border-top-color: var(--bad); }
+.card.alert .v { color: var(--bad); }
+
+/* One block per site. Only the devices needing attention are listed up front, so a
+   healthy site takes one line instead of thirty. */
+.site { background: #fff; border: 1px solid var(--line); margin-bottom: 14px; }
+.site-head { display: flex; justify-content: space-between; align-items: center;
+             gap: 12px; flex-wrap: wrap; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+.site-name { font-weight: 700; letter-spacing: .04em; margin-right: 8px; }
+.site-meta { font-size: 11px; }
+.site table { margin: 0; }
+.site th { border-bottom: 1px solid var(--line); }
+.site tbody tr:last-child td { border-bottom: 0; }
+.all-clear { margin: 0; padding: 11px 12px; color: var(--ok); font-size: 12px; }
+
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+th.num { text-align: right; }
+.num.flag { color: var(--bad); font-weight: 700; }
+
+.linkbtn { background: none; border: 0; border-top: 1px solid var(--line);
+           color: var(--navy); cursor: pointer; font-family: inherit; font-size: 11px;
+           letter-spacing: .06em; padding: 9px 12px; text-align: left; width: 100%; }
+.linkbtn:hover { background: var(--bg); }

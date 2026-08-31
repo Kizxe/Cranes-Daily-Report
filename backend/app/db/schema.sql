@@ -85,21 +85,7 @@ CREATE TABLE IF NOT EXISTS remarks (
 );
 CREATE INDEX IF NOT EXISTS idx_remarks_group_date ON remarks(group_id, report_date);
 
--- 5. PIC follow-up entries ------------------------------------------------
-CREATE TABLE IF NOT EXISTS pic_followups (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_id        INTEGER NOT NULL REFERENCES device_groups(id) ON DELETE CASCADE,
-    report_date     TEXT NOT NULL,
-    device_id       INTEGER REFERENCES devices(id) ON DELETE SET NULL,
-    issue           TEXT NOT NULL,               -- "CT_RHT_04 Inactive"
-    remark          TEXT NOT NULL,
-    assigned_pic    TEXT NOT NULL,
-    date_assigned   TEXT NOT NULL,               -- YYYY-MM-DD
-    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_pic_group_date ON pic_followups(group_id, report_date);
-
--- 6. reports table already covered by #7 numbering in CLAUDE.md; kept as-is --
+-- 5. Generated report log ------------------------------------------------
 CREATE TABLE IF NOT EXISTS reports (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     report_date     TEXT NOT NULL,
@@ -114,12 +100,12 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 CREATE INDEX IF NOT EXISTS idx_reports_date ON reports(report_date);
 
--- ops: one row per job run (capture / report / poll / seed) so the dashboard
+-- ops: one row per job run (capture / report / poll) so the dashboard
 -- can show "last capture: success/failed <ts>" and the debugger agent can tell
 -- whether the scheduler actually fired. Not part of the 7-table data model.
 CREATE TABLE IF NOT EXISTS job_runs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    job             TEXT NOT NULL,               -- capture | report | poll | seed | nightly
+    job             TEXT NOT NULL,               -- capture | report | poll | nightly
     trigger         TEXT NOT NULL DEFAULT 'scheduled',  -- scheduled | manual | startup
     status          TEXT NOT NULL,               -- success | failed
     detail          TEXT,

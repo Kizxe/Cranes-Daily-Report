@@ -6,7 +6,7 @@ detects active↔inactive downtime windows, takes a site remark + per-device rec
 and renders a daily PDF into `reports/YYYY-MM-DD/`.
 
 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** explains how the whole system fits together —
-the ThingsBoard trigger-device model, the ten tables, and where every number on the PDF comes
+the ThingsBoard trigger-device model, the nine tables, and where every number on the PDF comes
 from. Start there if you're new to the codebase. **[CLAUDE.md](CLAUDE.md)** records the decisions
 and why they were made. This file is the runbook: how to actually drive it.
 
@@ -20,28 +20,26 @@ backend/app/
   main.py            FastAPI app + lifespan (init db, sync config, start scheduler)
   config.py          env-driven settings (.env)
   logging_setup.py   stdout + logs/scheduler.log
-  db/                schema.sql (7 data tables + job_runs/imported_pdfs) + sqlite helpers
+  db/                schema.sql (9 tables) + sqlite helpers
   services/
     thingsboard_client.py   async ThingsBoard PE REST client
     config_sync.py          sites/*.yaml -> DB
-    seed_service.py         seed/sample_report_*.json -> DB (offline pipeline testing)
     snapshot_service.py     scheduled + manual snapshots
     downtime_service.py     status polling -> status_events, day summaries
     report_service.py       build context -> Jinja -> Playwright PDF
     pdf_import_service.py    archive + best-effort extract imported PDFs
     ops.py                  job_runs bookkeeping ("did last night work?")
     scheduler.py            23:59 nightly job + status poll interval
-  api/               devices, captures, downtime, remarks, reports, imports, seed, status
+  api/               devices, captures, downtime, remarks, reports, imports, status
 backend/config/sites/<site>.yaml     ONE FILE PER SITE (generate, don't hand-type)
 backend/config/device_groups.yaml    shared defaults only
-seed/sample_report_20260816.json    approved-mockup data for offline dev
 frontend/            index (dashboard) · site-detail · reports
 templates/daily_report.html         report template (swap for approved v3)
 tests/               pytest — run before calling a roadmap step done
 scripts/
   discover_device_groups.py   walks a site's trigger device -> sites/<site>.yaml
   inspect_db.py               read-only look inside cranes.db
-  load_seed.py                load sample data (+ --report to render its PDF)
+  backfill_counters.py        recover a past day's values from ThingsBoard history
   backup.py                   dated zip of cranes.db + reports/ into backups/
 logs/  backups/                bind-mounted, git-ignored
 .claude/commands/    /add-device-group, /regen-report
@@ -169,22 +167,10 @@ python -m scripts.inspect_db     # JOB RUNS: capture + report both 'ok' for last
 Or glance at the dashboard banner, which shows the same thing. If the machine was off
 at 23:59, see *Missed 23:59 run* below.
 
-## Working offline (no ThingsBoard)
-
-Sample data matching the approved report mockups, for testing the pipeline:
-
-```bash
-python -m scripts.load_seed --report   # 6 sample sites / 42 devices + renders the PDF
-python -m scripts.load_seed --forget   # remove them again
-```
-
-Run `--forget` once real sites are configured: a sample site has no snapshot for today,
-so it prints as "Unknown / ATTENTION" on every report and inflates the cover-page counts.
-
 ## Tests
 
 ```bash
-pytest -q          # 42 tests
+pytest -q          # 49 tests
 ```
 
 Run before calling a roadmap step done. Tests use a throwaway DB and their own empty
@@ -222,14 +208,12 @@ is set so the 23:59 job fires at local time.
 | GET  | `/api/status/runs` | recent `job_runs` rows |
 | GET  | `/api/groups`, `/api/groups/{id}/devices` | configured groups/devices |
 | POST | `/api/config/reload` | re-sync `backend/config/sites/*.yaml` into the DB |
-| POST | `/api/seed/load` | load the sample data (offline dev) |
 | GET  | `/api/devices/{id}/live` | pull current values straight from ThingsBoard |
 | POST | `/api/captures/run?date=YYYY-MM-DD` | manual snapshot ("Import Data") |
 | GET  | `/api/captures/{date}` | latest snapshot values for a date |
 | POST | `/api/downtime/poll` | poll all device statuses now |
 | GET  | `/api/downtime/groups/{id}?date=` | per-device day summary (`source`: counter \| events) |
 | GET/POST/PUT/DELETE | `/api/remarks` | site remarks (`device_id` null) + per-device recommendations (`device_id` set; POST upserts). `?scope=site\|device` filters |
-| GET/POST/DELETE | `/api/followups` | retired — kept so existing PIC follow-up rows stay readable; nothing writes or renders them |
 | POST | `/api/reports/{date}/generate` | (re)generate that day's PDF (409 if no snapshot; `?allow_empty=true` to override) |
 | GET  | `/api/reports/{date}/preview` | render report HTML (no PDF) |
 | GET  | `/api/reports/{date}/pdf` | download the PDF |

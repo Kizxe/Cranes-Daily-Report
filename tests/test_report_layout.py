@@ -9,9 +9,22 @@ import pytest
 from jinja2 import StrictUndefined
 
 from backend.app.db.database import get_conn
-from backend.app.services import report_service, seed_service
+from backend.app.services import report_service
+from tests.factories import DATE, device, make_site
 
-DATE = "2026-08-16"
+
+def _long_named_site(n: int = 26):
+    """Device names long enough to wrap in the 108px DEVICE column.
+
+    Row height is set by whichever column wraps furthest. Estimating it from the
+    recommendation alone packed too many rows onto page 3 and ran the card over
+    the footer, so the fixture deliberately uses names that wrap to three lines.
+    """
+    return make_site("NUMed", [
+        device(f"Numed RHT External Utility Room {i}", active_h=13.2,
+               affected_h=1.1, issues=i % 4)
+        for i in range(n)
+    ])
 
 
 def test_strict_undefined_is_enabled():
@@ -21,7 +34,7 @@ def test_strict_undefined_is_enabled():
 
 @pytest.mark.asyncio
 async def test_pdf_page_count_matches_context():
-    seed_service.load_seed()
+    _long_named_site()
     ctx = report_service.build_context(DATE)
     out = await report_service.generate_report(DATE, trigger="manual")
     assert out["status"] == "generated", out["error"]
@@ -32,7 +45,7 @@ async def test_pdf_page_count_matches_context():
 
 @pytest.mark.asyncio
 async def test_every_page_carries_chrome_and_its_number():
-    seed_service.load_seed()
+    _long_named_site()
     out = await report_service.generate_report(DATE, trigger="manual")
     assert out["status"] == "generated", out["error"]
 
@@ -46,7 +59,7 @@ async def test_every_page_carries_chrome_and_its_number():
 
 @pytest.mark.asyncio
 async def test_page_size_is_a4():
-    seed_service.load_seed()
+    _long_named_site()
     out = await report_service.generate_report(DATE, trigger="manual")
     with pdfplumber.open(out["pdf_path"]) as pdf:
         # A4 = 595.28 x 841.89pt. prefer_css_page_size keeps us within a rounding hair.
@@ -57,7 +70,7 @@ async def test_page_size_is_a4():
 @pytest.mark.asyncio
 async def test_wide_site_paginates_without_dropping_devices():
     """A site far larger than one page must span pages and keep every device."""
-    seed_service.load_seed()
+    _long_named_site()
     long_rec = "Inspect the sensor, reposition the bridge, then re-survey coverage. " * 2
     with get_conn() as conn:
         gid = conn.execute(
@@ -135,3 +148,55 @@ def test_attention_threshold_is_configurable_and_disablable(monkeypatch):
     monkeypatch.setattr(_settings, "report_attention_issue_count", 0)
     assert _needs_attention(_dev("RHT", issues=99)) is False, "0 must disable the rule"
     assert _needs_attention(_dev("RHT", severity="bad", issues=0)) is True
+
+
+@pytest.mark.asyncio
+async def test_no_page_content_overruns_the_footer():
+    """The estimator must never pack a page past the footer.
+
+    Counting only the recommendation column let three-line device names overflow:
+    page 3 of the NUMed report ran 15px into the footer and the card border was cut
+    off mid-page. Measuring the rendered page is the only guard that catches it —
+    the page count can be right while the content still spills.
+    """
+    from playwright.async_api import async_playwright
+
+    _long_named_site(40)
+    html = report_service.render_html(DATE)
+
+    js = """
+    () => [...document.querySelectorAll('.page')].map((pg, i) => {
+      const pr = pg.getBoundingClientRect();
+      const foot = pg.querySelector('.foot');
+      const footTop = foot.getBoundingClientRect().top - pr.top;
+      let bottom = 0, spills = [];
+      pg.querySelectorAll('*').forEach(el => {
+        if (el === foot || foot.contains(el)) return;
+        const r = el.getBoundingClientRect();
+        if (r.height) bottom = Math.max(bottom, r.bottom - pr.top);
+      });
+      pg.querySelectorAll('tbody td').forEach(td => {
+        const cr = td.getBoundingClientRect();
+        td.querySelectorAll('*').forEach(el => {
+          const er = el.getBoundingClientRect();
+          if (er.width && er.right > cr.right + 0.6) spills.push(el.className);
+        });
+        if (td.scrollWidth > td.clientWidth + 1) spills.push('text:' + td.innerText.slice(0, 20));
+      });
+      return {n: i + 1, footTop, bottom, spills};
+    })
+    """
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.set_content(html, wait_until="load")
+        pages = await page.evaluate(js)
+        await browser.close()
+
+    assert pages, "render produced no pages"
+    for info in pages:
+        assert info["bottom"] <= info["footTop"], (
+            f"page {info['n']} content runs {info['bottom'] - info['footTop']:.0f}px "
+            f"past the footer"
+        )
+        assert not info["spills"], f"page {info['n']} has cells spilling: {info['spills']}"

@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     frontend_dir: Path = REPO_ROOT / "frontend"
     logs_dir: Path = REPO_ROOT / "logs"
     backups_dir: Path = REPO_ROOT / "backups"
-    seed_file: Path = REPO_ROOT / "seed" / "sample_report_20260816.json"
 
     # --- Behaviour ---
     timezone: str = "Asia/Kuala_Lumpur"

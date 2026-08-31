@@ -29,7 +29,9 @@ function qs(name) {
 
 function pill(status) {
   const s = (status || "UNKNOWN").toUpperCase();
-  return `<span class="pill ${s}">${s}</span>`;
+  // "NO DATA" would become two class names and lose its styling, so the class is
+  // the status with every run of non-letters collapsed to a hyphen.
+  return `<span class="pill ${s.replace(/[^A-Z]+/g, "-")}">${s}</span>`;
 }
 
 // Highlight the active nav link.

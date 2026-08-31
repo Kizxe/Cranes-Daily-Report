@@ -46,7 +46,7 @@ def _fetch_plan() -> tuple[list[dict], int]:
     by_source: dict[str, list[tuple[int, str]]] = {}
     for r in rows:
         by_source.setdefault(r["source_id"], []).append((r["device_id"], r["key_name"]))
-    # Devices we can actually read, not every row in `devices` — a seeded or retired
+    # Devices we can actually read, not every row in `devices` — a retired
     # device with no TB source must not inflate "captured N devices".
     device_count = len({r["device_id"] for r in rows})
     return (

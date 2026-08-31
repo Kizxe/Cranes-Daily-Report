@@ -104,10 +104,10 @@ def _remarks(group_id: int, date: str) -> list[dict]:
 
 
 def _is_draft(date: str) -> bool:
-    """True when this date has no real captured data — only seeded rows (or none)."""
+    """True when nothing was captured for this date."""
     with read_conn() as conn:
         return conn.execute(
-            "SELECT 1 FROM snapshots WHERE capture_date = ? AND trigger <> 'seed' LIMIT 1",
+            "SELECT 1 FROM snapshots WHERE capture_date = ? LIMIT 1",
             (date,),
         ).fetchone() is None
 

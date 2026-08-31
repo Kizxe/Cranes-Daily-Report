@@ -12,9 +12,6 @@
 # A `groups:` list left inline here still loads, so an older single-file config keeps
 # working — but a site with its own file in sites/ wins on name. New sites go in
 # sites/, not here.
-#
-# For OFFLINE work (no ThingsBoard yet) don't use this at all — load the sample
-# instead:  python -m scripts.load_seed --report   (see CLAUDE.md guardrails).
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Used for any device whose keys don't explicitly mark one as role: status.

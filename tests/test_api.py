@@ -1,3 +1,5 @@
+from tests.factories import device, make_site
+
 def test_health(client):
     r = client.get("/api/health")
     assert r.status_code == 200
@@ -28,8 +30,7 @@ def test_last_run_reports_capture(client):
 
 
 def test_remark_crud(client):
-    client.post("/api/seed/load")
-    gid = client.get("/api/groups").json()[0]["id"]
+    gid = make_site("S", [device("D1")])["group_id"]
     created = client.post("/api/remarks", json={
         "group_id": gid, "report_date": "2026-08-16", "body": "hello",
     })
@@ -40,15 +41,3 @@ def test_remark_crud(client):
     })
     assert upd.json()["body"] == "changed"
     assert client.delete(f"/api/remarks/{rid}").status_code == 204
-
-
-def test_followup_create(client):
-    client.post("/api/seed/load")
-    gid = client.get("/api/groups").json()[0]["id"]
-    r = client.post("/api/followups", json={
-        "group_id": gid, "report_date": "2026-08-16",
-        "issue": "X down", "remark": "check it", "assigned_pic": "Eng",
-        "date_assigned": "2026-08-18",
-    })
-    assert r.status_code == 201
-    assert r.json()["issue"] == "X down"

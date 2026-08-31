@@ -18,28 +18,55 @@ from __future__ import annotations
 import textwrap
 
 # Every value below was measured off the rendered page, not estimated. To re-measure:
-# render_html(), then read getBoundingClientRect().height for each block in a browser.
-# Usable height is .foot.top - .head.bottom = 955px; 10px is held back as slack.
-CONTENT_PX = 945
+# generate a report, open its reports/<date>/report.html in Chromium and read
+# getBoundingClientRect() for .head, .foot, .health-card, tbody and .card-name.
+USABLE_PX = 954         # .foot.top (1061.8) - .head.bottom (107.0)
+CONTENT_PX = 942        # USABLE_PX less 12px of slack
 
-SITE_HEAD_PX = 206      # SITE/SYSTEM TYPE card 145 + margins 4/11/34 + "Expected..." 12
-SUMMARY_PX = 82         # SUMMARY label + the 4-up stat row        (first page of a site)
-BREAKDOWN_PX = 105      # DEVICE TYPE BREAKDOWN label + chip row   (first page of a site)
-CARD_CHROME_PX = 72     # health-card 25+25 padding + the italic site name 11 + margin 11
-SECTION_PX = 78         # one in-card section: divider + centred label + 30px navy thead
+# Fixed chrome per page, everything except the table rows themselves. Measured as
+# (head.bottom -> card.top) + (card.top -> first row top) + (tbody.bottom -> card-name.bottom).
+# The first of those three is the 37px gap under the header rule, which an earlier
+# version of this file left out entirely — that is what ran page 3 over the footer.
+FIRST_PAGE_CHROME_PX = 557   # site card + SUMMARY + DEVICE TYPE BREAKDOWN + one section
+CONT_PAGE_CHROME_PX = 189    # card padding + the italic site name + one section
+SECTION_PX = 78              # a SECOND section opened on a page that already has one
 
 ROW_BASE_PX = 11        # a row's vertical padding (5+5) + border
-ROW_LINE_PX = 14        # one wrapped line of the 9.2px/1.45 mono table body
+ROW_LINE_PX = 14        # one wrapped line of the 9.2px/1.45 mono table body (13.34, rounded up)
 ROW_MIN_PX = 39         # the two-line status pill sets the floor for a device row
-EVENT_ROW_PX = 24
-REC_CHARS = 44          # chars per line in the 263px ENGINEER RECOMMENDATION column
+EVENT_ROW_PX = 25       # a one-line event row: ROW_BASE + one line
+
+# Characters per line = (column width - 16px padding) / 5.75px, the measured advance
+# width of JetBrains Mono at 9.2px. Keep these in step with the <colgroup>s in the
+# template: every one of these columns wraps, and the tallest sets the row height.
+DEVICE_CHARS = 16       # the 108px DEVICE column
+REC_CHARS = 36          # the 227px ENGINEER RECOMMENDATION column
+EVENT_CHARS = 25        # the 160px DEVICE column of the DOWNTIME EVENTS table
+
+
+def _lines(text: str, width: int) -> int:
+    return len(textwrap.wrap(text or "", width)) or 1
 
 
 def device_px(device: dict) -> int:
-    """Height of one device row, driven by how far the recommendation wraps."""
-    text = device.get("recommendation") or ""
-    lines = len(textwrap.wrap(text, REC_CHARS)) or 1
+    """Height of one device row — the tallest of its wrapping columns.
+
+    The recommendation is not the only column that wraps: "Numed RHT External Trash
+    Collection Area" takes three lines in the 108px DEVICE column and sets the row
+    height on its own. Measuring only the recommendation under-counted those rows,
+    packed too many onto a page, and ran the card over the footer.
+    """
+    lines = max(
+        _lines(device.get("name"), DEVICE_CHARS),
+        _lines(device.get("recommendation"), REC_CHARS),
+    )
     return max(ROW_MIN_PX, ROW_BASE_PX + ROW_LINE_PX * lines)
+
+
+def event_px(event: dict) -> int:
+    """Height of one downtime-event row. Device name and status share one cell."""
+    label = f"{event.get('device') or ''} {event.get('status') or ''}".strip()
+    return ROW_BASE_PX + ROW_LINE_PX * _lines(label, EVENT_CHARS)
 
 
 def _new_page(site: dict, first: bool) -> dict:
@@ -64,7 +91,7 @@ def paginate(site_details: list[dict]) -> list[dict]:
 
     for site in site_details:
         page = _new_page(site, first=True)
-        used = SITE_HEAD_PX + SUMMARY_PX + BREAKDOWN_PX + CARD_CHROME_PX + SECTION_PX
+        used = FIRST_PAGE_CHROME_PX
         budget = CONTENT_PX
 
         for d in site["devices"]:
@@ -72,7 +99,7 @@ def paginate(site_details: list[dict]) -> list[dict]:
             if page["devices"] and used + h > budget:
                 pages.append(page)
                 page = _new_page(site, first=False)
-                used = CARD_CHROME_PX + SECTION_PX
+                used = CONT_PAGE_CHROME_PX
             page["devices"].append(d)
             used += h
 
@@ -83,17 +110,19 @@ def paginate(site_details: list[dict]) -> list[dict]:
             if used + SECTION_PX + EVENT_ROW_PX > budget:
                 pages.append(page)
                 page = _new_page(site, first=False)
-                used = CARD_CHROME_PX
+                used = CONT_PAGE_CHROME_PX   # already covers one section header
+            else:
+                used += SECTION_PX           # a second section on this page
             page["events_start"] = True
-            used += SECTION_PX
             for ev in events:
-                if page["events"] and used + EVENT_ROW_PX > budget:
+                ev_h = event_px(ev)
+                if page["events"] and used + ev_h > budget:
                     pages.append(page)
                     page = _new_page(site, first=False)
-                    used = CARD_CHROME_PX + SECTION_PX
+                    used = CONT_PAGE_CHROME_PX
                     page["events_start"] = True
                 page["events"].append(ev)
-                used += EVENT_ROW_PX
+                used += ev_h
         else:
             # Still render the section so the empty state ("No downtime events
             # recorded...") appears, if it fits.

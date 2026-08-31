@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from .. import clock
 from ..db.database import get_conn, read_conn
-from ..models.schemas import FollowupIn, FollowupOut, RemarkIn, RemarkOut
+from ..models.schemas import RemarkIn, RemarkOut
 
 router = APIRouter(tags=["remarks"])
 
@@ -107,39 +107,3 @@ def delete_remark(remark_id: int):
         conn.execute("DELETE FROM remarks WHERE id = ?", (remark_id,))
 
 
-# --- PIC follow-ups -----------------------------------------------------
-@router.get("/followups", response_model=list[FollowupOut])
-def list_followups(group_id: int | None = None, report_date: str | None = None):
-    q = ("SELECT p.*, d.name AS device_name FROM pic_followups p "
-         "LEFT JOIN devices d ON d.id = p.device_id WHERE 1=1")
-    p: list = []
-    if group_id is not None:
-        q += " AND p.group_id = ?"; p.append(group_id)
-    if report_date is not None:
-        q += " AND p.report_date = ?"; p.append(report_date)
-    q += " ORDER BY p.created_at DESC"
-    with read_conn() as conn:
-        return [dict(r) for r in conn.execute(q, p).fetchall()]
-
-
-@router.post("/followups", response_model=FollowupOut, status_code=201)
-def create_followup(payload: FollowupIn):
-    with get_conn() as conn:
-        cur = conn.execute(
-            """INSERT INTO pic_followups
-               (group_id, report_date, device_id, issue, remark, assigned_pic, date_assigned)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (payload.group_id, payload.report_date, payload.device_id, payload.issue,
-             payload.remark, payload.assigned_pic, payload.date_assigned),
-        )
-        row = conn.execute(
-            "SELECT p.*, d.name AS device_name FROM pic_followups p "
-            "LEFT JOIN devices d ON d.id = p.device_id WHERE p.id = ?", (cur.lastrowid,)
-        ).fetchone()
-    return dict(row)
-
-
-@router.delete("/followups/{followup_id}", status_code=204)
-def delete_followup(followup_id: int):
-    with get_conn() as conn:
-        conn.execute("DELETE FROM pic_followups WHERE id = ?", (followup_id,))

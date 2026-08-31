@@ -118,7 +118,7 @@ async def check_configured_devices() -> bool:
 
     missing_id = [r for r in rows if not r["tb_device_id"]]
     if missing_id:
-        print(f"{WARN} {len(missing_id)} device(s) have no tb_device_id (seed data?), skipping them")
+        print(f"{WARN} {len(missing_id)} device(s) have no tb_device_id, skipping them")
 
     live = [r for r in rows if r["tb_device_id"]]
     print(f"     checking {len(live)} device(s) with a ThingsBoard id...")

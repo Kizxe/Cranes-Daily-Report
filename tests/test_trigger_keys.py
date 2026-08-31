@@ -198,27 +198,6 @@ def test_written_timestamps_are_local_not_utc(client):
         assert abs((datetime.now(dt.TZ) - ts).total_seconds()) < 60, f"{raw} is not local time"
 
 
-def test_forget_seed_removes_only_the_sample_sites(site):
-    """--forget must clear the samples and leave configured sites alone."""
-    from backend.app.services import seed_service
-
-    seed_service.load_seed()
-    with read_conn() as conn:
-        before = {r["name"] for r in conn.execute("SELECT name FROM device_groups")}
-    assert "NUMed" in before and len(before) > 1
-
-    removed = seed_service.forget_seed()
-    with read_conn() as conn:
-        after = {r["name"] for r in conn.execute("SELECT name FROM device_groups")}
-        orphans = conn.execute(
-            "SELECT COUNT(*) n FROM devices WHERE group_id NOT IN "
-            "(SELECT id FROM device_groups)"
-        ).fetchone()["n"]
-    assert after == {"NUMed"}, "a configured site was deleted with the seed"
-    assert removed["count"] == len(before) - 1
-    assert orphans == 0, "deleting a group left its devices behind"
-
-
 def _capture(device_id: int, date: str, key: str, value: str) -> None:
     with get_conn() as conn:
         conn.execute(

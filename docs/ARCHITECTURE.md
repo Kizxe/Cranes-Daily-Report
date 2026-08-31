@@ -3,7 +3,7 @@
 > Written for the next person to work on this. Read `CLAUDE.md` for the decisions
 > and *why* they were made; this document covers *what exists and how it fits together*.
 >
-> Last verified against the code on **2026-08-31** (47 tests passing, 1 of 22 sites live).
+> Last verified against the code on **2026-08-31** (49 tests passing, 1 of 22 sites live).
 
 ---
 
@@ -71,7 +71,7 @@ CDR/
 │       ├── clock.py             Local-time clock for every timestamp written to the DB
 │       ├── logging_setup.py     stdout + logs/scheduler.log
 │       ├── db/
-│       │   ├── schema.sql       All 10 tables (CREATE TABLE IF NOT EXISTS)
+│       │   ├── schema.sql       All 9 tables (CREATE TABLE IF NOT EXISTS)
 │       │   └── database.py      Connection helper, WAL pragmas, additive migrations
 │       ├── models/schemas.py    Pydantic request/response models
 │       ├── api/                 HTTP layer — thin, delegates to services
@@ -81,7 +81,6 @@ CDR/
 │       │   ├── remarks.py       site remarks + per-device recommendations
 │       │   ├── reports.py       generate / preview / download a day's report
 │       │   ├── imports.py       upload an existing PDF
-│       │   ├── seed.py          load the offline sample data
 │       │   └── status.py        "did last night work?" for the dashboard banner
 │       └── services/            All the real logic lives here
 │           ├── thingsboard_client.py   async ThingsBoard PE REST client
@@ -91,7 +90,6 @@ CDR/
 │           ├── report_service.py       build context → Jinja → Playwright → PDF
 │           ├── report_layout.py        page-fitting for the PDF template
 │           ├── pdf_import_service.py   archive + extract imported PDFs
-│           ├── seed_service.py         sample data in/out
 │           ├── scheduler.py            the 23:59 job and the poll interval
 │           └── ops.py                  job_runs bookkeeping
 │
@@ -102,14 +100,12 @@ CDR/
 │   └── assets/{app.js,style.css}
 │
 ├── templates/daily_report.html  The approved report design. Jinja + print CSS.
-├── seed/sample_report_*.json    Sample data matching the approved mockups (offline dev)
 │
 ├── scripts/                     Operator tools, all `python -m scripts.<name>`
 │   ├── discover_device_groups.py  Walk a site's trigger device → sites/<site>.yaml
 │   ├── inspect_db.py              Read-only look inside cranes.db, no SQL needed
 │   ├── backfill_counters.py       Recover a past day's values from ThingsBoard history
 │   ├── check_thingsboard.py       Layered connection check (DNS → login → keys)
-│   ├── load_seed.py               Load / --forget the sample data
 │   └── backup.py                  Dated zip of cranes.db + reports/
 │
 ├── tests/                       pytest; throwaway DB + empty config, never touches real data
@@ -164,7 +160,7 @@ that needs `status_events`.
 
 ## 5. Database
 
-Ten tables in `backend/app/db/schema.sql`. Everything is one SQLite file in WAL mode;
+Nine tables in `backend/app/db/schema.sql`. Everything is one SQLite file in WAL mode;
 the FastAPI process is the only writer, so there is no lock contention to design around.
 
 ```
@@ -177,7 +173,6 @@ device_groups ──< devices ──< device_keys        the config, mirrored fr
 reports          log of every generated PDF
 job_runs         one row per job run — "did last night work?"
 imported_pdfs    PDFs uploaded through the import page
-pic_followups    RETIRED 2026-08-28; kept so old rows stay readable, nothing writes it
 ```
 
 **Key columns worth knowing:**
@@ -302,7 +297,6 @@ All under `/api`. The frontend is served from `/` by the same process.
 | GET | `/api/reports/{date}/preview` | render the HTML without making a PDF |
 | GET | `/api/reports/{date}/pdf` | download |
 | POST | `/api/imports` | upload an existing PDF (multipart `file`) |
-| POST | `/api/seed/load` | load the offline sample data |
 
 ---
 
@@ -354,7 +348,7 @@ else in `config.py` has a working default: paths, `TIMEZONE`, `SNAPSHOT_HOUR`/`M
 
 ## 10. Tests
 
-`pytest -q` — **47 tests**. They use a throwaway SQLite file *and their own empty config
+`pytest -q` — **49 tests**. They use a throwaway SQLite file *and their own empty config
 directory*, so they never touch `cranes.db` or `backend/config/`. That isolation is set
 up in `tests/conftest.py` before any backend import, because `config.Settings` reads the
 environment at import time.
@@ -364,7 +358,7 @@ environment at import time.
 | `test_trigger_keys.py` | trigger-sourced keys, per-site config loading, counter-derived hours, local timestamps |
 | `test_downtime.py` | status events, day summaries, config sync |
 | `test_report_context.py`, `test_report_layout.py` | report context assembly and page fitting |
-| `test_seed_and_report.py` | the offline pipeline end to end |
+| `test_report_pipeline.py` | context -> HTML -> PDF, on sites built by `tests/factories.py` |
 | `test_api.py`, `test_remarks_device.py`, `test_migration.py` | endpoints, remark rules, schema migration |
 
 **Write a test alongside every new endpoint or service function.** Nobody else is
@@ -389,9 +383,6 @@ curl -X POST localhost:8000/api/downtime/poll
 curl -X POST localhost:8000/api/reports/2026-08-31/generate
 
 # offline, no ThingsBoard
-python -m scripts.load_seed --report
-python -m scripts.load_seed --forget
-
 # backup — one file and one folder, no replication
 python -m scripts.backup
 ```
@@ -414,8 +405,9 @@ indefinitely. No prune job. `retention_days=0` in `config.py` is the switch if t
 3. **Renaming the repo folder breaks the venv.** Console scripts hard-code the old
    absolute path; `uvicorn: no such file` is the symptom. Recreate the venv or sed the
    paths in `.venv/bin/*` and `.venv/pyvenv.cfg`.
-4. **Sample sites pollute a real report.** Each has no snapshot for today, so it prints
-   as "Unknown / ATTENTION" and inflates the cover-page counts. `load_seed --forget`.
+4. **The report's row heights are estimated, not measured at render time.** `report_layout.py`
+   mirrors the template CSS; if a column width changes there, change the matching
+   `*_CHARS` constant too, or content silently runs past the footer.
 5. **Frozen counters.** Five NUMed sensors have `forTotalUse_` stuck at `[0, 0]` and so
    print 0.0 active / 0.0 affected while reporting INACTIVE or NO DATA. The ThingsBoard
    dashboard shows the same zeros — the fix belongs in that rule chain, not here.
@@ -428,8 +420,7 @@ indefinitely. No prune job. `retention_days=0` in `config.py` is the switch if t
 ## 13. Where the project stands
 
 **Done:** ThingsBoard client, per-site config generation, capture, downtime detection,
-remarks, report generation, PDF import, scheduler, containerisation, offline seed
-pipeline, 47 tests.
+remarks, report generation, PDF import, scheduler, containerisation, 49 tests.
 
 **Live:** 1 site of 22 (**NUMed**, 33 devices), producing a 4-page report.
 

@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from .api import captures, devices, downtime, imports, remarks, reports, seed, status
+from .api import captures, devices, downtime, imports, remarks, reports, status
 from .config import settings
 from .db.database import init_db
 from .logging_setup import configure as configure_logging
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Cranes Daily Report", version="0.1.0", lifespan=lifespan)
 
 for r in (devices.router, captures.router, downtime.router, remarks.router,
-          reports.router, imports.router, seed.router, status.router):
+          reports.router, imports.router, status.router):
     app.include_router(r, prefix="/api")
 
 
