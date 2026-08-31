@@ -106,14 +106,17 @@ def site_detail(name: str, date: str) -> None:
     status_of = dt.current_status_map(date)
     _rule(f"{g['name']}  —  {len(devices)} devices  —  {date}")
     print(f"  {'id':>4}  {'type':<10} {'device':<50} {'status':<10} "
-          f"{'active h':>8} {'affected':>8}  issues")
+          f"{'active h':>8} {'affected':>8}  {'issues':>6}  hrs from")
     for d in devices:
         s = dt.day_summary(d["id"], date)
         st = status_of.get(d["id"], "UNKNOWN")
         print(f"  {d['id']:>4}  {d['device_type'] or '':<10} {d['name'][:48]:<50} {st:<10} "
-              f"{s['active_hours']:>8} {s['affected_hours']:>8}  {s['issue_occurrences']}")
+              f"{s['active_hours']:>8} {s['affected_hours']:>8}  {s['issue_occurrences']:>6}  "
+              f"{s['source']}")
     print("\n  status: what role='status' reported in the latest snapshot for that date.")
-    print("  active/affected hours come from status_events, clipped to the day.")
+    print("  hrs from 'counter' = one day's slice of the trigger's forTotalUse_ counters;")
+    print("  'events' = our own status_events (fallback when there's no previous day to")
+    print("  difference against). issues = the trigger's '<sensor> 1D' daily fault count.")
 
 
 def device_detail(device_id: int, date: str) -> None:

@@ -55,6 +55,9 @@ devices:
   - key_name: ActiveInActive_DPM CH1
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_DPM CH1
+    role: total_use
+    source: trigger
 - name: DPM CH2
   device_type: DPM
   tb_device_id: null
@@ -80,6 +83,9 @@ devices:
   - key_name: ActiveInActive_DPM CH2
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_DPM CH2
+    role: total_use
+    source: trigger
 - name: Meatrol DPM
   device_type: DPM
   tb_device_id: a30e4050-ea78-11ef-82da-edc9c62fd9f4
@@ -92,6 +98,9 @@ devices:
     source: trigger
   - key_name: InactiveTs_Meatrol DPM
     role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Meatrol DPM
+    role: total_use
     source: trigger
 - name: Numed
   device_type: Other
@@ -109,6 +118,9 @@ devices:
   - key_name: ActiveInActive_Numed
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed
+    role: total_use
+    source: trigger
 - name: Numed Flowmeter
   device_type: Flowmeter
   tb_device_id: c81b98b0-2011-11f0-82da-edc9c62fd9f4
@@ -124,6 +136,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed Flowmeter
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed Flowmeter
+    role: total_use
     source: trigger
   - key_name: Numed Flowmeter 1D
     role: daily_issues
@@ -153,6 +168,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Anatomy Room
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Anatomy Room
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Anatomy Room 1D
     role: daily_issues
     source: trigger
@@ -180,6 +198,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT Bell's Court Ground Floor Senior Provost Officer
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT Bell's Court Ground Floor Senior Provost Officer
+    role: total_use
     source: trigger
   - key_name: Numed RHT Bell's Court Ground Floor Senior Provost Officer 1D
     role: daily_issues
@@ -209,6 +230,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Bell's Court Level 1- B.1.30
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Bell's Court Level 1- B.1.30
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Bell's Court Level 1- B.1.30 1D
     role: daily_issues
     source: trigger
@@ -236,6 +260,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT CPD
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT CPD
+    role: total_use
     source: trigger
   - key_name: Numed RHT CPD 1D
     role: daily_issues
@@ -265,6 +292,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Clinical
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Clinical
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Clinical 1D
     role: daily_issues
     source: trigger
@@ -292,6 +322,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT External Trash Collection Area
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT External Trash Collection Area
+    role: total_use
     source: trigger
   - key_name: Numed RHT External Trash Collection Area 1D
     role: daily_issues
@@ -321,6 +354,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT External Utility Room
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT External Utility Room
+    role: total_use
+    source: trigger
   - key_name: Numed RHT External Utility Room 1D
     role: daily_issues
     source: trigger
@@ -348,6 +384,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT IT Cluster
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT IT Cluster
+    role: total_use
     source: trigger
   - key_name: Numed RHT IT Cluster 1D
     role: daily_issues
@@ -377,6 +416,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Iskandar Demo Back
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Iskandar Demo Back
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Iskandar Demo Back 1D
     role: daily_issues
     source: trigger
@@ -404,6 +446,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT Iskandar Demo Front
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT Iskandar Demo Front
+    role: total_use
     source: trigger
   - key_name: Numed RHT Iskandar Demo Front 1D
     role: daily_issues
@@ -433,6 +478,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT LT Baylis Back
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT LT Baylis Back
+    role: total_use
+    source: trigger
   - key_name: Numed RHT LT Baylis Back 1D
     role: daily_issues
     source: trigger
@@ -460,6 +508,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT LT Baylis Front
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT LT Baylis Front
+    role: total_use
     source: trigger
   - key_name: Numed RHT LT Baylis Front 1D
     role: daily_issues
@@ -489,6 +540,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT LT JORDAN Front
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT LT JORDAN Front
+    role: total_use
+    source: trigger
   - key_name: Numed RHT LT JORDAN Front 1D
     role: daily_issues
     source: trigger
@@ -516,6 +570,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT LT Jordan Back
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT LT Jordan Back
+    role: total_use
     source: trigger
   - key_name: Numed RHT LT Jordan Back 1D
     role: daily_issues
@@ -545,6 +602,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Lib 1st Floor
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Lib 1st Floor
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Lib 1st Floor 1D
     role: daily_issues
     source: trigger
@@ -572,6 +632,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed RHT Lib GF Locker Room
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed RHT Lib GF Locker Room
+    role: total_use
     source: trigger
   - key_name: Numed RHT Lib GF Locker Room 1D
     role: daily_issues
@@ -601,6 +664,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Library 2nd Floor
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Library 2nd Floor
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Library 2nd Floor 1D
     role: daily_issues
     source: trigger
@@ -629,6 +695,9 @@ devices:
   - key_name: ActiveInActive_Numed RHT Wet Lab
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed RHT Wet Lab
+    role: total_use
+    source: trigger
   - key_name: Numed RHT Wet Lab 1D
     role: daily_issues
     source: trigger
@@ -648,6 +717,9 @@ devices:
   - key_name: ActiveInActive_Numed Recovery
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed Recovery
+    role: total_use
+    source: trigger
 - name: Numed Setpoints
   device_type: Setpoints
   tb_device_id: dca57120-2cc7-11f1-a38e-e56ade1a22b0
@@ -657,6 +729,9 @@ devices:
     source: trigger
   - key_name: InactiveTs_Numed Setpoints
     role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Numed Setpoints
+    role: total_use
     source: trigger
 - name: Numed_DPM_1
   device_type: DPM
@@ -673,6 +748,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed_DPM_1
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed_DPM_1
+    role: total_use
     source: trigger
   - key_name: Numed_DPM_1 1D
     role: daily_issues
@@ -693,6 +771,9 @@ devices:
   - key_name: ActiveInActive_Numed_DPM_2
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed_DPM_2
+    role: total_use
+    source: trigger
   - key_name: Numed_DPM_2 1D
     role: daily_issues
     source: trigger
@@ -711,6 +792,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_Numed_DPM_3
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Numed_DPM_3
+    role: total_use
     source: trigger
   - key_name: Numed_DPM_3 1D
     role: daily_issues
@@ -731,6 +815,9 @@ devices:
   - key_name: ActiveInActive_Numed_DPM_4
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed_DPM_4
+    role: total_use
+    source: trigger
   - key_name: Numed_DPM_4 1D
     role: daily_issues
     source: trigger
@@ -750,6 +837,9 @@ devices:
   - key_name: ActiveInActive_Numed_DPM_5&6
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_Numed_DPM_5&6
+    role: total_use
+    source: trigger
 - name: RTD CH1
   device_type: RTD
   tb_device_id: null
@@ -766,6 +856,9 @@ devices:
   - key_name: ActiveInActive_RTD CH1
     role: uptime_split
     source: trigger
+  - key_name: forTotalUse_RTD CH1
+    role: total_use
+    source: trigger
 - name: RTD CH2
   device_type: RTD
   tb_device_id: null
@@ -781,6 +874,9 @@ devices:
     source: trigger
   - key_name: ActiveInActive_RTD CH2
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD CH2
+    role: total_use
     source: trigger
 - name: UFM
   device_type: UFM
@@ -806,4 +902,7 @@ devices:
     source: trigger
   - key_name: ActiveInActive_UFM
     role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM
+    role: total_use
     source: trigger

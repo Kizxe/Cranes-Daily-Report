@@ -17,7 +17,8 @@ at poll time, so a 5–15 min poll interval no longer rounds off downtime window
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from ..config import settings
@@ -268,19 +269,105 @@ def downtime_for_date(device_id: int, date: str) -> list[dict]:
     return out
 
 
+def _role_value(conn, device_id: int, role: str, date: str) -> str | None:
+    """Latest captured value of a device's key in `role`, on `date`."""
+    row = conn.execute(
+        """
+        SELECT s.value FROM snapshots s
+        JOIN device_keys k ON k.device_id = s.device_id AND k.key_name = s.key_name
+        WHERE s.device_id = ? AND k.role = ? AND s.capture_date = ? AND s.value IS NOT NULL
+        ORDER BY s.capture_ts DESC LIMIT 1
+        """,
+        (device_id, role, date),
+    ).fetchone()
+    return row["value"] if row else None
+
+
+def _total_use(conn, device_id: int, date: str) -> tuple[float, float] | None:
+    """(inactive_ms, active_ms) from forTotalUse_<sensor> — cumulative, not per-day."""
+    raw = _role_value(conn, device_id, "total_use", date)
+    if not raw:
+        return None
+    try:
+        pair = json.loads(raw)
+        return float(pair[0]), float(pair[1])
+    except (ValueError, TypeError, IndexError):
+        return None
+
+
+def counter_hours(device_id: int, date: str) -> dict | None:
+    """Active / affected hours for one day, from ThingsBoard's own running counters.
+
+    `forTotalUse_<sensor>` is [inactive_ms, active_ms] accumulated since the counters
+    last reset — 4455 hours on one NUMed sensor — so it can't go straight into a daily
+    column. Differencing it against the previous day's capture gives exactly the hours
+    that elapsed in between, using ThingsBoard's accounting rather than re-deriving it
+    from our poll samples.
+
+    Returns None when there's no previous day to difference against (the first day a
+    site is configured), or when a counter reset makes the difference negative — the
+    caller falls back to the status_events math.
+    """
+    prev_date = (datetime.fromisoformat(date) - timedelta(days=1)).strftime("%Y-%m-%d")
+    with read_conn() as conn:
+        cur = _total_use(conn, device_id, date)
+        prev = _total_use(conn, device_id, prev_date)
+    if not cur or not prev:
+        return None
+    d_inactive, d_active = cur[0] - prev[0], cur[1] - prev[1]
+    if d_inactive < 0 or d_active < 0:
+        return None                      # counters were reset between the two captures
+
+    active_h, affected_h = d_active / 3_600_000, d_inactive / 3_600_000
+    # The baseline is whatever value the key last carried before the previous day ended.
+    # If that key hadn't been written for a while, the difference spans more than one
+    # day and the hours are not this day's. Past a day's slack, don't guess — fall back.
+    if active_h + affected_h > DAY_SECONDS / 3600 + 2:
+        return None
+    return {
+        # A day holds 24 hours; a slightly-early baseline can still push one side just
+        # over, so clamp rather than print an impossible 25.0.
+        "active_hours": round(min(active_h, 24.0), 1),
+        "affected_hours": round(min(affected_h, 24.0), 1),
+        "source": "counter",
+    }
+
+
 def day_summary(device_id: int, date: str) -> dict:
     events = downtime_for_date(device_id, date)
     covered = sum(e["seconds_in_day"] for e in events)
     active = sum(e["seconds_in_day"] for e in events if e["is_active"])
     affected = sum(e["seconds_in_day"] for e in events if not e["is_active"])
     occurrences = sum(1 for e in events if not e["is_active"])
-    # Percentage of the DAY, not of the covered window. Dividing by `covered` would
-    # let a device with only 4h of events read 100% active.
-    return {
+
+    hours = {
         "active_hours": round(active / 3600, 1),
         "affected_hours": round(affected / 3600, 1),
+        "source": "events",
+    }
+    # ThingsBoard already counts active/inactive milliseconds per sensor. Prefer that
+    # over our own poll-derived math: it doesn't depend on how long we've been polling.
+    from_counter = counter_hours(device_id, date)
+    if from_counter:
+        hours = from_counter
+
+    # ISSUE OCC. is the trigger's own daily fault count ("<sensor> 1D"), which resets at
+    # midnight and matches the Fault Counter device's per-device breakdown. Our own
+    # count of inactive events is the fallback.
+    with read_conn() as conn:
+        daily = _role_value(conn, device_id, "daily_issues", date)
+    try:
+        occurrences = int(float(daily)) if daily is not None else occurrences
+    except (TypeError, ValueError):
+        pass
+
+    # Percentage of the DAY, not of the covered window. Dividing by `covered` would
+    # let a device with only 4h of events read 100% active.
+    active_pct = round(100 * hours["active_hours"] * 3600 / DAY_SECONDS, 1)
+    return {
+        **hours,
         "covered_hours": round(covered / 3600, 1),
-        "active_pct": round(100 * active / DAY_SECONDS, 1),
+        "active_pct": min(active_pct, 100.0),
         "issue_occurrences": occurrences,
         "events": events,
     }

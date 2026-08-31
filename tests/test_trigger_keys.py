@@ -217,3 +217,83 @@ def test_forget_seed_removes_only_the_sample_sites(site):
     assert after == {"NUMed"}, "a configured site was deleted with the seed"
     assert removed["count"] == len(before) - 1
     assert orphans == 0, "deleting a group left its devices behind"
+
+
+def _capture(device_id: int, date: str, key: str, value: str) -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO snapshots (capture_ts, capture_date, trigger, device_id, key_name, value)"
+            " VALUES (?, ?, 'scheduled', ?, ?, ?)",
+            (f"{date}T23:59:00+08:00", date, device_id, key, value),
+        )
+
+
+def test_day_hours_come_from_the_trigger_counters(site):
+    """ACTIVE/AFFECTED HRS = one day's slice of ThingsBoard's own running counters."""
+    did = site["Numed RHT Wet Lab"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO device_keys (device_id, key_name, role, tb_source_device_id)"
+            " VALUES (?, 'forTotalUse_Numed RHT Wet Lab', 'total_use', ?)", (did, TRIGGER_ID))
+        conn.execute(
+            "INSERT INTO device_keys (device_id, key_name, role, tb_source_device_id)"
+            " VALUES (?, 'Numed RHT Wet Lab 1D', 'daily_issues', ?)", (did, TRIGGER_ID))
+
+    # Cumulative totals: 100h inactive / 200h active yesterday, +2h / +22h since.
+    h = 3_600_000
+    _capture(did, "2026-08-30", "forTotalUse_Numed RHT Wet Lab", f"[{100*h}, {200*h}]")
+    _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", f"[{102*h}, {222*h}]")
+    _capture(did, "2026-08-31", "Numed RHT Wet Lab 1D", "7.0")
+
+    s = dt.day_summary(did, "2026-08-31")
+    assert s["source"] == "counter"
+    assert s["active_hours"] == 22.0, "active hours must be the day's slice, not the total"
+    assert s["affected_hours"] == 2.0
+    assert s["issue_occurrences"] == 7, "ISSUE OCC. must be the trigger's own 1D count"
+
+
+def test_day_hours_fall_back_when_there_is_no_previous_day(site):
+    """First day a site is configured: nothing to difference, so use status_events."""
+    did = site["Numed RHT Wet Lab"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO device_keys (device_id, key_name, role, tb_source_device_id)"
+            " VALUES (?, 'forTotalUse_Numed RHT Wet Lab', 'total_use', ?)", (did, TRIGGER_ID))
+    _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", f"[{102*3_600_000}, 0]")
+
+    assert dt.counter_hours(did, "2026-08-31") is None
+    assert dt.day_summary(did, "2026-08-31")["source"] == "events"
+
+
+def test_counter_reset_does_not_produce_negative_hours(site):
+    """The counters reset sometimes; a negative difference must not reach the report."""
+    did = site["Numed RHT Wet Lab"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO device_keys (device_id, key_name, role, tb_source_device_id)"
+            " VALUES (?, 'forTotalUse_Numed RHT Wet Lab', 'total_use', ?)", (did, TRIGGER_ID))
+    _capture(did, "2026-08-30", "forTotalUse_Numed RHT Wet Lab", "[9999999999, 9999999999]")
+    _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", "[0, 0]")
+
+    assert dt.counter_hours(did, "2026-08-31") is None
+    s = dt.day_summary(did, "2026-08-31")
+    assert s["active_hours"] >= 0 and s["affected_hours"] >= 0
+
+
+def test_stale_baseline_is_rejected_rather_than_printing_impossible_hours(site):
+    """A baseline older than one day would make ACTIVE HRS exceed 24 — don't use it."""
+    did = site["Numed RHT Wet Lab"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO device_keys (device_id, key_name, role, tb_source_device_id)"
+            " VALUES (?, 'forTotalUse_Numed RHT Wet Lab', 'total_use', ?)", (did, TRIGGER_ID))
+    h = 3_600_000
+    _capture(did, "2026-08-30", "forTotalUse_Numed RHT Wet Lab", "[0, 0]")
+    _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", f"[{10*h}, {70*h}]")
+    assert dt.counter_hours(did, "2026-08-31") is None, "80h in a day must be rejected"
+
+    # Just over a day is a slightly-early baseline, not a broken one: clamp, don't drop.
+    with get_conn() as conn:
+        conn.execute("DELETE FROM snapshots WHERE capture_date = '2026-08-31'")
+    _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", f"[0, {25*h}]")
+    assert dt.counter_hours(did, "2026-08-31")["active_hours"] == 24.0

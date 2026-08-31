@@ -28,8 +28,9 @@ and writes it back as one key per sensor per family:
     activeTs_<sensor>        epoch ms of the last ->active transition
     InactiveTs_<sensor>      epoch ms of the last ->inactive transition
     IssueOcc_<sensor>        issue occurrences to date
-    <sensor> 1D              issues on the current day
-    ActiveInActive_<sensor>  ["A_<ts>","N_hh:mm:ss", activeMs, inactiveMs]
+    <sensor> 1D              issues on the current day (the report's ISSUE OCC.)
+    forTotalUse_<sensor>     [inactive_ms, active_ms] — cumulative, feeds ACTIVE/AFFECTED HRS
+    ActiveInActive_<sensor>  ["A_<ts>","N_hh:mm:ss", inactive_ms, active_ms]
 
 So the sensor roster is derived from `active_*` and every emitted key carries
 `source: trigger`, meaning "read this off the trigger device, not off the sensor".
@@ -63,6 +64,9 @@ FAMILIES: list[tuple[str, str]] = [
     ("InactiveTs_", "inactive_ts"),
     ("IssueOcc_", "issue_count"),
     ("ActiveInActive_", "uptime_split"),
+    # [inactive_ms, active_ms] since the counters last reset — the same pair the
+    # ThingsBoard "Total Active / Total Inactive Time" table shows.
+    ("forTotalUse_", "total_use"),
 ]
 
 # Sensor kind, read out of the sensor name. First match wins, so RHT beats the
