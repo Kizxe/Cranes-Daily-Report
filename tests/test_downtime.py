@@ -79,6 +79,26 @@ def test_short_blips_are_debounced_into_the_window_they_interrupted():
     assert downtime_service.day_summary(did, day)["issue_occurrences"] == 1
 
 
+def test_two_silences_either_side_of_one_reading_stay_two_events():
+    """Back-to-back gap windows are two faults — that is how ThingsBoard counts them.
+
+    Bell's Court L1 on 2026-09-01: quiet 04:12:27-04:28:56, one reading, quiet again
+    04:28:56-04:49:07. Debouncing used to glue those into a single 37-minute outage.
+    """
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        for start, end in (("04:12:27", "04:28:56"), ("04:28:56", "04:49:07")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, 'NO DATA', ?, ?, 'test')",
+                (did, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+
+    evs = downtime_service.downtime_for_date(did, day)
+    assert [(e["start"][11:19], e["end"][11:19]) for e in evs] == [
+        ("04:12:27", "04:28:56"), ("04:28:56", "04:49:07")]
+
+
 def test_two_outages_hours_apart_stay_two_events():
     """Same status, but not contiguous — debouncing must not glue them together."""
     did = _make_device()

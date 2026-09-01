@@ -1,4 +1,17 @@
-"""Rebuild `status_events` for a day from ThingsBoard's own key history.
+"""Rebuild `status_events` for a day from ThingsBoard's own history.
+
+A downtime event is **the sensor going quiet**: the span between its last reading and
+its next one, once that span passes `downtime_gap_minutes`. That is what ThingsBoard's
+Downtime Events widget shows and what its fault counter counts. It is NOT the same as
+how long the trigger's STATIC/STALLED flag stayed up afterwards — verified on
+`Numed RHT Bell's Court Level 1- B.1.30`, 2026-09-01: TB's window 9:50:49 -> 10:02:48
+is the silence, while the STALLED flag ran 10:02:48 -> 10:09:06, i.e. it *starts* where
+TB's window ends. Counting flag windows gave 116 events that matched nothing; counting
+gaps gives 99 against the triggers' own 1D total of 102.
+
+Devices with no `tb_device_id` of their own (`RTD CH1`, `RTD CH2`, `UFM` — channels the
+trigger reports on behalf of) have no telemetry to find gaps in, so they keep the older
+walk over the trigger's status key.
 
 Why this exists alongside the poll loop: `poll_all_statuses` samples every
 `downtime_poll_minutes`, so a device that drops and recovers between two polls leaves
@@ -23,15 +36,20 @@ must not blank out a day of downtime.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime, timedelta
 
+from ..config import settings
 from ..db.database import get_conn, read_conn
 from . import ops
 from .downtime_service import TZ, normalize_status
 from .thingsboard_client import ThingsBoardError, tb_client
 
 log = logging.getLogger("cranes.reconcile")
+
+# How many devices to read from ThingsBoard at once.
+_READ_CHUNK = 8
 
 
 def plan(date: str, site: str | None = None, refresh: bool = False) -> list[dict]:
@@ -43,6 +61,7 @@ def plan(date: str, site: str | None = None, refresh: bool = False) -> list[dict
     sql = """
         SELECT d.id AS device_id, d.name AS device_name,
                k.key_name AS status_key,
+               d.tb_device_id AS own_device_id,
                COALESCE(k.tb_source_device_id, d.tb_device_id) AS source_id
         FROM devices d
         JOIN device_keys k ON k.device_id = d.id AND k.role = 'status'
@@ -96,6 +115,109 @@ def events_from_points(points: list[dict], day_start: datetime, day_end: datetim
         end_iso = end.isoformat() if end and end <= now else None
         out.append((status, start.isoformat(), end_iso))
     return out
+
+
+# What to watch for a heartbeat, best first. Any key the device writes on its own
+# schedule works — "Seq #" is a counter every RHT bumps each reading, so it is the most
+# reliable evidence that the sensor was alive at that moment.
+HEARTBEAT_PREFERENCE = ("Seq #", "Temp (C)", "Corrected Temp (C)", "Humidity (%RH)",
+                        "Flow Rate", "Power (W)", "Total Energy (kWh)")
+
+
+async def heartbeat_key(device_id: int, tb_device_id: str) -> str | None:
+    """Which of the device's OWN keys proves it was reporting. Resolved once, then kept.
+
+    A `role='heartbeat'` row is the config; the site YAML carries one for sites
+    discovered from now on. When it is missing we ask ThingsBoard for the device's keys,
+    pick one, and store it — so an existing site starts working without re-running
+    discovery, and later passes cost no extra call.
+    """
+    with read_conn() as conn:
+        row = conn.execute(
+            "SELECT key_name FROM device_keys WHERE device_id = ? AND role = 'heartbeat'",
+            (device_id,),
+        ).fetchone()
+    if row:
+        return row["key_name"]
+
+    try:
+        keys = await tb_client.timeseries_keys(tb_device_id)
+    except ThingsBoardError as e:
+        log.warning("no key list for %s: %s", tb_device_id, str(e)[:200])
+        return None
+    if not keys:
+        return None
+
+    pick = next((k for k in HEARTBEAT_PREFERENCE if k in keys), keys[0])
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT OR IGNORE INTO device_keys (device_id, key_name, role) "
+            "VALUES (?, ?, 'heartbeat')",
+            (device_id, pick),
+        )
+    return pick
+
+
+def gaps_from_points(points: list[dict], day_start: datetime, day_end: datetime,
+                     now: datetime, gap_seconds: int) -> list[tuple[str, str, str | None]]:
+    """The day as alternating ACTIVE / NO DATA segments, from when the sensor reported.
+
+    A silence of `gap_seconds` or longer is a downtime window running from the last
+    reading before it to the first reading after — the same span TB's widget prints,
+    minus its ~5 min detection lag, because the device stopped at its last reading and
+    not when the rule chain noticed.
+
+    The ACTIVE segments between gaps are emitted too, so the day stays fully covered and
+    `day_summary`'s events-based hours and active_pct still mean something.
+    """
+    stamps = sorted(datetime.fromtimestamp(p["ts"] / 1000, TZ)
+                    for p in points if p.get("value") is not None)
+    cap = min(now, day_end)
+    if not stamps or cap <= day_start:
+        return []
+
+    before = [t for t in stamps if t < day_start]
+    inside = [t for t in stamps if day_start <= t <= cap]
+    # The last reading before midnight is what makes a gap straddling 00:00 visible.
+    seq = ([before[-1]] if before else []) + inside
+
+    segments: list[tuple[str, datetime, datetime | None]] = []
+
+    def add(status: str, start: datetime, end: datetime | None) -> None:
+        if end is None or end > start:
+            segments.append((status, start, end))
+
+    cursor = day_start
+    # Nothing at all before the day and nothing for a while after midnight: the sensor
+    # was quiet through that stretch too, even though there is no earlier reading to
+    # measure from.
+    if not before and inside and (inside[0] - day_start).total_seconds() >= gap_seconds:
+        add("NO DATA", day_start, inside[0])
+        cursor = inside[0]
+
+    for a, b in zip(seq, seq[1:]):
+        if (b - a).total_seconds() < gap_seconds:
+            continue
+        gap_start, gap_end = max(a, day_start), min(b, cap)
+        if gap_end <= cursor:
+            continue
+        if gap_start > cursor:
+            add("ACTIVE", cursor, gap_start)
+        add("NO DATA", max(gap_start, cursor), gap_end)
+        cursor = gap_end
+
+    # The tail: either the sensor is still reporting, or it has been quiet since its
+    # last reading. Only today leaves a window open — a past day is closed at its end.
+    open_end = None if cap == now else day_end
+    last = max(seq[-1], day_start)
+    if (cap - last).total_seconds() >= gap_seconds:
+        if last > cursor:
+            add("ACTIVE", cursor, last)
+        add("NO DATA", max(last, cursor), open_end)
+    else:
+        add("ACTIVE", cursor, open_end)
+
+    return [(st, s.isoformat(), e.isoformat() if e else None) for st, s, e in segments]
 
 
 async def _history(tb_device_id: str, keys: list[str], start_ms: int,
@@ -163,27 +285,58 @@ async def reconcile_day(date: str, *, site: str | None = None, refresh: bool = F
     start_ms = int((day_start - timedelta(days=lookback_days)).timestamp() * 1000)
     end_ms = int(min(now, day_end + timedelta(days=lookback_days)).timestamp() * 1000)
 
+    gap_seconds = settings.downtime_gap_minutes * 60
     sources = plan(date, site, refresh)
+    # A device with a TB device of its own has telemetry to find gaps in. One without
+    # (RTD CH1/CH2, UFM) is only ever described by the trigger, so it keeps the flag
+    # walk — that is the one case events_from_points is still used for.
+    by_gap = [d for src in sources for d in src["devices"] if d["own_device_id"]]
+    by_flag = [{"tb_device_id": src["tb_device_id"],
+                "devices": [d for d in src["devices"] if not d["own_device_id"]]}
+               for src in sources]
+
     written = skipped = devices = 0
     preview: list[dict] = []
+    results: list[tuple[dict, list]] = []
 
-    for src in sources:
+    async def read_gaps(d: dict) -> tuple[dict, list]:
+        key = await heartbeat_key(d["device_id"], d["own_device_id"])
+        if not key:
+            return d, []
+        data = await _history(d["own_device_id"], [key], start_ms, end_ms)
+        points = data.get(key) or []
+        if not points:
+            return d, []
+        return d, gaps_from_points(points, day_start, day_end, now, gap_seconds)
+
+    # One history call per device now, not one per trigger — issued in chunks so a site
+    # of 33 sensors is a handful of round trips rather than 33.
+    for i in range(0, len(by_gap), _READ_CHUNK):
+        results += await asyncio.gather(*(read_gaps(d) for d in by_gap[i:i + _READ_CHUNK]))
+
+    for src in by_flag:
+        if not src["devices"]:
+            continue
         keys = sorted({d["status_key"] for d in src["devices"]})
         data = await _history(src["tb_device_id"], keys, start_ms, end_ms)
         for d in src["devices"]:
             points = sorted(data.get(d["status_key"]) or [], key=lambda p: p["ts"])
-            if not points:
-                # No history came back — keep whatever we already hold for this device.
-                skipped += 1
-                continue
-            events = events_from_points(points, day_start, day_end, now)
-            devices += 1
-            written += len(events)
-            preview += [{"device": d["device_name"], "status": st, "start": s, "end": e}
-                        for st, s, e in events]
-            if not dry_run:
-                _write_device(d["device_id"], date, events,
-                              "reconcile" if refresh else "backfill")
+            results.append((d, events_from_points(points, day_start, day_end, now)
+                            if points else []))
+
+    for d, events in results:
+        if not events:
+            # Nothing came back — keep whatever we already hold for this device rather
+            # than blanking out a day of downtime over a failed read.
+            skipped += 1
+            continue
+        devices += 1
+        written += len(events)
+        preview += [{"device": d["device_name"], "status": st, "start": s, "end": e}
+                    for st, s, e in events]
+        if not dry_run:
+            _write_device(d["device_id"], date, events,
+                          "reconcile" if refresh else "backfill")
 
     summary = {"date": date, "devices": devices, "events": written,
                "skipped": skipped, "refresh": refresh, "dry_run": dry_run}
@@ -204,4 +357,5 @@ async def reconcile_today(trigger: str = "scheduled") -> dict:
         raise
 
 
-__all__ = ["events_from_points", "plan", "reconcile_day", "reconcile_today"]
+__all__ = ["events_from_points", "gaps_from_points", "heartbeat_key", "plan",
+           "reconcile_day", "reconcile_today"]

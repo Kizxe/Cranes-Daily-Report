@@ -179,7 +179,9 @@ imported_pdfs    PDFs uploaded through the import page
 
 - `device_keys.role` — what a key *means*. Exactly one key per device is `status`.
   Current roles: `status`, `active_flag`, `active_ts`, `inactive_ts`, `total_use`,
-  `uptime_split`, `daily_issues`, `issue_count`, `severity`.
+  `uptime_split`, `daily_issues`, `issue_count`, `severity`, `heartbeat`.
+  `heartbeat` is the odd one out: it names a key the sensor writes **itself**
+  (`Seq #`, `Temp (C)`, ...), and gaps in it are the downtime events.
 - `device_keys.tb_source_device_id` — **which ThingsBoard device actually reports this
   key.** Set to the site's trigger for trigger-sourced keys; `NULL` means "the device's
   own `tb_device_id`". This one column is what lets a whole site collapse into a single
@@ -218,8 +220,11 @@ defaults remain only as a backstop for hand-written SQL.
        │    dated from activeTs_/InactiveTs_ rather than poll time
        │
        │  reconcile_service.reconcile_day(refresh=True)  hourly + before the report
-       │    replaces today's rows with every transition TB's history holds —
-       │    the poll samples, so it misses drops shorter than its interval
+       │    replaces today's rows with gaps in each sensor's OWN telemetry:
+       │    silence >= downtime_gap_minutes, last reading -> next reading.
+       │    This is what TB's widget shows and its fault counter counts; the
+       │    STATIC/STALLED flags describe the aftermath, not the outage.
+       │    Devices with no TB device of their own keep the flag walk.
        ▼
   status_events
        │
@@ -244,7 +249,7 @@ This is the table to keep open while working on the report.
 | **ISSUE OCC.** | `<sensor> 1D` | the trigger's daily fault count, resets at midnight. It will not tally with the DOWNTIME EVENTS rows below it, and should not: the rule chain raises STATIC after 15 min of no change and STALLED after 30, and those flags clear in about a minute, so a sensor can hold 33 windows on a day the trigger counts 2 faults. Counting windows ourselves was tried on 2026-09-01 and reverted. Falls back to our window count for a device with no 1D key. |
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
-| **DOWNTIME EVENTS** | `status_events` | built by the poll loop; capped per device/site so a flapping device can't flood the PDF |
+| **DOWNTIME EVENTS** | `status_events` | gaps in the sensor's own `heartbeat` key, found by the reconcile pass: a silence of `downtime_gap_minutes` (10) or more, from its last reading to its next. The same span TB's Downtime Events widget prints. Capped and ranked worst-first so a chatty sensor can't flood the PDF |
 | **DEVICE TYPE BREAKDOWN** chip | derived | a device counts as attention if its status is `bad` **or** it went down `report_attention_issue_count` times today (default 5) — a device that flapped 10 times isn't Healthy just because it's up when the report runs |
 | Site **HEALTHY / ATTENTION** | derived | a site escalates only on a `bad` status. `STATIC`/`STALLED` are warnings, not attention |
 

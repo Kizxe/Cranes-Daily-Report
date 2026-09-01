@@ -250,23 +250,36 @@ def _debounce(events: list[dict], min_seconds: int) -> list[dict]:
     """
     if min_seconds <= 0:
         return events
+    def absorb(prev: dict, e: dict) -> None:
+        prev["end"] = e["end"]
+        prev["seconds_in_day"] += e["seconds_in_day"]
+        prev["carried_out"] = e["carried_out"]
+        prev["ongoing"] = e["ongoing"]
+        prev["raw_end"] = e["raw_end"]
+
     out: list[dict] = []
+    folded = False           # the window just dropped left a hole to close
     for e in events:
         prev = out[-1] if out else None
         # Only a window that picks up exactly where the last one ended can be merged
         # into it. Two INACTIVE windows hours apart are two outages, not one.
         contiguous = bool(prev) and prev["end"] == e["start"]
-        if contiguous and (e["seconds_in_day"] < min_seconds
-                           or e["status"] == prev["status"]):
-            prev["end"] = e["end"]
-            prev["seconds_in_day"] += e["seconds_in_day"]
-            prev["carried_out"] = e["carried_out"]
-            prev["ongoing"] = e["ongoing"]
-            prev["raw_end"] = e["raw_end"]
+        if contiguous and e["seconds_in_day"] < min_seconds:
+            absorb(prev, e)          # the blip itself
+            folded = True
+            continue
+        if contiguous and folded and e["status"] == prev["status"]:
+            absorb(prev, e)          # the far half of the window it interrupted
+            folded = False
             continue
         if e["seconds_in_day"] < min_seconds and not e["ongoing"]:
-            continue          # too short to report, with no neighbour to fold it into
+            folded = True            # too short to report, nothing to fold it into
+            continue
+        # Same status, back to back, with nothing dropped between them: two separate
+        # events. Two silences either side of a single reading are two faults, which is
+        # how ThingsBoard counts them too.
         out.append(dict(e))
+        folded = False
     return out
 
 

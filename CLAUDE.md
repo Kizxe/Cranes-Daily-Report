@@ -101,6 +101,20 @@ reads it.
   EVENTS table all describe real outages and agree with each other — 107 occurrences that day
   against the triggers' 98. Two same-status windows that aren't contiguous are two outages and
   are never merged. Replaces the old `report_min_event_seconds` filter.
+- **A downtime event is the sensor going quiet** (2026-09-01, verified against the live
+  instance). Not the STATIC/STALLED flag: on `Numed RHT Bell's Court Level 1- B.1.30` the
+  TB widget's window `9:50:49 -> 10:02:48` is the silence, while the STALLED flag ran
+  `10:02:48 -> 10:09:06` — the flag *starts* where the outage ends, which is why the two
+  never tallied. `reconcile_service.gaps_from_points` walks the sensor's OWN telemetry
+  (`device_keys.role = 'heartbeat'`, e.g. `Seq #`, resolved once and stored) and calls a
+  silence of `downtime_gap_minutes` (**10**) a `NO DATA` window running from its last
+  reading to its next, with the ACTIVE stretches in between emitted too so the day stays
+  covered. Site total that day: **103 windows against the triggers' `1D` total of 102**,
+  where the old flag walk produced 116 that matched nothing. Sensors with no TB device of
+  their own (`RTD CH1`, `RTD CH2`, `UFM`) have no telemetry to find gaps in and keep the
+  flag walk (`events_from_points`). Two silences either side of a single reading are two
+  events — TB counts them that way, and `_debounce` only merges across a window it
+  actually dropped.
 - **Report timing**: generated right at 23:59 off that snapshot, no built-in wait for late remarks. A remark added after 23:59 gets in via manually regenerating that day's report (`POST /api/reports/{date}/generate`), not by delaying the scheduled run.
 - **ThingsBoard instance**: ThingsBoard PE, cloud-hosted — not on the same PC as this app. So no `host.docker.internal` / local Docker bridge needed, just outbound HTTPS. PE's REST API closely matches CE's but isn't guaranteed identical — confirm the exact base URL / login flow when writing `thingsboard_client.py`.
 - **Docker**: bind-mount (not named volumes) for `reports/`, `uploads/`, `backend/data/`, and `backend/config/` so they're real, editable files on the host, not sealed inside the container. Bind the app to `0.0.0.0` so it's reachable over the LAN. Set `TZ=Asia/Kuala_Lumpur` explicitly — containers default to UTC and the 23:59 job would silently fire at the wrong time otherwise. `restart: unless-stopped`.

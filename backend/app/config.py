@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     reconcile_minutes: int = 60
     # How far either side of the day to look for the transitions surrounding it.
     reconcile_lookback_days: int = 7
+    # A downtime event is the sensor going quiet for this long. This is what
+    # ThingsBoard's own Downtime Events widget shows and what its fault counter counts:
+    # the silence, not how long the STATIC/STALLED flag stayed up afterwards. Measured
+    # on NUMed 2026-09-01 — 10 min gives 99 events against the triggers' 1D total of
+    # 102, where counting flag windows gave 116 that matched nothing.
+    downtime_gap_minutes: int = 10
     # Retention: keep everything indefinitely (decided 2026-08-28). No prune job.
     retention_days: int = 0
 

@@ -52,7 +52,8 @@ import sys
 import yaml
 
 from backend.app.config import settings
-from backend.app.services.thingsboard_client import tb_client
+from backend.app.services import reconcile_service
+from backend.app.services.thingsboard_client import ThingsBoardError, tb_client
 
 # Per-sensor key families on the trigger device -> the role stored in device_keys.
 # `status` is resolved separately (deviceStatus_ when the sensor has one, else active_).
@@ -145,6 +146,18 @@ async def list_triggers() -> None:
         print(f"  {d.get('name'):34} type={d.get('type') or '—'}")
 
 
+async def _heartbeat_for(sensor_id: str) -> str | None:
+    """Pick the sensor's own heartbeat key, the same way reconcile_service would."""
+    try:
+        own_keys = await tb_client.timeseries_keys(sensor_id)
+    except ThingsBoardError:
+        return None
+    if not own_keys:
+        return None
+    return next((k for k in reconcile_service.HEARTBEAT_PREFERENCE if k in own_keys),
+                own_keys[0])
+
+
 async def build_site(trigger_name: str, site_name: str, exclude: set[str]) -> dict:
     devices = await _all_devices()
     trigger = next((d for d in devices if (d.get("name") or "") == trigger_name), None)
@@ -184,10 +197,19 @@ async def build_site(trigger_name: str, site_name: str, exclude: set[str]) -> di
                 k["role"] = "status"
                 break
 
+        # A key the sensor writes itself, on its own schedule: gaps in it are the
+        # downtime events (reconcile_service.gaps_from_points). Only sensors that exist
+        # as their own TB device have one — the rest are described by the trigger alone.
+        sensor_id = own_id.get(sensor)
+        if sensor_id:
+            beat = await _heartbeat_for(sensor_id)
+            if beat:
+                dev_keys.append({"key_name": beat, "role": "heartbeat"})
+
         entries.append({
             "name": sensor,
             "device_type": device_type(sensor),
-            "tb_device_id": own_id.get(sensor),   # usually None — sensor isn't its own device
+            "tb_device_id": sensor_id,            # usually None — sensor isn't its own device
             "keys": dev_keys,
         })
 
