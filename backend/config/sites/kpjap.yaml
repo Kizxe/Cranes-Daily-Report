@@ -30,544 +30,531 @@ trigger:
   device_name: KPJAPTriggers
   tb_device_id: cee87850-c900-11f0-8150-1ffa4442f0c7
 devices:
-- name: Chiller 1 DPM
-  device_type: DPM
-  tb_device_id: null
-  keys:
-  - key_name: active_DPM CH1
-    role: status
-    source: trigger
-  - key_name: activeTs_DPM CH1
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_DPM CH1
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_DPM CH1
-    role: inactive_ts
-    source: trigger
-- name: Chiller 2 DPM
-  device_type: DPM
-  tb_device_id: null
-  keys:
-  - key_name: active_DPM CH2
-    role: status
-    source: trigger
-  - key_name: activeTs_DPM CH2
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_DPM CH2
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_DPM CH2
-    role: inactive_ts
-    source: trigger
-- name: Engineering Office
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Engineering Office
-    role: status
-    source: trigger
-  - key_name: activeTs_Engineering Office
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Engineering Office
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Engineering Office
-    role: inactive_ts
-    source: trigger
-- name: Old CT SCAN
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Old CT SCAN
-    role: status
-    source: trigger
-  - key_name: activeTs_Old CT SCAN
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Old CT SCAN
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Old CT SCAN
-    role: inactive_ts
-    source: trigger
-- name: Old EGL GF
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Old EGL GF
-    role: status
-    source: trigger
-  - key_name: activeTs_Old EGL GF
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Old EGL GF
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Old EGL GF
-    role: inactive_ts
-    source: trigger
-- name: Old EGL 1F
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Old EGL 1F
-    role: active_flag
-    source: trigger
-  - key_name: activeTs_Old EGL 1F
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Old EGL 1F
-    role: total_use
-    source: trigger
-- name: Cafeteria
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Cafeteria
-    role: status
-    source: trigger
-  - key_name: activeTs_Cafeteria
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Cafeteria
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Cafeteria
-    role: inactive_ts
-    source: trigger
-- name: Admission
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Admission
-    role: status
-    source: trigger
-  - key_name: activeTs_Admission
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Admission
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Admission
-    role: inactive_ts
-    source: trigger
-- name: Pharmacy Outpatient
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Pharmacy Outpatient
-    role: status
-    source: trigger
-  - key_name: activeTs_Pharmacy Outpatient
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Pharmacy Outpatient
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Pharmacy Outpatient
-    role: inactive_ts
-    source: trigger
-- name: Pharmacy Inpatient
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Pharmacy Inpatient
-    role: status
-    source: trigger
-  - key_name: activeTs_Pharmacy Inpatient
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Pharmacy Inpatient
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Pharmacy Inpatient
-    role: inactive_ts
-    source: trigger
-- name: Health Screening Unit
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Health Screening Unit
-    role: status
-    source: trigger
-  - key_name: activeTs_Health Screening Unit
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Health Screening Unit
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Health Screening Unit
-    role: inactive_ts
-    source: trigger
-- name: Conference Hall
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Conference Hall
-    role: status
-    source: trigger
-  - key_name: activeTs_Conference Hall
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Conference Hall
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Conference Hall
-    role: inactive_ts
-    source: trigger
-- name: Physio Electro
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Physio Electro
-    role: status
-    source: trigger
-  - key_name: activeTs_Physio Electro
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Physio Electro
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Physio Electro
-    role: inactive_ts
-    source: trigger
-- name: Haemodialysis
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Haemodialysis
-    role: status
-    source: trigger
-  - key_name: activeTs_Haemodialysis
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Haemodialysis
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Haemodialysis
-    role: inactive_ts
-    source: trigger
-- name: ICU Waiting Area
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_ICU Waiting Area
-    role: status
-    source: trigger
-  - key_name: activeTs_ICU Waiting Area
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_ICU Waiting Area
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_ICU Waiting Area
-    role: inactive_ts
-    source: trigger
-- name: CSSD Packing Area
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_CSSD Packing Area
-    role: status
-    source: trigger
-  - key_name: activeTs_CSSD Packing Area
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_CSSD Packing Area
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_CSSD Packing Area
-    role: inactive_ts
-    source: trigger
-- name: Daycare
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Daycare
-    role: status
-    source: trigger
-  - key_name: activeTs_Daycare
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Daycare
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Daycare
-    role: inactive_ts
-    source: trigger
-- name: Recovery SPD
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Recovery SPD
-    role: status
-    source: trigger
-  - key_name: activeTs_Recovery SPD
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Recovery SPD
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Recovery SPD
-    role: inactive_ts
-    source: trigger
-- name: Maternity Nurse Station
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Maternity Nurse Station
-    role: status
-    source: trigger
-  - key_name: activeTs_Maternity Nurse Station
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Maternity Nurse Station
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Maternity Nurse Station
-    role: inactive_ts
-    source: trigger
-- name: Nursery Procedure Room
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Nursery Procedure Room
-    role: status
-    source: trigger
-  - key_name: activeTs_Nursery Procedure Room
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Nursery Procedure Room
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Nursery Procedure Room
-    role: inactive_ts
-    source: trigger
-- name: Maternity Visitor
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Maternity Visitor
-    role: status
-    source: trigger
-  - key_name: activeTs_Maternity Visitor
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Maternity Visitor
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Maternity Visitor
-    role: inactive_ts
-    source: trigger
-- name: Education Service
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Education Service
-    role: status
-    source: trigger
-  - key_name: activeTs_Education Service
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Education Service
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Education Service
-    role: inactive_ts
-    source: trigger
-- name: Medical Nurse Station
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Medical Nurse Station
-    role: status
-    source: trigger
-  - key_name: activeTs_Medical Nurse Station
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Medical Nurse Station
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Medical Nurse Station
-    role: inactive_ts
-    source: trigger
-- name: Premier Ward Nurse Station
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Premier Ward Nurse Station
-    role: status
-    source: trigger
-  - key_name: activeTs_Premier Ward Nurse Station
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Premier Ward Nurse Station
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Premier Ward Nurse Station
-    role: inactive_ts
-    source: trigger
-- name: Surgical A Nurse Station
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Surgical A Nurse Station
-    role: status
-    source: trigger
-  - key_name: activeTs_Surgical A Nurse Station
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Surgical A Nurse Station
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Surgical A Nurse Station
-    role: inactive_ts
-    source: trigger
-- name: Surgical B Nurse Station
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Surgical B Nurse Station
-    role: status
-    source: trigger
-  - key_name: activeTs_Surgical B Nurse Station
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Surgical B Nurse Station
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Surgical B Nurse Station
-    role: inactive_ts
-    source: trigger
-- name: Paediatric Ward Play Area
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Paediatric Ward Play Area
-    role: status
-    source: trigger
-  - key_name: activeTs_Paediatric Ward Play Area
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Paediatric Ward Play Area
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Paediatric Ward Play Area
-    role: inactive_ts
-    source: trigger
-- name: Paediatric Ward Physio
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Paediatric Ward Physio
-    role: status
-    source: trigger
-  - key_name: activeTs_Paediatric Ward Physio
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Paediatric Ward Physio
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Paediatric Ward Physio
-    role: inactive_ts
-    source: trigger
-- name: Consultant Block Centre
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Consultant Block Centre
-    role: status
-    source: trigger
-  - key_name: activeTs_Consultant Block Centre
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Consultant Block Centre
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Consultant Block Centre
-    role: inactive_ts
-    source: trigger
-- name: Consultant Block Right
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Consultant Block Right
-    role: status
-    source: trigger
-  - key_name: activeTs_Consultant Block Right
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Consultant Block Right
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Consultant Block Right
-    role: inactive_ts
-    source: trigger
-- name: Consultant Block Left
-  device_type: RHT
-  tb_device_id: null
-  keys:
-  - key_name: active_Consultant Block Left
-    role: status
-    source: trigger
-  - key_name: activeTs_Consultant Block Left
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_Consultant Block Left
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_Consultant Block Left
-    role: inactive_ts
-    source: trigger
-- name: RTD CH1
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH1
-    role: status
-    source: trigger
-  - key_name: activeTs_RTD CH1
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_RTD CH1
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_RTD CH1
-    role: inactive_ts
-    source: trigger
-- name: RTD CH2
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH2
-    role: status
-    source: trigger
-  - key_name: activeTs_RTD CH2
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_RTD CH2
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_RTD CH2
-    role: inactive_ts
-    source: trigger
-- name: UFM
-  device_type: UFM
-  tb_device_id: null
-  keys:
-  - key_name: active_UFM
-    role: status
-    source: trigger
-  - key_name: activeTs_UFM
-    role: active_ts
-    source: trigger
-  - key_name: forTotalUse_UFM
-    role: total_use
-    source: trigger
-  - key_name: InactiveTs_UFM
-    role: inactive_ts
-    source: trigger
+  - name: Chiller 1 DPM
+    device_type: DPM
+    tb_device_id: null
+    keys:
+      - key_name: active_DPM CH1
+        role: status
+        source: trigger
+      - key_name: activeTs_DPM CH1
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_DPM CH1
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_DPM CH1
+        role: inactive_ts
+        source: trigger
+  - name: Chiller 2 DPM
+    device_type: DPM
+    tb_device_id: null
+    keys:
+      - key_name: active_DPM CH2
+        role: status
+        source: trigger
+      - key_name: activeTs_DPM CH2
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_DPM CH2
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_DPM CH2
+        role: inactive_ts
+        source: trigger
+  - name: Engineering Office
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Engineering Office
+        role: status
+        source: trigger
+      - key_name: activeTs_Engineering Office
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Engineering Office
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Engineering Office
+        role: inactive_ts
+        source: trigger
+  - name: Old CT SCAN
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Old CT SCAN
+        role: status
+        source: trigger
+      - key_name: activeTs_Old CT SCAN
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Old CT SCAN
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Old CT SCAN
+        role: inactive_ts
+        source: trigger
+  - name: Old EGL GF
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Old EGL GF
+        role: status
+        source: trigger
+      - key_name: activeTs_Old EGL GF
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Old EGL GF
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Old EGL GF
+        role: inactive_ts
+        source: trigger
+  - name: Cafeteria
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Cafeteria
+        role: status
+        source: trigger
+      - key_name: activeTs_Cafeteria
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Cafeteria
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Cafeteria
+        role: inactive_ts
+        source: trigger
+  - name: Admission
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Admission
+        role: status
+        source: trigger
+      - key_name: activeTs_Admission
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Admission
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Admission
+        role: inactive_ts
+        source: trigger
+  - name: Pharmacy Outpatient
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Pharmacy Outpatient
+        role: status
+        source: trigger
+      - key_name: activeTs_Pharmacy Outpatient
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Pharmacy Outpatient
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Pharmacy Outpatient
+        role: inactive_ts
+        source: trigger
+  - name: Pharmacy Inpatient
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Pharmacy Inpatient
+        role: status
+        source: trigger
+      - key_name: activeTs_Pharmacy Inpatient
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Pharmacy Inpatient
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Pharmacy Inpatient
+        role: inactive_ts
+        source: trigger
+  - name: Health Screening Unit
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Health Screening Unit
+        role: status
+        source: trigger
+      - key_name: activeTs_Health Screening Unit
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Health Screening Unit
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Health Screening Unit
+        role: inactive_ts
+        source: trigger
+  - name: Conference Hall
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Conference Hall
+        role: status
+        source: trigger
+      - key_name: activeTs_Conference Hall
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Conference Hall
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Conference Hall
+        role: inactive_ts
+        source: trigger
+  - name: Physio Electro
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Physio Electro
+        role: status
+        source: trigger
+      - key_name: activeTs_Physio Electro
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Physio Electro
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Physio Electro
+        role: inactive_ts
+        source: trigger
+  - name: Haemodialysis
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Haemodialysis
+        role: status
+        source: trigger
+      - key_name: activeTs_Haemodialysis
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Haemodialysis
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Haemodialysis
+        role: inactive_ts
+        source: trigger
+  - name: ICU Waiting Area
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_ICU Waiting Area
+        role: status
+        source: trigger
+      - key_name: activeTs_ICU Waiting Area
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_ICU Waiting Area
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_ICU Waiting Area
+        role: inactive_ts
+        source: trigger
+  - name: CSSD Packing Area
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_CSSD Packing Area
+        role: status
+        source: trigger
+      - key_name: activeTs_CSSD Packing Area
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_CSSD Packing Area
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_CSSD Packing Area
+        role: inactive_ts
+        source: trigger
+  - name: Daycare
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Daycare
+        role: status
+        source: trigger
+      - key_name: activeTs_Daycare
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Daycare
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Daycare
+        role: inactive_ts
+        source: trigger
+  - name: Recovery SPD
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Recovery SPD
+        role: status
+        source: trigger
+      - key_name: activeTs_Recovery SPD
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Recovery SPD
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Recovery SPD
+        role: inactive_ts
+        source: trigger
+  - name: Maternity Nurse Station
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Maternity Nurse Station
+        role: status
+        source: trigger
+      - key_name: activeTs_Maternity Nurse Station
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Maternity Nurse Station
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Maternity Nurse Station
+        role: inactive_ts
+        source: trigger
+  - name: Nursery Procedure Room
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Nursery Procedure Room
+        role: status
+        source: trigger
+      - key_name: activeTs_Nursery Procedure Room
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Nursery Procedure Room
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Nursery Procedure Room
+        role: inactive_ts
+        source: trigger
+  - name: Maternity Visitor
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Maternity Visitor
+        role: status
+        source: trigger
+      - key_name: activeTs_Maternity Visitor
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Maternity Visitor
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Maternity Visitor
+        role: inactive_ts
+        source: trigger
+  - name: Education Service
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Education Service
+        role: status
+        source: trigger
+      - key_name: activeTs_Education Service
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Education Service
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Education Service
+        role: inactive_ts
+        source: trigger
+  - name: Medical Nurse Station
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Medical Nurse Station
+        role: status
+        source: trigger
+      - key_name: activeTs_Medical Nurse Station
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Medical Nurse Station
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Medical Nurse Station
+        role: inactive_ts
+        source: trigger
+  - name: Premier Ward Nurse Station
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Premier Ward Nurse Station
+        role: status
+        source: trigger
+      - key_name: activeTs_Premier Ward Nurse Station
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Premier Ward Nurse Station
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Premier Ward Nurse Station
+        role: inactive_ts
+        source: trigger
+  - name: Surgical A Nurse Station
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Surgical A Nurse Station
+        role: status
+        source: trigger
+      - key_name: activeTs_Surgical A Nurse Station
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Surgical A Nurse Station
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Surgical A Nurse Station
+        role: inactive_ts
+        source: trigger
+  - name: Surgical B Nurse Station
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Surgical B Nurse Station
+        role: status
+        source: trigger
+      - key_name: activeTs_Surgical B Nurse Station
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Surgical B Nurse Station
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Surgical B Nurse Station
+        role: inactive_ts
+        source: trigger
+  - name: Paediatric Ward Play Area
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Paediatric Ward Play Area
+        role: status
+        source: trigger
+      - key_name: activeTs_Paediatric Ward Play Area
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Paediatric Ward Play Area
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Paediatric Ward Play Area
+        role: inactive_ts
+        source: trigger
+  - name: Paediatric Ward Physio
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Paediatric Ward Physio
+        role: status
+        source: trigger
+      - key_name: activeTs_Paediatric Ward Physio
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Paediatric Ward Physio
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Paediatric Ward Physio
+        role: inactive_ts
+        source: trigger
+  - name: Consultant Block Centre
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Consultant Block Centre
+        role: status
+        source: trigger
+      - key_name: activeTs_Consultant Block Centre
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Consultant Block Centre
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Consultant Block Centre
+        role: inactive_ts
+        source: trigger
+  - name: Consultant Block Right
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Consultant Block Right
+        role: status
+        source: trigger
+      - key_name: activeTs_Consultant Block Right
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Consultant Block Right
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Consultant Block Right
+        role: inactive_ts
+        source: trigger
+  - name: Consultant Block Left
+    device_type: RHT
+    tb_device_id: null
+    keys:
+      - key_name: active_Consultant Block Left
+        role: status
+        source: trigger
+      - key_name: activeTs_Consultant Block Left
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_Consultant Block Left
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_Consultant Block Left
+        role: inactive_ts
+        source: trigger
+  - name: RTD CH1
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH1
+        role: status
+        source: trigger
+      - key_name: activeTs_RTD CH1
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_RTD CH1
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_RTD CH1
+        role: inactive_ts
+        source: trigger
+  - name: RTD CH2
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH2
+        role: status
+        source: trigger
+      - key_name: activeTs_RTD CH2
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_RTD CH2
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_RTD CH2
+        role: inactive_ts
+        source: trigger
+  - name: UFM
+    device_type: UFM
+    tb_device_id: null
+    keys:
+      - key_name: active_UFM
+        role: status
+        source: trigger
+      - key_name: activeTs_UFM
+        role: active_ts
+        source: trigger
+      - key_name: forTotalUse_UFM
+        role: total_use
+        source: trigger
+      - key_name: InactiveTs_UFM
+        role: inactive_ts
+        source: trigger
