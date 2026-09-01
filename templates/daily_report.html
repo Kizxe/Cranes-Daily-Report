@@ -66,6 +66,10 @@
     display:flex; align-items:center; justify-content:center;
     font:700 13.3px/1 var(--mono); letter-spacing:.04em;
   }
+  /* The real mark, once templates/assets/logo-mark.png exists — no border/radius of
+     its own, the icon is already a closed square. object-fit keeps its own aspect
+     (154x152, not quite 1:1) instead of being squashed into an exact box. */
+  .mark-icon { width:39px; height:39px; object-fit:contain; display:block; }
   .wordmark { font:700 17.3px/1 var(--mono); letter-spacing:.23em; }
   .docno { font:400 13.3px/1 var(--mono); letter-spacing:.10em; color:var(--muted-2); }
   .foot {
@@ -191,7 +195,11 @@
 
 {%- macro chrome(number) -%}
   <div class="head">
-    <div class="mark"><span class="sc">SC</span><span class="wordmark">SQUARECLOUD MALAYSIA</span></div>
+    <div class="mark">
+      {% if logo_uri() %}<img class="mark-icon" src="{{ logo_uri() }}" alt="Squarecloud">
+      {% else %}<span class="sc">SC</span>{% endif %}
+      <span class="wordmark">SQUARECLOUD MALAYSIA</span>
+    </div>
     <div class="docno">{{ doc_number }}</div>
   </div>
   <div class="foot">

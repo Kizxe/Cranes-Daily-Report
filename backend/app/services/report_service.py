@@ -37,6 +37,27 @@ _env = Environment(
 _env.filters["hrs"] = lambda v: f"{float(v):.1f}"
 
 
+_LOGO_PATH = settings.template_dir / "assets" / "logo-mark.png"
+
+
+@lru_cache(maxsize=1)
+def _logo_uri() -> str | None:
+    """The Squarecloud mark as a data: URI, or None if the asset is missing.
+
+    Same reasoning as _font_css(): an about:blank page (Playwright's set_content) can't
+    load file:// images, so it has to be inlined for the PDF, the HTTP preview and an
+    offline container alike. None makes the template fall back to the plain "SC"
+    monogram it always drew, so a missing asset degrades instead of breaking the render.
+    """
+    if not _LOGO_PATH.exists():
+        return None
+    b64 = base64.b64encode(_LOGO_PATH.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{b64}"
+
+
+_env.globals["logo_uri"] = _logo_uri
+
+
 # Variable fonts: one file per family+style, the weight axis lives inside it.
 _FONT_FACES = [
     ("JetBrains Mono", "JetBrainsMono-Variable.woff2", "normal", "100 800"),
