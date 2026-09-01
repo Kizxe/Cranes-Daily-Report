@@ -225,8 +225,8 @@ def test_day_hours_come_from_the_trigger_counters(site):
     _capture(did, "2026-08-31", "Numed RHT Wet Lab 1D", "7.0")
 
     # Two downtime windows on the day, while the trigger's own 1D key claims 7 faults.
-    # The trigger wins: it flags STATIC after 15 min of no change and STALLED after 30,
-    # so the windows we hold and the faults it counted are not the same thing.
+    # The windows win: they are what the drill-down and the report print, and the 1D
+    # snapshot only updates at capture time — the number must match the list under it.
     for start, end in (("2026-08-31T02:00:00+08:00", "2026-08-31T03:00:00+08:00"),
                        ("2026-08-31T20:00:00+08:00", "2026-08-31T21:00:00+08:00")):
         with get_conn() as conn:
@@ -238,7 +238,7 @@ def test_day_hours_come_from_the_trigger_counters(site):
     assert s["source"] == "counter"
     assert s["active_hours"] == 22.0, "active hours must be the day's slice, not the total"
     assert s["affected_hours"] == 2.0
-    assert s["issue_occurrences"] == 7, "ISSUE OCC. must be the trigger's own 1D count"
+    assert s["issue_occurrences"] == 2, "ISSUE OCC. counts the windows on screen, not 1D"
 
 
 def test_day_hours_fall_back_when_there_is_no_previous_day(site):

@@ -112,6 +112,29 @@ def test_two_outages_hours_apart_stay_two_events():
     assert downtime_service.day_summary(did, day)["issue_occurrences"] == 2
 
 
+def test_issue_occ_counts_every_non_active_window_on_screen():
+    """Anatomy Room, 2026-09-01: three NO DATA gaps plus a STATIC flag window. The
+    drill-down showed 4 while ISSUE OCC. said 2 (a stale trigger 1D snapshot) — the
+    number must be the count of the windows listed under it."""
+    did = _make_device()
+    day = "2026-08-16"
+    windows = [("NO DATA", "04:27:32", "04:41:34"), ("NO DATA", "07:27:44", "07:38:36"),
+               ("NO DATA", "10:23:48", "11:04:04"), ("STATIC", "14:08:01", "14:12:07")]
+    with get_conn() as conn:
+        # A stale 1D key claiming fewer faults must not override what is on screen.
+        conn.execute("INSERT INTO device_keys (device_id, key_name, role)"
+                     " VALUES (?, 'D 1D', 'daily_issues')", (did,))
+        conn.execute("INSERT INTO snapshots (capture_ts, capture_date, trigger,"
+                     " device_id, key_name, value) VALUES (?, ?, 'manual', ?, 'D 1D', '2')",
+                     (f"{day}T11:29:00+08:00", day, did))
+        for status, start, end in windows:
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+    assert downtime_service.day_summary(did, day)["issue_occurrences"] == 4
+
+
 def test_a_backdated_transition_never_overlaps_the_open_event():
     """activeTs_/InactiveTs_ can point before the open window began — right after a
     reconcile rewrote the day, it usually does. Taken verbatim it wrote an event that

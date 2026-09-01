@@ -429,20 +429,14 @@ def day_summary(device_id: int, date: str) -> dict:
     if from_counter:
         hours = from_counter
 
-    # ISSUE OCC. is the trigger's own daily fault count, "<sensor> 1D" — the same number
-    # the Fault Counter device breaks down per device, and the one the site has always
-    # been read against (restored 2026-09-01, after a day counting windows ourselves).
-    # Counting windows instead looked reasonable but does not survive contact with the
-    # data: the rule chain flags STATIC after 15 min of no change and STALLED after 30,
-    # and those flags clear in a minute or less, so one sensor produces dozens of
-    # windows a day where the trigger counts 2 faults. Our own count of the day's
-    # downtime windows is the fallback when a device has no 1D key.
-    with read_conn() as conn:
-        daily = _role_value(conn, device_id, "daily_issues", date)
-    try:
-        occurrences = int(float(daily)) if daily is not None else occurrences
-    except (TypeError, ValueError):
-        pass
+    # ISSUE OCC. counts the day's downtime windows — STATIC, STALLED, NO DATA and
+    # INACTIVE alike — exactly the non-active rows the drill-down and the report's
+    # summary show, so the number always equals the list under it. This is safe to do
+    # now that events are telemetry gaps: back when they were flag transitions, one
+    # sensor held 33 windows on a day the trigger counted 2 faults, and the column
+    # briefly fell back to the trigger's "<sensor> 1D" key. That key counts by the rule
+    # chain's own definition and only updates at capture time, so it sat at 2 while the
+    # drill-down plainly showed 4 windows — the number on screen must match the list.
 
     # Percentage of the DAY, not of the covered window. Dividing by `covered` would
     # let a device with only 4h of events read 100% active.

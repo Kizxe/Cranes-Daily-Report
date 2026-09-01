@@ -69,12 +69,13 @@ reads it.
   differences it against the previous day's capture — TB's own accounting, scoped to the day.
   `status_events` is the fallback only when there is no baseline to difference.
   `scripts/backfill_counters.py --date <yesterday>` recovers a missing baseline from TB history.
-  **ISSUE OCC. is counted from `status_events`** (revised 2026-09-01): the number of debounced
-  downtime windows overlapping the day — exactly the rows the site-detail drill-down and the report's
-  DOWNTIME EVENTS table list, so the number can be checked against the list under it.
-  `<sensor> 1D` (the trigger's own daily fault count) is still captured but no longer feeds
-  the column; it counts faults by its own rule-chain definition and disagreed with the
-  events on screen.
+  **ISSUE OCC. counts the day's downtime windows** (settled 2026-09-01 after going back and
+  forth): STATIC, STALLED, NO DATA and INACTIVE alike — exactly the rows the drill-down and
+  the report list, so the number always equals the list under it. Counting windows only
+  became safe once events were telemetry gaps; the trigger's `<sensor> 1D` key was tried in
+  between, but it counts by the rule chain's own definition and only refreshes at capture
+  time, so it printed 2 while the drill-down plainly showed 4. `1D` is still captured for
+  reference; expect it to differ (CPD logs 1D faults with no telemetry gaps at all).
 - **The Fault Counter device** `71af5410-df0d-11f0-a0b2-1366f3bd8252` holds per-site daily fault
   totals (`Numed_fault_counter_all/dpm/rht/rtd/ufm`, `Numed_top_fault_device`, `_category`,
   `Numed_device_fault_data`). No timestamps, so it CANNOT fill the DOWNTIME EVENTS table —

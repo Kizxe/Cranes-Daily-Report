@@ -137,7 +137,7 @@ site* and writes it back onto the trigger, as one key per sensor per family:
 | `forTotalUse_<sensor>` | `[51704534, 133102008]` | **`[inactive_ms, active_ms]`**, cumulative |
 | `ActiveInActive_<sensor>` | `["A_1788…","N_14:21:44",51704534,133102008]` | current state + the same pair |
 | `IssueOcc_<sensor>` | `419` | issue occurrences to date |
-| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight — this is ISSUE OCC. |
+| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight — captured for reference, not what ISSUE OCC. prints |
 
 `NumedTrigger` alone carries **566 keys**. Comma-joining them all into one REST call
 overflows the request line and ThingsBoard answers `400` with an HTML error page — the
@@ -230,7 +230,7 @@ defaults remain only as a backstop for hand-written SQL.
        │
        │  downtime_service.day_summary()
        │    active/affected hours ← forTotalUse_ differenced day over day
-       │    issue occurrences     ← "<sensor> 1D" (windows are the fallback)
+       │    issue occurrences     ← count of the day's downtime windows
        │    events list           ← status_events, clipped to the day and
        │                              debounced by min_event_seconds (120s)
        ▼
@@ -246,7 +246,7 @@ This is the table to keep open while working on the report.
 | **STATUS** pill | `deviceStatus_<sensor>`, else `active_<sensor>` | latest snapshot value for `role='status'`; `true`/`false` normalise to `ACTIVE`/`INACTIVE` |
 | **ACTIVE HRS** | `forTotalUse_[1]` | today's capture minus yesterday's — the counter is cumulative |
 | **AFFECTED HRS** | `forTotalUse_[0]` | same difference |
-| **ISSUE OCC.** | `<sensor> 1D` | the trigger's daily fault count, resets at midnight. It will not tally with the DOWNTIME EVENTS rows below it, and should not: the rule chain raises STATIC after 15 min of no change and STALLED after 30, and those flags clear in about a minute, so a sensor can hold 33 windows on a day the trigger counts 2 faults. Counting windows ourselves was tried on 2026-09-01 and reverted. Falls back to our window count for a device with no 1D key. |
+| **ISSUE OCC.** | `status_events` | how many downtime windows the day holds — the same rows the DOWNTIME SUMMARY counts and the drill-down lists, so the number always matches what is on screen. (`<sensor> 1D` is still captured but no longer read: it counts by the rule chain's own definition and only refreshes at capture time, so it sat at 2 while the page showed 4 windows.) |
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
 | **DOWNTIME SUMMARY** | `status_events` | one row per device that dropped: how many windows, total hours down, its longest. Complete — every window is counted here even when it is not listed below |
