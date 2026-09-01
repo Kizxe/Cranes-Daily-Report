@@ -20,7 +20,10 @@ function toast(msg) {
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  // Local date. toISOString() is UTC — in MYT (+08:00) it answered with yesterday's
+  // date every morning until 8 AM, so the pickers opened on the wrong day.
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function qs(name) {

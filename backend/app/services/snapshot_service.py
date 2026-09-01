@@ -39,6 +39,10 @@ def _fetch_plan() -> tuple[list[dict], int]:
             JOIN device_keys k ON k.device_id = d.id
             JOIN device_groups g ON g.id = d.group_id
             WHERE COALESCE(k.tb_source_device_id, d.tb_device_id) IS NOT NULL
+              -- heartbeat keys exist for the gap reconcile, which reads their history
+              -- itself. Snapshotting them adds one TB call per sensor per capture for
+              -- a value ("Seq #") no report number reads.
+              AND k.role != 'heartbeat'
             ORDER BY g.sort_order, d.sort_order, k.key_name
             """
         ).fetchall()

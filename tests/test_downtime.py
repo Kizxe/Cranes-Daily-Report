@@ -112,6 +112,37 @@ def test_two_outages_hours_apart_stay_two_events():
     assert downtime_service.day_summary(did, day)["issue_occurrences"] == 2
 
 
+def test_a_backdated_transition_never_overlaps_the_open_event():
+    """activeTs_/InactiveTs_ can point before the open window began — right after a
+    reconcile rewrote the day, it usually does. Taken verbatim it wrote an event that
+    overlapped the previous row and double-counted those seconds."""
+    did = _make_device()
+    downtime_service.record_status(did, "ACTIVE", source="test",
+                                   ts="2026-08-16T10:00:00+08:00")
+    downtime_service.record_status(did, "STATIC", source="test",
+                                   ts="2026-08-16T09:00:00+08:00")   # earlier than open
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT status, start_ts, end_ts FROM status_events WHERE device_id = ?"
+            " ORDER BY id", (did,)).fetchall()
+    assert rows[0]["end_ts"] == rows[1]["start_ts"], "windows must stay contiguous"
+    assert rows[1]["start_ts"] >= rows[0]["start_ts"], "no event may predate the one it closes"
+
+
+def test_snapshot_plan_leaves_heartbeat_keys_alone():
+    """Heartbeat keys are for the gap reconcile; snapshotting them costs one extra TB
+    call per sensor per capture for a value no report number reads."""
+    from backend.app.services import snapshot_service as snap
+    did = _make_device()
+    with get_conn() as conn:
+        conn.execute("UPDATE devices SET tb_device_id = 'sensor-1' WHERE id = ?", (did,))
+        conn.execute("INSERT INTO device_keys (device_id, key_name, role)"
+                     " VALUES (?, 'Seq #', 'heartbeat')", (did,))
+    sources, _ = snap._fetch_plan()
+    keys = [k for src in sources for _, k in src["keys"]]
+    assert "Seq #" not in keys
+
+
 def test_config_sync_noop_on_empty_yaml():
     counts = config_sync.sync_from_yaml()
     assert counts == {"groups": 0, "devices": 0, "keys": 0}

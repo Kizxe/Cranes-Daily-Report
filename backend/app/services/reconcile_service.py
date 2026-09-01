@@ -150,9 +150,15 @@ async def heartbeat_key(device_id: int, tb_device_id: str) -> str | None:
 
     pick = next((k for k in HEARTBEAT_PREFERENCE if k in keys), keys[0])
     with get_conn() as conn:
+        # The key may already be configured on the device under another role (a site
+        # YAML that lists the sensor's own metrics). Claim it for heartbeat unless the
+        # role is one something else resolves by — otherwise the pick is never stored
+        # and every pass pays a timeseries_keys call for this device again.
         conn.execute(
-            "INSERT OR IGNORE INTO device_keys (device_id, key_name, role) "
-            "VALUES (?, ?, 'heartbeat')",
+            "INSERT INTO device_keys (device_id, key_name, role) VALUES (?, ?, 'heartbeat') "
+            "ON CONFLICT(device_id, key_name) DO UPDATE SET role = 'heartbeat' "
+            "WHERE device_keys.role NOT IN "
+            "('status', 'active_ts', 'inactive_ts', 'total_use', 'daily_issues')",
             (device_id, pick),
         )
     return pick
@@ -180,6 +186,12 @@ def gaps_from_points(points: list[dict], day_start: datetime, day_end: datetime,
     inside = [t for t in stamps if day_start <= t <= cap]
     # The last reading before midnight is what makes a gap straddling 00:00 visible.
     seq = ([before[-1]] if before else []) + inside
+    if not seq:
+        # Every reading is AFTER this day (the lookahead fetches past day_end): the
+        # device had not started reporting yet. Skip it — inventing a 24h outage for a
+        # pre-deployment day would be a lie, and the IndexError this used to raise took
+        # the whole reconcile pass down with it.
+        return []
 
     segments: list[tuple[str, datetime, datetime | None]] = []
 
@@ -266,7 +278,9 @@ def _write_device(device_id: int, date: str, events: list[tuple[str, str, str | 
             "WHERE device_id = ? AND substr(start_ts, 1, 10) < ? ORDER BY start_ts DESC LIMIT 1",
             (device_id, date),
         ).fetchone()
-        if prev and (prev["end_ts"] is None or prev["end_ts"] > first_start):
+        if prev and (prev["end_ts"] is None
+                     or datetime.fromisoformat(prev["end_ts"])
+                     > datetime.fromisoformat(first_start)):
             conn.execute(
                 "UPDATE status_events SET end_ts = ?, duration_seconds = ? WHERE id = ?",
                 (first_start, _duration(prev["start_ts"], first_start), prev["id"]),

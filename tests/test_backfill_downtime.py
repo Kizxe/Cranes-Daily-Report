@@ -294,6 +294,17 @@ def test_a_reporting_sensor_on_a_live_day_has_no_open_downtime():
     ]
 
 
+def test_readings_only_after_the_day_mean_the_device_did_not_exist_yet():
+    """Backfilling a day before the sensor was deployed: skip it, don't crash.
+
+    The lookahead fetches history past day_end, so this shape reaches the walk — and
+    it used to raise IndexError, which took the whole reconcile pass down through
+    asyncio.gather.
+    """
+    later = [_beat(datetime.fromisoformat("2026-08-31T09:00:00+08:00"))]
+    assert rec.gaps_from_points(later, DAY_START, DAY_END, PAST_NOW, GAP) == []
+
+
 def test_no_readings_at_all_yields_nothing_rather_than_inventing_downtime():
     assert rec.gaps_from_points([], DAY_START, DAY_END, PAST_NOW, GAP) == []
 

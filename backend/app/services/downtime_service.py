@@ -179,6 +179,13 @@ def record_status(device_id: int, status: str, source: str = "poll", ts: str | N
             return False
         if current:
             start = datetime.fromisoformat(current["start_ts"])
+            # The trigger's activeTs_/InactiveTs_ can point at a moment BEFORE the open
+            # event began — routinely so right after a reconcile rewrote the day. Taking
+            # it verbatim would write an event that overlaps the previous row and
+            # double-counts those seconds; the change is dated no earlier than the
+            # window it is closing.
+            if datetime.fromisoformat(now) < start:
+                now = current["start_ts"]
             dur = int((datetime.fromisoformat(now) - start).total_seconds())
             conn.execute(
                 "UPDATE status_events SET end_ts = ?, duration_seconds = ? WHERE id = ?",
