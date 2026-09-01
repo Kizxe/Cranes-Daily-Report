@@ -143,7 +143,21 @@ reads it.
    never deletes, so the YAML edit alone leaves the rows behind). **`RTD CH1`, `RTD CH2`
    and `UFM` stay** — they are real channels whose counters are frozen at [0,0] by the
    rule chain, which is a ThingsBoard-side problem the report should keep showing.
-   21 sites to go.
+   **KPJAP done 2026-09-01** — 34 devices, hand-authored (not via the discover script)
+   and fixed against the live instance rather than trusted as typed: a `- name:`
+   indentation slip broke the YAML parse; every device used `role: active_flag` for its
+   status key instead of `role: status`, which would have left every device on the site
+   reading UNKNOWN forever (`active_` is the only status source here — no device has a
+   `deviceStatus_` key, same fallback NUMed's status-less sensors use); `InactiveTs_<x>`
+   existed live for 33/34 devices but was missing from the hand-typed file, so it was
+   added. **`Old EGL 1F` has no matching key on `KPJAPTriggers` at all** (`active_`,
+   `activeTs_`, `forTotalUse_` all absent) — left configured (reads UNKNOWN, harmless)
+   rather than guessed at; confirm with the user whether it's a typo for `Old EGL GF`,
+   not yet wired up, or on a different trigger. Every KPJAP device has `tb_device_id:
+   null` (no sensor is its own TB device here either), so downtime for the whole site
+   runs on the flag-walk fallback, not the gap-based one — expected, not a bug; matches
+   how `RTD CH1/CH2`/`UFM` already work at NUMed.
+   20 sites to go.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.
