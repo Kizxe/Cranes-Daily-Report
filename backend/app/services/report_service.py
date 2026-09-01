@@ -161,51 +161,68 @@ def _worst_first(row: dict) -> tuple:
     return (0 if row["severity"] == "bad" else 1, -row["seconds"])
 
 
-def _site_events(devices: list[dict], date: str) -> tuple[list[dict], int]:
-    """Non-active events for the DOWNTIME EVENTS table, capped. Returns (events, omitted).
+def _hhmm(iso: str) -> str:
+    return datetime.fromisoformat(iso).strftime("%H:%M")
 
-    Both caps drop the *least* serious rows, not whichever happened to come last. Since
-    the reconcile pass reads every transition ThingsBoard recorded, a chatty RHT sensor
-    can produce dozens of short STATIC windows in a day and would otherwise fill the
-    table alphabetically, pushing a DPM's real INACTIVE outage off the page entirely.
-    Survivors are printed back in device / time order, which is how the approved report
-    reads.
+
+def _site_downtime(devices: list[dict], date: str) -> tuple[list[dict], list[dict], int]:
+    """(per-device summary, the longest windows, how many windows aren't listed).
+
+    A day holds far too many windows to print one row each — NUMed averages ~100 across
+    the site, and listing them buried the outages that matter under a wall of short
+    ones. So the report answers the two questions worth asking: which devices dropped
+    and for how long in total (the summary, one row each), then the individual outages
+    long enough to be worth reading times for.
     """
-    rows: list[dict] = []
-    omitted = 0
+    summary: list[dict] = []
+    windows: list[dict] = []
+
     for order, d in enumerate(devices):
-        # Already debounced by min_event_seconds in downtime_for_date, so what is left
-        # is what the site-detail page shows and what ISSUE OCC. counted.
         evs = [e for e in dt.downtime_for_date(d["id"], date) if not e["is_active"]]
+        if not evs:
+            continue
         built = []
         for e in evs:
             start = datetime.fromisoformat(e["start"])
-            end = datetime.fromisoformat(e["end"])
             built.append({
                 "device_id": d["id"],
                 "device": d["name"],
                 "status": e["status"],
                 "severity": dt.severity(e["status"]),
                 "date": start.strftime("%d %b %Y"),
-                "start": start.strftime("%H:%M"),
-                "end": end.strftime("%H:%M"),
+                "start": _hhmm(e["start"]),
+                "end": _hhmm(e["end"]),
                 "duration_hours": round(e["seconds_in_day"] / 3600, 2),
                 "seconds": e["seconds_in_day"],
                 "_sort": (order, e["start"]),
             })
-        keep = sorted(built, key=_worst_first)[: settings.report_max_events_per_device]
-        omitted += len(built) - len(keep)
-        rows += keep
+        windows += built
 
-    if len(rows) > settings.report_max_events_per_site:
-        rows = sorted(rows, key=_worst_first)
-        omitted += len(rows) - settings.report_max_events_per_site
-        rows = rows[: settings.report_max_events_per_site]
+        worst = max(built, key=lambda r: r["seconds"])
+        total = sum(r["seconds"] for r in built)
+        summary.append({
+            "device_id": d["id"],
+            "device": d["name"],
+            "events": len(built),
+            "total_hours": round(total / 3600, 2),
+            "longest": f"{worst['start']}–{worst['end']}",
+            "longest_hours": worst["duration_hours"],
+            "status": worst["status"],
+            "severity": "bad" if any(r["severity"] == "bad" for r in built) else "warn",
+            "seconds": total,
+        })
 
-    rows.sort(key=lambda r: r["_sort"])
-    for r in rows:
+    # Worst first, so the top of the summary is where the day's trouble is.
+    summary.sort(key=_worst_first)
+    for row in summary:
+        del row["seconds"]
+
+    listed = sorted(windows, key=_worst_first)[: settings.report_longest_events]
+    omitted = len(windows) - len(listed)
+    listed.sort(key=lambda r: r["_sort"])       # print in device / time order
+    for r in listed:
         del r["_sort"], r["seconds"]
-    return rows, omitted
+    return summary, listed, omitted
 
 
 def build_context(date: str) -> dict:
@@ -250,7 +267,7 @@ def build_context(date: str) -> dict:
             })
 
         total = len(devices) or 1
-        events, omitted = _site_events(dev_ctx, date)
+        downtime, events, omitted = _site_downtime(dev_ctx, date)
         # A site escalates only on a 'bad' status (INACTIVE and friends). Static and
         # Stalled are warnings — the approved report runs BSC East Wing with 1 Static
         # + 1 Stalled and still prints HEALTHY.
@@ -295,6 +312,7 @@ def build_context(date: str) -> dict:
             ),
             "health": health,
             "breakdown": _type_breakdown(dev_ctx),
+            "downtime": downtime,
             "events": events,
             "events_truncated": omitted,
             "remarks": site_remarks,

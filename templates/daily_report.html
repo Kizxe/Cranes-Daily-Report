@@ -329,9 +329,37 @@
     </div>
     {% endif %}
 
+    {% if pg.summary_start %}
+    <div class="in-sec">
+      <div class="lbl">DOWNTIME SUMMARY{% if not pg.first %} (CONTINUED){% endif %}</div>
+      <table>
+        <colgroup>
+          <col style="width:190px"><col style="width:70px"><col style="width:100px">
+          <col style="width:120px"><col>
+        </colgroup>
+        <thead><tr>
+          <th>DEVICE</th><th>EVENTS</th><th>TOTAL DOWN</th><th>LONGEST</th><th>&nbsp;</th>
+        </tr></thead>
+        <tbody>
+        {% for d in pg.summary %}
+          <tr>
+            <td><strong>{{ d.device }}</strong></td>
+            <td>{{ d.events }}</td>
+            <td>{{ "%.2f"|format(d.total_hours) }} hr</td>
+            <td>{{ d.longest }}</td>
+            <td class="sev-{{ d.severity }}">{{ "%.2f"|format(d.longest_hours) }} hr {{ d.status }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="empty">No downtime recorded for {{ date_human }}.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
     {% if pg.events_start %}
     <div class="in-sec">
-      <div class="lbl">DOWNTIME EVENTS</div>
+      <div class="lbl">LONGEST OUTAGES{% if not pg.first %} (CONTINUED){% endif %}</div>
       <table>
         <colgroup>
           <col style="width:160px"><col style="width:100px"><col style="width:100px">
@@ -353,7 +381,8 @@
           <tr><td colspan="5" class="empty">No downtime events recorded for {{ date_human }}.</td></tr>
         {% endfor %}
         {% if site.events_truncated %}
-          <tr><td colspan="5" class="empty">+{{ site.events_truncated }} more event(s) omitted.</td></tr>
+          <tr><td colspan="5" class="empty">+{{ site.events_truncated }} shorter event(s) —
+            every one is counted in the summary above.</td></tr>
         {% endif %}
         </tbody>
       </table>

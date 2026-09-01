@@ -41,7 +41,8 @@ EVENT_ROW_PX = 25       # a one-line event row: ROW_BASE + one line
 # template: every one of these columns wraps, and the tallest sets the row height.
 DEVICE_CHARS = 16       # the 108px DEVICE column
 REC_CHARS = 36          # the 227px ENGINEER RECOMMENDATION column
-EVENT_CHARS = 25        # the 160px DEVICE column of the DOWNTIME EVENTS table
+EVENT_CHARS = 25        # the 160px DEVICE column of the LONGEST OUTAGES table
+SUMMARY_CHARS = 30      # the 190px DEVICE column of the DOWNTIME SUMMARY table
 
 
 def _lines(text: str, width: int) -> int:
@@ -69,6 +70,11 @@ def event_px(event: dict) -> int:
     return ROW_BASE_PX + ROW_LINE_PX * _lines(label, EVENT_CHARS)
 
 
+def summary_px(row: dict) -> int:
+    """Height of one DOWNTIME SUMMARY row — only the device name wraps."""
+    return ROW_BASE_PX + ROW_LINE_PX * _lines(row.get("device"), SUMMARY_CHARS)
+
+
 def _new_page(site: dict, first: bool) -> dict:
     return {
         "kind": "site",
@@ -77,6 +83,8 @@ def _new_page(site: dict, first: bool) -> dict:
         "site": site,
         "first": first,
         "devices": [],
+        "summary": [],
+        "summary_start": False,
         "events": [],
         "events_start": False,
     }
@@ -86,7 +94,8 @@ def paginate(site_details: list[dict]) -> list[dict]:
     """Cover page, then as many pages per site as its devices and events need."""
     pages: list[dict] = [{
         "kind": "cover", "number": 0, "anchor": None, "site": None,
-        "first": True, "devices": [], "events": [], "events_start": False,
+        "first": True, "devices": [], "summary": [], "summary_start": False,
+        "events": [], "events_start": False,
     }]
 
     for site in site_details:
@@ -103,8 +112,28 @@ def paginate(site_details: list[dict]) -> list[dict]:
             page["devices"].append(d)
             used += h
 
-        # The DOWNTIME EVENTS section: keep the header with at least one row, else
-        # push the whole section to the next page rather than orphaning the label.
+        # DOWNTIME SUMMARY, then LONGEST OUTAGES. Each keeps its header with at least
+        # one row, else the whole section moves to the next page rather than orphaning
+        # the label.
+        summary = site.get("downtime") or []
+        if summary:
+            if used + SECTION_PX + EVENT_ROW_PX > budget:
+                pages.append(page)
+                page = _new_page(site, first=False)
+                used = CONT_PAGE_CHROME_PX
+            else:
+                used += SECTION_PX
+            page["summary_start"] = True
+            for row in summary:
+                h = summary_px(row)
+                if page["summary"] and used + h > budget:
+                    pages.append(page)
+                    page = _new_page(site, first=False)
+                    used = CONT_PAGE_CHROME_PX
+                    page["summary_start"] = True
+                page["summary"].append(row)
+                used += h
+
         events = site.get("events") or []
         if events:
             if used + SECTION_PX + EVENT_ROW_PX > budget:

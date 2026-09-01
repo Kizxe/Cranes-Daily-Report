@@ -249,7 +249,8 @@ This is the table to keep open while working on the report.
 | **ISSUE OCC.** | `<sensor> 1D` | the trigger's daily fault count, resets at midnight. It will not tally with the DOWNTIME EVENTS rows below it, and should not: the rule chain raises STATIC after 15 min of no change and STALLED after 30, and those flags clear in about a minute, so a sensor can hold 33 windows on a day the trigger counts 2 faults. Counting windows ourselves was tried on 2026-09-01 and reverted. Falls back to our window count for a device with no 1D key. |
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
-| **DOWNTIME EVENTS** | `status_events` | gaps in the sensor's own `heartbeat` key, found by the reconcile pass: a silence of `downtime_gap_minutes` (10) or more, from its last reading to its next. The same span TB's Downtime Events widget prints. Capped and ranked worst-first so a chatty sensor can't flood the PDF |
+| **DOWNTIME SUMMARY** | `status_events` | one row per device that dropped: how many windows, total hours down, its longest. Complete — every window is counted here even when it is not listed below |
+| **LONGEST OUTAGES** | `status_events` | gaps in the sensor's own `heartbeat` key, found by the reconcile pass: a silence of `downtime_gap_minutes` (10) or more, from its last reading to its next. The same span TB's Downtime Events widget prints. Capped and ranked worst-first so a chatty sensor can't flood the PDF |
 | **DEVICE TYPE BREAKDOWN** chip | derived | a device counts as attention if its status is `bad` **or** it went down `report_attention_issue_count` times today (default 5) — a device that flapped 10 times isn't Healthy just because it's up when the report runs |
 | Site **HEALTHY / ATTENTION** | derived | a site escalates only on a `bad` status. `STATIC`/`STALLED` are warnings, not attention |
 
@@ -433,9 +434,11 @@ indefinitely. No prune job. `retention_days=0` in `config.py` is the switch if t
 5. **Frozen counters.** Five NUMed sensors have `forTotalUse_` stuck at `[0, 0]` and so
    print 0.0 active / 0.0 affected while reporting INACTIVE or NO DATA. The ThingsBoard
    dashboard shows the same zeros — the fix belongs in that rule chain, not here.
-6. **`report_max_events_per_device` / `_per_site`.** A flapping device can generate dozens
-   of events a day; the PDF caps them. Nothing is lost — `/api/downtime/events/{id}` has
-   them all.
+6. **The PDF summarises downtime, it does not list it.** A site averages ~100 windows a
+   day, so DOWNTIME SUMMARY prints one row per device that dropped — count, total down,
+   longest window, always complete — and LONGEST OUTAGES prints the
+   `report_longest_events` (10) longest windows underneath. Nothing is lost: the summary
+   counts every window and `/api/downtime/events/{id}` has them one by one.
 
 ---
 

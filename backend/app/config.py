@@ -58,11 +58,13 @@ class Settings(BaseSettings):
     # Retention: keep everything indefinitely (decided 2026-08-28). No prune job.
     retention_days: int = 0
 
-    # --- Report: DOWNTIME EVENTS table caps -------------------------------
-    # A flapping device can produce dozens of events a day. Cap what the PDF prints;
-    # nothing is lost — GET /api/downtime/events/{device_id} still has them all.
-    report_max_events_per_device: int = 8
-    report_max_events_per_site: int = 40
+    # --- Report: the DOWNTIME sections ------------------------------------
+    # The PDF prints a per-device summary (one row per device that dropped, always
+    # complete) and then this many individual windows, longest first. A day holds ~100
+    # windows across a site; listing them all buried the outages that matter and cost
+    # three extra pages. Nothing is lost — the summary counts every window, and
+    # GET /api/downtime/events/{device_id} still has them one by one.
+    report_longest_events: int = 10
     # Debounce. The reconcile pass reads every transition ThingsBoard recorded, and the
     # sensors chatter: on NUMed, 2026-09-01 held 491 non-active windows with a median
     # length of 38s — STATIC/STALLED blips a few seconds long. A window shorter than

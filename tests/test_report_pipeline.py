@@ -78,7 +78,8 @@ def test_render_html_has_the_sections_and_none_of_the_removed_ones():
     assert "Computime" in html
     assert "SQUARECLOUD MALAYSIA" in html
     assert "DEVICE TYPE BREAKDOWN" in html
-    assert "DOWNTIME EVENTS" in html
+    assert "DOWNTIME SUMMARY" in html
+    assert "LONGEST OUTAGES" in html
     # Removed by request: PIC follow-ups, the signal column, the duration Category
     # column, and the reports/ path that leaked into a client-facing document.
     assert "PIC FOLLOW-UP" not in html
@@ -96,18 +97,17 @@ async def test_generate_report_writes_pdf():
         assert len(pdf.pages) >= 2
 
 
-def test_the_event_table_keeps_the_worst_events_when_it_hits_the_cap(monkeypatch):
-    """A chatty sensor must not push a real outage off the page.
+def test_the_summary_counts_every_window_while_the_list_keeps_the_worst(monkeypatch):
+    """The two blocks answer different questions and must stay consistent.
 
-    The reconcile pass reads every transition ThingsBoard recorded, so one RHT sensor
-    can hold dozens of short STATIC windows. Capped alphabetically, the DPM's INACTIVE
-    outage never printed.
+    A chatty RHT sensor holds dozens of short windows; a DPM holds one long outage.
+    Listing them all buried the outage, so the list keeps only the longest — but the
+    summary still has to account for every window, or the report quietly loses them.
     """
     from backend.app.services import downtime_service as dt, report_service as rs
 
     make_site("NUMed", [device("A_RHT", status="STATIC"), device("Z_DPM", type="DPM")])
-    monkeypatch.setattr(rs.settings, "report_max_events_per_device", 2)
-    monkeypatch.setattr(rs.settings, "report_max_events_per_site", 3)
+    monkeypatch.setattr(rs.settings, "report_longest_events", 3)
 
     def _name(device_id):
         from backend.app.db.database import read_conn
@@ -117,8 +117,8 @@ def test_the_event_table_keeps_the_worst_events_when_it_hits_the_cap(monkeypatch
 
     def fake_day(device_id, date):
         if "A_RHT" in _name(device_id):
-            return [{"status": "STATIC", "is_active": False, "seconds_in_day": 200 + i,
-                     "start": f"{DATE}T0{i}:00:00+08:00", "end": f"{DATE}T0{i}:05:00+08:00"}
+            return [{"status": "STATIC", "is_active": False, "seconds_in_day": 600 + i,
+                     "start": f"{DATE}T0{i}:00:00+08:00", "end": f"{DATE}T0{i}:10:00+08:00"}
                     for i in range(1, 6)]
         return [{"status": "INACTIVE", "is_active": False, "seconds_in_day": 7200,
                  "start": f"{DATE}T09:00:00+08:00", "end": f"{DATE}T11:00:00+08:00"}]
@@ -126,9 +126,15 @@ def test_the_event_table_keeps_the_worst_events_when_it_hits_the_cap(monkeypatch
     monkeypatch.setattr(dt, "downtime_for_date", fake_day)
     site = rs.build_context(DATE)["site_details"][0]
 
-    statuses = [e["status"] for e in site["events"]]
-    assert "INACTIVE" in statuses, "the real outage must survive the cap"
-    assert len(site["events"]) == 3 and site["events_truncated"] == 3
-    # Survivors print in device / time order, not in ranking order.
-    assert [e["device"] for e in site["events"]] == ["A_RHT", "A_RHT", "Z_DPM"]
+    summary = {row["device"]: row for row in site["downtime"]}
+    assert summary["A_RHT"]["events"] == 5, "every window has to be counted somewhere"
+    assert summary["Z_DPM"]["events"] == 1
+    assert summary["Z_DPM"]["total_hours"] == 2.0
+    assert summary["A_RHT"]["longest"] == "05:00–05:10"
+    # Worst first: the DPM's real outage heads the summary.
+    assert [r["device"] for r in site["downtime"]] == ["Z_DPM", "A_RHT"]
 
+    assert len(site["events"]) == 3 and site["events_truncated"] == 3
+    assert "INACTIVE" in [e["status"] for e in site["events"]], "the outage must survive"
+    # What is listed prints in device / time order, not in ranking order.
+    assert [e["device"] for e in site["events"]] == ["A_RHT", "A_RHT", "Z_DPM"]

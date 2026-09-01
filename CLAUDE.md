@@ -115,6 +115,11 @@ reads it.
   flag walk (`events_from_points`). Two silences either side of a single reading are two
   events — TB counts them that way, and `_debounce` only merges across a window it
   actually dropped.
+- **The report summarises downtime rather than listing it** (2026-09-01). ~100 windows a
+  day per site made the events table useless and cost three extra pages: DOWNTIME SUMMARY
+  is one row per device that dropped (count, total down, longest window — always complete,
+  worst first), then LONGEST OUTAGES lists the `report_longest_events` (10) longest windows.
+  The old `report_max_events_per_device` / `_per_site` caps are gone with it.
 - **Report timing**: generated right at 23:59 off that snapshot, no built-in wait for late remarks. A remark added after 23:59 gets in via manually regenerating that day's report (`POST /api/reports/{date}/generate`), not by delaying the scheduled run.
 - **ThingsBoard instance**: ThingsBoard PE, cloud-hosted — not on the same PC as this app. So no `host.docker.internal` / local Docker bridge needed, just outbound HTTPS. PE's REST API closely matches CE's but isn't guaranteed identical — confirm the exact base URL / login flow when writing `thingsboard_client.py`.
 - **Docker**: bind-mount (not named volumes) for `reports/`, `uploads/`, `backend/data/`, and `backend/config/` so they're real, editable files on the host, not sealed inside the container. Bind the app to `0.0.0.0` so it's reachable over the LAN. Set `TZ=Asia/Kuala_Lumpur` explicitly — containers default to UTC and the 23:59 job would silently fire at the wrong time otherwise. `restart: unless-stopped`.

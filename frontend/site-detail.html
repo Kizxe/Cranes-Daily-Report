@@ -140,8 +140,19 @@ async function toggleEvents(deviceId, name) {
           : clock(e.end_ts) + (e.carried_out ? ` <span class="muted">(continues)</span>` : "")}</td>
       <td>${(e.duration_seconds / 3600).toFixed(2)}${e.ongoing ? " so far" : ""}</td>
     </tr>`).join("") || `<tr><td colspan="4" class="muted">No status changes on ${dateInput.value}.</td></tr>`;
+  // Lead with the shape of the day — the full list below can run to dozens of rows.
+  const down = evs.filter(e => !["ACTIVE", "ONLINE", "OK", "UP"].includes(e.status));
+  const totalHrs = down.reduce((h, e) => h + e.duration_seconds / 3600, 0);
+  const worst = down.reduce((a, e) => !a || e.duration_seconds > a.duration_seconds ? e : a, null);
+  const summary = down.length
+    ? `${down.length} downtime event${down.length > 1 ? "s" : ""} ·
+       ${totalHrs.toFixed(2)} hr down · longest ${clock(worst.start_ts)}–${
+         worst.ongoing ? "ongoing" : clock(worst.end_ts)} (${(worst.duration_seconds / 3600).toFixed(2)} hr)`
+    : "No downtime.";
+
   row.querySelector("td").innerHTML = `
     <strong>Downtime events — ${name} · ${dateInput.value}</strong>
+    <p class="muted">${summary}</p>
     <table><thead><tr><th>Status</th><th>Start</th><th>End</th><th>Duration (hr)</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
   row.hidden = false;
