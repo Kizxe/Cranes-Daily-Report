@@ -142,6 +142,32 @@ python -m scripts.discover_device_groups --trigger ComputimeTrigger --name Compu
     --exclude "Some Flag,Another Flag" --write
 ```
 
+**Hand-typing a site file instead?** It happens (KPJAP was). Nothing stops you, but two
+things will silently break the whole site if you get them wrong, and the app gives no
+error either way — it just reads UNKNOWN forever:
+
+- **Exactly one key per device must carry `role: status`.** Not `active_flag` — that role
+  exists but nothing reads it. Use `deviceStatus_<sensor>` if the trigger has one, else
+  `active_<sensor>` (its `true`/`false` normalise to `ACTIVE`/`INACTIVE`).
+- **Every `key_name` has to exist on the trigger device, verbatim.** A typo or a device
+  that isn't wired up yet reads UNKNOWN with no error — check before you type, not after:
+
+  ```bash
+  python -c "
+  import asyncio, yaml
+  from backend.app.services.thingsboard_client import tb_client
+  async def main():
+      keys = set(await tb_client.timeseries_keys('<trigger tb_device_id>'))
+      await tb_client.close()
+      site = yaml.safe_load(open('backend/config/sites/<site>.yaml'))
+      for d in site['devices']:
+          for k in d['keys']:
+              if k['key_name'] not in keys:
+                  print('MISSING:', d['name'], k['key_name'])
+  asyncio.run(main())
+  "
+  ```
+
 Load the change without restarting:
 
 ```bash
@@ -156,6 +182,18 @@ curl -X POST localhost:8000/api/downtime/poll    # read statuses, write status_e
 ```
 
 The nightly job does both automatically; these are for when you want to see it now.
+
+**A brand-new site has no yesterday to compare against**, so ACTIVE/AFFECTED HRS reads
+`source: events` (still correct, just from `status_events` instead of the `forTotalUse_`
+counter) until a baseline exists. Two one-time commands fix that and backfill today's
+downtime in one pass:
+
+```bash
+python -m scripts.backfill_counters --date <yesterday> --site <Site>   # seeds the counter baseline
+python -m scripts.backfill_downtime --date <today> --site <Site> --refresh
+python -m scripts.inspect_db --site <Site>              # eyeball status + hours before trusting it
+curl -X POST localhost:8000/api/reports/<today>/generate
+```
 
 ### 4. Look inside the database
 
