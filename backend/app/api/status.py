@@ -23,6 +23,7 @@ def last_run() -> dict:
         "last_capture": ops.last_run("capture"),
         "last_report": ops.last_run("report"),
         "last_poll": ops.last_run("poll"),
+        "last_reconcile": ops.last_run("reconcile"),
         "last_nightly": ops.last_run("nightly"),
         "latest_snapshot_ts": last_snap,
         "next_runs": scheduler.next_runs(),

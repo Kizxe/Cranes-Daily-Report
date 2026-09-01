@@ -31,9 +31,9 @@ def make_site(name="Test Site", devices=(), *, date=DATE, remark=None,
     """Insert a site and everything the report needs to render it. Returns {name: device_id}.
 
     Hours are written as forTotalUse_ counter pairs on `date` and the day before, which
-    is the path the report actually takes (downtime_service.counter_hours). Issue counts
-    go in as the trigger's "<device> 1D" key. Both are exact, so a test asserting 13.2
-    active hours gets 13.2 rather than something reconstructed from synthetic events.
+    is the path the report actually takes (downtime_service.counter_hours), so a test
+    asserting 13.2 active hours gets exactly 13.2. `issues` becomes that many downtime
+    windows in status_events, because ISSUE OCC. is counted off the events themselves.
     """
     ids: dict[str, int] = {}
     prev = (datetime.fromisoformat(date) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -71,16 +71,28 @@ def make_site(name="Test Site", devices=(), *, date=DATE, remark=None,
             snap(prev, f"forTotalUse_{d['name']}", "[0, 0]")
             snap(date, f"forTotalUse_{d['name']}",
                  f"[{int(d['affected_h'] * HOUR_MS)}, {int(d['active_h'] * HOUR_MS)}]")
+            # Still captured — it just no longer drives ISSUE OCC.
             snap(date, f"{d['name']} 1D", str(d["issues"]))
 
-            # One open event so the DOWNTIME EVENTS table has something to show for a
-            # device that isn't active.
-            if d["status"] != "ACTIVE":
-                start = datetime.fromisoformat(f"{date}T00:00:00").replace(tzinfo=TZ)
+            def at(hhmm):
+                return datetime.fromisoformat(f"{date}T{hhmm}").replace(tzinfo=TZ)
+
+            # A device that is down right now holds one open window, and that outage is
+            # itself one of the day's occurrences.
+            down_now = d["status"] != "ACTIVE"
+            for i in range(max(d["issues"] - (1 if down_now else 0), 0)):
+                start = at("01:00:00") + timedelta(minutes=30 * i)
+                end = start + timedelta(minutes=5)
+                conn.execute(
+                    "INSERT INTO status_events (device_id, status, start_ts, end_ts,"
+                    " duration_seconds, source) VALUES (?, 'INACTIVE', ?, ?, 300, 'test')",
+                    (did, start.isoformat(), end.isoformat()),
+                )
+            if down_now:
                 conn.execute(
                     "INSERT INTO status_events (device_id, status, start_ts, source)"
                     " VALUES (?, ?, ?, 'test')",
-                    (did, d["status"], start.isoformat()),
+                    (did, d["status"], at("12:00:00").isoformat()),
                 )
 
             if d["recommendation"]:

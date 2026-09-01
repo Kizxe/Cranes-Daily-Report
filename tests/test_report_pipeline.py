@@ -94,3 +94,41 @@ async def test_generate_report_writes_pdf():
     assert report_service.settings.report_pdf_path(DATE).exists()
     with pdfplumber.open(out["pdf_path"]) as pdf:
         assert len(pdf.pages) >= 2
+
+
+def test_the_event_table_keeps_the_worst_events_when_it_hits_the_cap(monkeypatch):
+    """A chatty sensor must not push a real outage off the page.
+
+    The reconcile pass reads every transition ThingsBoard recorded, so one RHT sensor
+    can hold dozens of short STATIC windows. Capped alphabetically, the DPM's INACTIVE
+    outage never printed.
+    """
+    from backend.app.services import downtime_service as dt, report_service as rs
+
+    make_site("NUMed", [device("A_RHT", status="STATIC"), device("Z_DPM", type="DPM")])
+    monkeypatch.setattr(rs.settings, "report_max_events_per_device", 2)
+    monkeypatch.setattr(rs.settings, "report_max_events_per_site", 3)
+
+    def _name(device_id):
+        from backend.app.db.database import read_conn
+        with read_conn() as c:
+            return c.execute("SELECT name FROM devices WHERE id = ?",
+                             (device_id,)).fetchone()["name"]
+
+    def fake_day(device_id, date):
+        if "A_RHT" in _name(device_id):
+            return [{"status": "STATIC", "is_active": False, "seconds_in_day": 200 + i,
+                     "start": f"{DATE}T0{i}:00:00+08:00", "end": f"{DATE}T0{i}:05:00+08:00"}
+                    for i in range(1, 6)]
+        return [{"status": "INACTIVE", "is_active": False, "seconds_in_day": 7200,
+                 "start": f"{DATE}T09:00:00+08:00", "end": f"{DATE}T11:00:00+08:00"}]
+
+    monkeypatch.setattr(dt, "downtime_for_date", fake_day)
+    site = rs.build_context(DATE)["site_details"][0]
+
+    statuses = [e["status"] for e in site["events"]]
+    assert "INACTIVE" in statuses, "the real outage must survive the cap"
+    assert len(site["events"]) == 3 and site["events_truncated"] == 3
+    # Survivors print in device / time order, not in ranking order.
+    assert [e["device"] for e in site["events"]] == ["A_RHT", "A_RHT", "Z_DPM"]
+

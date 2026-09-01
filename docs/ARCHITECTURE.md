@@ -137,7 +137,7 @@ site* and writes it back onto the trigger, as one key per sensor per family:
 | `forTotalUse_<sensor>` | `[51704534, 133102008]` | **`[inactive_ms, active_ms]`**, cumulative |
 | `ActiveInActive_<sensor>` | `["A_1788…","N_14:21:44",51704534,133102008]` | current state + the same pair |
 | `IssueOcc_<sensor>` | `419` | issue occurrences to date |
-| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight |
+| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight — captured, but not what ISSUE OCC. prints |
 
 `NumedTrigger` alone carries **566 keys**. Comma-joining them all into one REST call
 overflows the request line and ThingsBoard answers `400` with an HTML error page — the
@@ -213,16 +213,21 @@ defaults remain only as a backstop for hand-written SQL.
        ▼
   snapshots  (raw values, one row per key per capture)
        │
-       │  downtime_service.poll_all_statuses()  every 10 min
+       │  downtime_service.poll_all_statuses()  every 5 min
        │    reads role='status', writes a row only on change,
        │    dated from activeTs_/InactiveTs_ rather than poll time
+       │
+       │  reconcile_service.reconcile_day(refresh=True)  hourly + before the report
+       │    replaces today's rows with every transition TB's history holds —
+       │    the poll samples, so it misses drops shorter than its interval
        ▼
   status_events
        │
        │  downtime_service.day_summary()
        │    active/affected hours ← forTotalUse_ differenced day over day
-       │    issue occurrences     ← "<sensor> 1D"
-       │    events list           ← status_events, clipped to the day
+       │    issue occurrences     ← count of the day's downtime windows
+       │    events list           ← status_events, clipped to the day and
+       │                              debounced by min_event_seconds (120s)
        ▼
   report_service.generate_report()  →  Jinja → Playwright → reports/YYYY-MM-DD/
 ```
@@ -236,7 +241,7 @@ This is the table to keep open while working on the report.
 | **STATUS** pill | `deviceStatus_<sensor>`, else `active_<sensor>` | latest snapshot value for `role='status'`; `true`/`false` normalise to `ACTIVE`/`INACTIVE` |
 | **ACTIVE HRS** | `forTotalUse_[1]` | today's capture minus yesterday's — the counter is cumulative |
 | **AFFECTED HRS** | `forTotalUse_[0]` | same difference |
-| **ISSUE OCC.** | `<sensor> 1D` | the trigger's daily fault count, resets at midnight |
+| **ISSUE OCC.** | `status_events` | how many debounced downtime windows overlap the day — the same rows DOWNTIME EVENTS lists, so the count always matches the list. (`<sensor> 1D` is still captured, but stopped driving this column on 2026-09-01: it counts faults by the rule chain's own definition and disagreed with the events on screen.) |
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
 | **DOWNTIME EVENTS** | `status_events` | built by the poll loop; capped per device/site so a flapping device can't flood the PDF |
@@ -265,12 +270,24 @@ Both live in `services/scheduler.py`, started by the FastAPI lifespan.
 | Job | When | What |
 |---|---|---|
 | `nightly` | 23:59 daily | capture the snapshot, then generate that day's report |
-| `downtime` | every 10 min | poll statuses, write `status_events` on change |
+| `downtime` | every 5 min (+ one catch-up ~5 s after boot) | poll statuses, write `status_events` on change |
 
 `nightly` has `misfire_grace_time=3600`, so a process that comes back within the hour
 still runs it. If the machine was **off** at 23:59, an OS-level cron entry hitting
 `POST /api/captures/run` then `POST /api/reports/{date}/generate` is the backup trigger
-(see README). Every run writes a `job_runs` row, which is what the dashboard banner and
+(see README).
+
+`downtime` only records changes while the process is up, and it *samples* — a drop that
+starts and ends inside one poll interval is never seen. Both holes are closed by
+`reconcile_service`, which reads the status key's full ThingsBoard history and replaces a
+day's rows with every transition TB recorded: hourly against today (`reconcile_minutes`),
+once more at the top of the 23:59 job before the report is built, and on demand via
+`POST /api/downtime/reconcile?date=` or
+`python -m scripts.backfill_downtime --date <day> --refresh` (rows tagged
+`source='reconcile'`). Without `--refresh` the script only fills days that have no events
+at all (`source='backfill'`), which is the safe way to recover a stretch the process was
+down for. A device whose history comes back empty is always left as-is. The report/site-detail then show the
+real downtime for that past day. Every run writes a `job_runs` row, which is what the dashboard banner and
 `python -m scripts.inspect_db` read.
 
 ---

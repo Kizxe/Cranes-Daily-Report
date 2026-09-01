@@ -40,6 +40,8 @@ scripts/
   discover_device_groups.py   walks a site's trigger device -> sites/<site>.yaml
   inspect_db.py               read-only look inside cranes.db
   backfill_counters.py        recover a past day's values from ThingsBoard history
+  backfill_downtime.py        rebuild a day's status_events from TB history (--refresh)
+  prune_devices.py            delete devices the site YAML no longer lists
   backup.py                   dated zip of cranes.db + reports/ into backups/
 logs/  backups/                bind-mounted, git-ignored
 .claude/commands/    /add-device-group, /regen-report
@@ -63,14 +65,61 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 On startup it creates the DB if missing, mirrors `backend/config/sites/*.yaml` into it,
 and starts two scheduled jobs: the **23:59 nightly** (capture + report) and a **status
-poll every 10 min**. Watch for this line — it tells you the config actually loaded:
+poll every 5 min** (plus a one-off catch-up poll ~5 s after boot, so a restart leaves
+no blind spot). Watch for this line — it tells you the config actually loaded:
 
 ```
-INFO cranes: config sync: {'groups': 1, 'devices': 33, 'keys': 215}
+INFO cranes: config sync: {'groups': 1, 'devices': 33, 'keys': 248}
 ```
 
 Open **http://localhost:8000** (or `http://<this-pc-ip>:8000` from another machine on
 the LAN). Leave it running; open a second terminal for everything below.
+
+### 1b. Stopping and restarting
+
+If the app is running in a terminal you can see, **Ctrl-C** stops it. Otherwise:
+
+```bash
+pgrep -fl "uvicorn backend.app.main"     # is it running? prints the PID if so
+pkill -f "uvicorn backend.app.main"      # stop it
+```
+
+To restart, stop it and start it again — there is no reload command. `--reload` only
+picks up *Python* edits; a change to `.env` or to `config.py` defaults needs a full
+restart, and so does anything that touches the scheduler.
+
+```bash
+pkill -f "uvicorn backend.app.main"; sleep 2
+uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Run it detached, so it survives closing the terminal:
+
+```bash
+nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > logs/uvicorn.out 2>&1 &
+tail -f logs/uvicorn.out                 # watch it boot; Ctrl-C just stops tailing
+```
+
+Confirm it came back up — all three should answer:
+
+```bash
+curl -s localhost:8000/api/health
+curl -s localhost:8000/api/status/last-run | python -m json.tool | head -20
+python -m scripts.inspect_db
+```
+
+**A restart is not free.** Downtime is only recorded while the process is up, so a
+status change during the gap is missed. The boot catch-up poll narrows it to seconds,
+and the hourly reconcile pass rebuilds today from ThingsBoard history anyway; for a
+longer outage rebuild that day with `scripts/backfill_downtime.py`. On the
+always-on PC, run it under `docker compose` with `restart: unless-stopped` rather than
+by hand.
+
+**Port already in use?** Something is still bound to 8000:
+
+```bash
+lsof -nP -iTCP:8000 -sTCP:LISTEN       # what's holding it
+```
 
 ### 2. Add a site
 
@@ -198,6 +247,38 @@ docker compose up --build
 Bind mounts keep `backend/data/`, `reports/`, `uploads/`, `backend/config/`,
 `logs/`, `backups/` as real editable files on the host. `TZ=Asia/Kuala_Lumpur`
 is set so the 23:59 job fires at local time.
+
+**Run it 24/7.** Downtime is recorded only while the process is up — the poll loop
+runs every 5 min, but nothing catches a status change that happens while the
+container is stopped. `docker compose` sets `restart: unless-stopped`; keep it on the
+always-on PC. For any stretch it *was* down, rebuild that day afterwards:
+
+```bash
+python -m scripts.backfill_downtime --date 2026-08-30 --dry-run   # then drop --dry-run
+python -m scripts.backfill_downtime --date 2026-08-30 --site NUMed
+```
+
+It reads each device's status-key history from ThingsBoard and writes one
+`status_events` row per transition, tagged `source='backfill'`. It skips any device
+that already has events that day, so a real poll-recorded day is never overwritten
+and re-running is safe.
+
+**The poll misses short flaps — that is what the reconcile pass is for.** Polling every
+5 min only samples; a device that dropped and recovered in between left no trace. Every
+hour (and once at the top of the 23:59 job) the backend replaces today's events with
+every transition ThingsBoard's history holds, so ISSUE OCC. and the DOWNTIME EVENTS
+table match what the instance actually recorded. Set `RECONCILE_MINUTES=0` to turn it
+off; run it by hand for any day with:
+
+```bash
+curl -s -X POST "localhost:8000/api/downtime/reconcile?date=2026-09-01"
+python -m scripts.backfill_downtime --date 2026-09-01 --refresh --dry-run
+```
+
+Sensors chatter, so windows shorter than `MIN_EVENT_SECONDS` (default 120) are folded
+into the window they interrupted — NUMed sees ~490 raw transitions a day with a median
+length of 38s, and roughly 105 real windows once debounced. Regenerate the report afterwards
+(`POST /api/reports/{date}/generate`).
 
 ## Key endpoints
 

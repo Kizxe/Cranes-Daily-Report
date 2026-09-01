@@ -126,14 +126,22 @@ async function saveRecommendation(deviceId) {
 async function toggleEvents(deviceId, name) {
   const row = document.getElementById(`ev-${deviceId}`);
   if (!row.hidden) { row.hidden = true; return; }
-  const evs = await api(`/downtime/events/${deviceId}?limit=50`);
+  const evs = await api(`/downtime/events/${deviceId}?limit=50&date=${dateInput.value}`);
+  // Every row is already clipped to the selected day, so print clock times only — the
+  // day is in the heading. A window that runs past either edge says so instead of
+  // printing another date.
+  const clock = (iso) => (iso || "").slice(11, 19);
+  const stamp = (iso) => (iso || "").replace("T", " ").slice(0, 16);
   const rows = evs.map(e => `<tr>
-      <td>${pill(e.status)}</td><td>${(e.start_ts || "").replace("T", " ").slice(0, 19)}</td>
-      <td>${e.end_ts ? e.end_ts.replace("T", " ").slice(0, 19) : "— ongoing"}</td>
-      <td>${e.duration_seconds != null ? (e.duration_seconds / 3600).toFixed(2) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="4" class="muted">No status changes recorded.</td></tr>`;
+      <td>${pill(e.status)}</td>
+      <td>${clock(e.start_ts)}${e.carried_in
+          ? ` <span class="muted">(since ${stamp(e.actual_start_ts)})</span>` : ""}</td>
+      <td>${e.ongoing ? `<span class="muted">still ${e.status.toLowerCase()}</span>`
+          : clock(e.end_ts) + (e.carried_out ? ` <span class="muted">(continues)</span>` : "")}</td>
+      <td>${(e.duration_seconds / 3600).toFixed(2)}${e.ongoing ? " so far" : ""}</td>
+    </tr>`).join("") || `<tr><td colspan="4" class="muted">No status changes on ${dateInput.value}.</td></tr>`;
   row.querySelector("td").innerHTML = `
-    <strong>Downtime events — ${name}</strong>
+    <strong>Downtime events — ${name} · ${dateInput.value}</strong>
     <table><thead><tr><th>Status</th><th>Start</th><th>End</th><th>Duration (hr)</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
   row.hidden = false;

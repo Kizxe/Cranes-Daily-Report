@@ -224,11 +224,19 @@ def test_day_hours_come_from_the_trigger_counters(site):
     _capture(did, "2026-08-31", "forTotalUse_Numed RHT Wet Lab", f"[{102*h}, {222*h}]")
     _capture(did, "2026-08-31", "Numed RHT Wet Lab 1D", "7.0")
 
+    # Two downtime windows on the day, while the trigger's own 1D key claims 7.
+    for start, end in (("2026-08-31T02:00:00+08:00", "2026-08-31T03:00:00+08:00"),
+                       ("2026-08-31T20:00:00+08:00", "2026-08-31T21:00:00+08:00")):
+        with get_conn() as conn:
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, 'INACTIVE', ?, ?, 'test')", (did, start, end))
+
     s = dt.day_summary(did, "2026-08-31")
     assert s["source"] == "counter"
     assert s["active_hours"] == 22.0, "active hours must be the day's slice, not the total"
     assert s["affected_hours"] == 2.0
-    assert s["issue_occurrences"] == 7, "ISSUE OCC. must be the trigger's own 1D count"
+    assert s["issue_occurrences"] == 2, "ISSUE OCC. counts the day's downtime windows, not 1D"
 
 
 def test_day_hours_fall_back_when_there_is_no_previous_day(site):

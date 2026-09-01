@@ -156,21 +156,32 @@ def _type_breakdown(devices: list[dict]) -> list[dict]:
     return out
 
 
+def _worst_first(row: dict) -> tuple:
+    """Ranking for what survives a cap: a real outage before a warning, longest first."""
+    return (0 if row["severity"] == "bad" else 1, -row["seconds"])
+
+
 def _site_events(devices: list[dict], date: str) -> tuple[list[dict], int]:
-    """Non-active events for the DOWNTIME EVENTS table, capped. Returns (events, omitted)."""
+    """Non-active events for the DOWNTIME EVENTS table, capped. Returns (events, omitted).
+
+    Both caps drop the *least* serious rows, not whichever happened to come last. Since
+    the reconcile pass reads every transition ThingsBoard recorded, a chatty RHT sensor
+    can produce dozens of short STATIC windows in a day and would otherwise fill the
+    table alphabetically, pushing a DPM's real INACTIVE outage off the page entirely.
+    Survivors are printed back in device / time order, which is how the approved report
+    reads.
+    """
     rows: list[dict] = []
     omitted = 0
-    for d in devices:
-        evs = [
-            e for e in dt.downtime_for_date(d["id"], date)
-            if not e["is_active"] and e["seconds_in_day"] >= settings.report_min_event_seconds
-        ]
-        keep = evs[: settings.report_max_events_per_device]
-        omitted += len(evs) - len(keep)
-        for e in keep:
+    for order, d in enumerate(devices):
+        # Already debounced by min_event_seconds in downtime_for_date, so what is left
+        # is what the site-detail page shows and what ISSUE OCC. counted.
+        evs = [e for e in dt.downtime_for_date(d["id"], date) if not e["is_active"]]
+        built = []
+        for e in evs:
             start = datetime.fromisoformat(e["start"])
             end = datetime.fromisoformat(e["end"])
-            rows.append({
+            built.append({
                 "device_id": d["id"],
                 "device": d["name"],
                 "status": e["status"],
@@ -179,10 +190,21 @@ def _site_events(devices: list[dict], date: str) -> tuple[list[dict], int]:
                 "start": start.strftime("%H:%M"),
                 "end": end.strftime("%H:%M"),
                 "duration_hours": round(e["seconds_in_day"] / 3600, 2),
+                "seconds": e["seconds_in_day"],
+                "_sort": (order, e["start"]),
             })
+        keep = sorted(built, key=_worst_first)[: settings.report_max_events_per_device]
+        omitted += len(built) - len(keep)
+        rows += keep
+
     if len(rows) > settings.report_max_events_per_site:
+        rows = sorted(rows, key=_worst_first)
         omitted += len(rows) - settings.report_max_events_per_site
         rows = rows[: settings.report_max_events_per_site]
+
+    rows.sort(key=lambda r: r["_sort"])
+    for r in rows:
+        del r["_sort"], r["seconds"]
     return rows, omitted
 
 

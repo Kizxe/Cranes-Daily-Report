@@ -52,20 +52,34 @@ async function loadBanner() {
       <span><b>Last capture</b> ${fmtRun(s.last_capture)}</span>
       <span><b>Last report</b> ${fmtRun(s.last_report)}</span>
       <span><b>Last poll</b> ${fmtRun(s.last_poll)}</span>
+      <span><b>Last reconcile</b> ${fmtRun(s.last_reconcile)}</span>
       <span><b>Next nightly</b> ${(s.next_runs.nightly || "—").replace("T", " ").slice(0, 16)}</span>`;
   } catch (e) { /* the banner is best-effort — never block the page on it */ }
 }
 
 function deviceRows(devices) {
-  return devices.map(d => `
-    <tr>
-      <td>${d.device}</td>
-      <td class="muted">${d.device_type || "—"}</td>
-      <td>${pill(d.status)}</td>
-      <td class="num">${d.active_hours.toFixed(1)}</td>
-      <td class="num">${d.affected_hours.toFixed(1)}</td>
-      <td class="num${d.issue_occurrences >= 5 ? " flag" : ""}">${d.issue_occurrences}</td>
-    </tr>`).join("");
+  // Group under a category header per device type — easier to scan than a flat list.
+  const byType = {};
+  for (const d of devices) (byType[d.device_type || "OTHER"] ||= []).push(d);
+  const order = Object.keys(byType).sort();
+
+  return order.map(type => {
+    const list = byType[type];
+    const bad = list.filter(d => d.severity !== "ok").length;
+    const head = `<tr class="cat">
+      <td colspan="4">${type}</td>
+      <td class="num cat-meta${bad ? " flag" : ""}">${bad ? bad + " / " : ""}${list.length}</td>
+    </tr>`;
+    const rows = list.map(d => `
+      <tr>
+        <td>${d.device}</td>
+        <td>${pill(d.status)}</td>
+        <td class="num">${d.active_hours.toFixed(1)}</td>
+        <td class="num">${d.affected_hours.toFixed(1)}</td>
+        <td class="num${d.issue_occurrences >= 5 ? " flag" : ""}">${d.issue_occurrences}</td>
+      </tr>`).join("");
+    return head + rows;
+  }).join("");
 }
 
 function siteBlock(group, devices) {
@@ -91,7 +105,7 @@ function siteBlock(group, devices) {
       </div>
       ${shown.length ? `<table>
         <thead><tr>
-          <th>Device</th><th>Type</th><th>Status</th>
+          <th>Device</th><th>Status</th>
           <th class="num">Active h</th><th class="num">Affected h</th><th class="num">Issues</th>
         </tr></thead>
         <tbody class="attention">${deviceRows(shown)}</tbody>
@@ -139,7 +153,7 @@ async function load() {
       table.querySelector("tbody.all").hidden = showingAll;
       table.querySelector("tbody.attention").hidden = !showingAll;
       btn.textContent = showingAll
-        ? `Show all ${table.querySelectorAll("tbody.all tr").length} devices`
+        ? `Show all ${table.querySelectorAll("tbody.all tr:not(.cat)").length} devices`
         : "Show only devices needing attention";
     };
   });

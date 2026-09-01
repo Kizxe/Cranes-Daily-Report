@@ -69,8 +69,12 @@ reads it.
   differences it against the previous day's capture — TB's own accounting, scoped to the day.
   `status_events` is the fallback only when there is no baseline to difference.
   `scripts/backfill_counters.py --date <yesterday>` recovers a missing baseline from TB history.
-  **ISSUE OCC. is `<sensor> 1D`**, the trigger's daily fault count (resets at midnight; matches
-  the Fault Counter device's `<Site>_device_fault_data` breakdown device for device).
+  **ISSUE OCC. is counted from `status_events`** (revised 2026-09-01): the number of debounced
+  downtime windows overlapping the day — exactly the rows the site-detail drill-down and the report's
+  DOWNTIME EVENTS table list, so the number can be checked against the list under it.
+  `<sensor> 1D` (the trigger's own daily fault count) is still captured but no longer feeds
+  the column; it counts faults by its own rule-chain definition and disagreed with the
+  events on screen.
 - **The Fault Counter device** `71af5410-df0d-11f0-a0b2-1366f3bd8252` holds per-site daily fault
   totals (`Numed_fault_counter_all/dpm/rht/rtd/ufm`, `Numed_top_fault_device`, `_category`,
   `Numed_device_fault_data`). No timestamps, so it CANNOT fill the DOWNTIME EVENTS table —
@@ -78,7 +82,25 @@ reads it.
 - **Don't use the trigger's `Active Device` / `Inactive Device` counters.** The rule chain
   computes them over its own subset (19+4 against a 34-sensor roster on NUMed) and they drift
   minute to minute. Report counts are derived from our own roster instead.
-- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows.
+- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows. Default is now **5 min** (`downtime_poll_minutes`), and `scheduler.start()` fires one catch-up poll ~5 s after boot so a restart leaves no gap. The loop only runs while the process is up, so the container must run 24/7 (`restart: unless-stopped`); for any stretch it was down, `scripts/backfill_downtime.py --date <day>` rebuilds that day's `status_events` from the trigger's status-key history (mirror of `backfill_counters.py`; skips devices that already have events that day).
+- **Reconcile from ThingsBoard history** (added 2026-09-01): the poll only *samples*, so a
+  device that dropped and recovered inside one interval never reached `status_events` —
+  measured on NUMed at 11:32 that day, the poll held 28 downtime windows while the triggers'
+  own `1D` counters summed to 98. `reconcile_service.reconcile_day(date, refresh=True)` walks
+  the status key's full TB history and replaces that day's rows with every transition TB
+  recorded. Runs hourly on today (`reconcile_minutes`, 0 disables) and once more at the top of
+  the 23:59 job before the report is built; `POST /api/downtime/reconcile?date=` and
+  `scripts/backfill_downtime.py --date <day> --refresh` are the manual doors. Without
+  `--refresh` the script keeps its old gap-fill behaviour (only days with no events at all).
+  A device whose history comes back empty is left untouched — a TB blip must never blank out
+  a day of downtime.
+- **Debounce: `min_event_seconds` (default 120)**. Reading every transition means reading the
+  chatter: 2026-09-01 on NUMed held 491 non-active windows, median 38s, nearly all STATIC/
+  STALLED. `downtime_service._debounce` folds a sub-threshold window into the (contiguous)
+  window it interrupted, so ISSUE OCC., the site-detail drill-down and the report's DOWNTIME
+  EVENTS table all describe real outages and agree with each other — 107 occurrences that day
+  against the triggers' 98. Two same-status windows that aren't contiguous are two outages and
+  are never merged. Replaces the old `report_min_event_seconds` filter.
 - **Report timing**: generated right at 23:59 off that snapshot, no built-in wait for late remarks. A remark added after 23:59 gets in via manually regenerating that day's report (`POST /api/reports/{date}/generate`), not by delaying the scheduled run.
 - **ThingsBoard instance**: ThingsBoard PE, cloud-hosted — not on the same PC as this app. So no `host.docker.internal` / local Docker bridge needed, just outbound HTTPS. PE's REST API closely matches CE's but isn't guaranteed identical — confirm the exact base URL / login flow when writing `thingsboard_client.py`.
 - **Docker**: bind-mount (not named volumes) for `reports/`, `uploads/`, `backend/data/`, and `backend/config/` so they're real, editable files on the host, not sealed inside the container. Bind the app to `0.0.0.0` so it's reachable over the LAN. Set `TZ=Asia/Kuala_Lumpur` explicitly — containers default to UTC and the 23:59 job would silently fire at the wrong time otherwise. `restart: unless-stopped`.
@@ -93,9 +115,15 @@ reads it.
 1. Draft the site config for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists. **One file per site**, `backend/config/sites/<site>.yaml`; `device_groups.yaml` now holds only shared defaults. One site per run, so a re-run can't disturb the other 21:
    `python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write`
    (`--list-triggers` first). **NUMed done 2026-08-31** — 33 sensors, `Robert Bosch Recovery`
-   excluded as another site's. Still to review there: `Numed`, `Numed Setpoints`,
-   `Numed Flowmeter`, `Numed Recovery`, `Meatrol DPM` look like system flags rather than
-   devices — drop with `--exclude` if so. 21 sites to go.
+   excluded as another site's. **Trimmed to 28 on 2026-09-01**: `Numed`, `Numed Setpoints`,
+   `Numed Flowmeter`, `Numed Recovery`, `Meatrol DPM` were system flags, not devices —
+   their status keys had not been written in 4–225 days, and each was printing an
+   all-day INACTIVE window in the report. Removed from `sites/numed.yaml` and from the DB
+   with `python -m scripts.prune_devices --site NUMed --apply` (config_sync upserts and
+   never deletes, so the YAML edit alone leaves the rows behind). **`RTD CH1`, `RTD CH2`
+   and `UFM` stay** — they are real channels whose counters are frozen at [0,0] by the
+   rule chain, which is a ThingsBoard-side problem the report should keep showing.
+   21 sites to go.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.

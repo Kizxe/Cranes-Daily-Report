@@ -42,7 +42,13 @@ class Settings(BaseSettings):
     snapshot_hour: int = 23
     snapshot_minute: int = 59
     # Downtime polling cadence (minutes). CLAUDE.md: 5–15 min is fine.
-    downtime_poll_minutes: int = 10
+    downtime_poll_minutes: int = 5
+    # How often today's events are rebuilt from ThingsBoard history. The poll only
+    # samples, so a drop-and-recover inside one interval never reaches status_events;
+    # the reconcile pass reads every transition TB recorded. 0 disables it.
+    reconcile_minutes: int = 60
+    # How far either side of the day to look for the transitions surrounding it.
+    reconcile_lookback_days: int = 7
     # Retention: keep everything indefinitely (decided 2026-08-28). No prune job.
     retention_days: int = 0
 
@@ -51,8 +57,13 @@ class Settings(BaseSettings):
     # nothing is lost — GET /api/downtime/events/{device_id} still has them all.
     report_max_events_per_device: int = 8
     report_max_events_per_site: int = 40
-    # 0 = print every event. Raise to ~60 to suppress sub-minute poll flaps.
-    report_min_event_seconds: int = 0
+    # Debounce. The reconcile pass reads every transition ThingsBoard recorded, and the
+    # sensors chatter: on NUMed, 2026-09-01 held 491 non-active windows with a median
+    # length of 38s — STATIC/STALLED blips a few seconds long. A window shorter than
+    # this is absorbed into the window it interrupted, so ISSUE OCC., the site-detail
+    # drill-down and the report's DOWNTIME EVENTS table all speak about real outages.
+    # 0 = keep every transition. 120s leaves ~105 windows across the site.
+    min_event_seconds: int = 120
     # DEVICE TYPE BREAKDOWN: a device that went down this many times today counts as
     # attention even if it is active right now — a device that flapped 10 times is not
     # "Healthy" just because it happens to be up when the report runs. 0 disables it.

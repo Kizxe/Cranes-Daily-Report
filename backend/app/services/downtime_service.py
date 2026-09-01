@@ -237,8 +237,44 @@ async def poll_all_statuses(trigger: str = "scheduled") -> dict:
     return {"polled": len(devices), "changes": changes}
 
 
+def _debounce(events: list[dict], min_seconds: int) -> list[dict]:
+    """Absorb sub-threshold windows into the window they interrupted.
+
+    A sensor that reads STATIC for 38 seconds and comes back is not a downtime event;
+    before the reconcile pass we simply never saw those, because the 5-minute poll
+    sampled straight past them. Now that we read every transition ThingsBoard recorded,
+    they have to be collapsed or one day prints hundreds of rows.
+
+    Merging (rather than dropping) keeps the day continuous: the blip's seconds go to
+    the window before it, and the two halves of that window become one row.
+    """
+    if min_seconds <= 0:
+        return events
+    out: list[dict] = []
+    for e in events:
+        prev = out[-1] if out else None
+        # Only a window that picks up exactly where the last one ended can be merged
+        # into it. Two INACTIVE windows hours apart are two outages, not one.
+        contiguous = bool(prev) and prev["end"] == e["start"]
+        if contiguous and (e["seconds_in_day"] < min_seconds
+                           or e["status"] == prev["status"]):
+            prev["end"] = e["end"]
+            prev["seconds_in_day"] += e["seconds_in_day"]
+            prev["carried_out"] = e["carried_out"]
+            prev["ongoing"] = e["ongoing"]
+            prev["raw_end"] = e["raw_end"]
+            continue
+        if e["seconds_in_day"] < min_seconds and not e["ongoing"]:
+            continue          # too short to report, with no neighbour to fold it into
+        out.append(dict(e))
+    return out
+
+
 def downtime_for_date(device_id: int, date: str) -> list[dict]:
-    """Status events overlapping a calendar day (local tz), clipped to the day."""
+    """Status events overlapping a calendar day (local tz), clipped to the day.
+
+    Windows shorter than `min_event_seconds` are debounced away — see `_debounce`.
+    """
     day_start = datetime.fromisoformat(f"{date}T00:00:00").replace(tzinfo=TZ)
     day_end = datetime.fromisoformat(f"{date}T23:59:59").replace(tzinfo=TZ)
     with read_conn() as conn:
@@ -253,10 +289,16 @@ def downtime_for_date(device_id: int, date: str) -> list[dict]:
             """,
             (device_id, day_end.isoformat(), day_start.isoformat()),
         ).fetchall()
+    # An event that is still open has not run to the end of the day yet — on today it
+    # ends "now". Counting it to 23:59:59 would credit hours that haven't happened.
+    open_end = min(day_end, max(datetime.now(TZ), day_start))
+
     out = []
     for r in rows:
-        s = max(datetime.fromisoformat(r["start_ts"]), day_start)
-        e = min(datetime.fromisoformat(r["end_ts"]) if r["end_ts"] else day_end, day_end)
+        raw_start = datetime.fromisoformat(r["start_ts"])
+        raw_end = datetime.fromisoformat(r["end_ts"]) if r["end_ts"] else None
+        s = max(raw_start, day_start)
+        e = max(min(raw_end or open_end, day_end), s)
         out.append(
             {
                 "status": r["status"],
@@ -264,9 +306,18 @@ def downtime_for_date(device_id: int, date: str) -> list[dict]:
                 "end": e.isoformat(),
                 "seconds_in_day": int((e - s).total_seconds()),
                 "is_active": r["status"] in ACTIVE_STATES,
+                # A window can start before the day and/or run past it. Callers show
+                # the clipped times — these flags say the window continues beyond the
+                # edge, so a drill-down never prints another day's date under the
+                # date picker.
+                "carried_in": raw_start < day_start,
+                "carried_out": raw_end is None or raw_end > day_end,
+                "ongoing": raw_end is None,
+                "raw_start": raw_start.isoformat(),
+                "raw_end": raw_end.isoformat() if raw_end else None,
             }
         )
-    return out
+    return _debounce(out, settings.min_event_seconds)
 
 
 def _role_value(conn, device_id: int, role: str, date: str) -> str | None:
@@ -358,15 +409,11 @@ def day_summary(device_id: int, date: str) -> dict:
     if from_counter:
         hours = from_counter
 
-    # ISSUE OCC. is the trigger's own daily fault count ("<sensor> 1D"), which resets at
-    # midnight and matches the Fault Counter device's per-device breakdown. Our own
-    # count of inactive events is the fallback.
-    with read_conn() as conn:
-        daily = _role_value(conn, device_id, "daily_issues", date)
-    try:
-        occurrences = int(float(daily)) if daily is not None else occurrences
-    except (TypeError, ValueError):
-        pass
+    # ISSUE OCC. is how many downtime windows the day actually holds — the same rows
+    # the site-detail drill-down and the report's DOWNTIME EVENTS table list, so the
+    # number can always be checked against the list under it. (It used to be the
+    # trigger's "<sensor> 1D" key; that key is still captured, but it counts faults
+    # by its own rule-chain definition and disagreed with the events on screen.)
 
     # Percentage of the DAY, not of the covered window. Dividing by `covered` would
     # let a device with only 4h of events read 100% active.
