@@ -251,7 +251,7 @@ This is the table to keep open while working on the report.
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
 | **DOWNTIME SUMMARY** | `status_events` | one row per device that dropped: how many windows, total hours down, its longest. Complete — every window is counted here even when it is not listed below |
 | **LONGEST OUTAGES** | `status_events` | gaps in the sensor's own `heartbeat` key, found by the reconcile pass: a silence of `downtime_gap_minutes` (10) or more, from its last reading to its next. The same span TB's Downtime Events widget prints. Capped and ranked worst-first so a chatty sensor can't flood the PDF |
-| **DEVICE TYPE BREAKDOWN** chip | derived | a device counts as attention if its status is `bad` **or** it went down `report_attention_issue_count` times today (default 5) — a device that flapped 10 times isn't Healthy just because it's up when the report runs |
+| **DEVICE TYPE BREAKDOWN** chip | derived | a device counts as attention if its status is `bad` **or** it went down `report_attention_issue_count` times today (default 10, raised from 5 on 2026-09-01 now that ISSUE OCC. counts every window) — a device that flapped repeatedly isn't Healthy just because it's up when the report runs |
 | Site **HEALTHY / ATTENTION** | derived | a site escalates only on a `bad` status. `STATIC`/`STALLED` are warnings, not attention |
 
 **Why the hours are a difference, not the raw counter.** `forTotalUse_` accumulates since

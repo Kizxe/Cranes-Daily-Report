@@ -38,7 +38,7 @@
         <th style="width:19%">Device</th><th style="width:9%">Status</th>
         <th style="width:8%">Active Hrs</th><th style="width:9%">Affected Hrs</th>
         <th style="width:8%">Active %</th><th style="width:7%">Issue Occ.</th>
-        <th>Engineer recommendation</th>
+        <th>Remark</th>
       </tr>
     </thead>
     <tbody id="devices"><tr><td colspan="7" class="muted">Pick a group.</td></tr></tbody>
@@ -87,7 +87,7 @@ async function loadAll() {
       ? `<textarea disabled rows="2">No action.</textarea>
          <span class="rec-auto">AUTO</span>`
       : `<textarea data-device="${d.device_id}" rows="2"
-           placeholder="What should the engineer do?">${(byDevice[d.device_id]?.body || "")}</textarea>
+           placeholder="Remark for this device">${(byDevice[d.device_id]?.body || "")}</textarea>
          <button class="secondary rec-save" data-device="${d.device_id}">Save</button>`;
     return `<tr>
       <td><a href="#" class="dev-events" data-device="${d.device_id}"
