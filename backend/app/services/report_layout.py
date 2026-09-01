@@ -40,7 +40,9 @@ EVENT_ROW_PX = 25       # a one-line event row: ROW_BASE + one line
 # width of JetBrains Mono at 9.2px. Keep these in step with the <colgroup>s in the
 # template: every one of these columns wraps, and the tallest sets the row height.
 DEVICE_CHARS = 16       # the 108px DEVICE column
-REC_CHARS = 36          # the 227px ENGINEER RECOMMENDATION column
+REC_CHARS = 34          # the ~216px REMARK column (STATUS widened 80->88 on 2026-09-01
+                        # so "INACTIVE" stops wrapping onto two lines, which took it from
+                        # here — re-measure both together if either column moves again)
 EVENT_CHARS = 25        # the 160px DEVICE column of the LONGEST OUTAGES table
 SUMMARY_CHARS = 30      # the 190px DEVICE column of the DOWNTIME SUMMARY table
 
