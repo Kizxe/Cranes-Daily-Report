@@ -124,8 +124,9 @@ async def test_refresh_replaces_flaps_the_poll_never_sampled(dev, monkeypatch):
         ("INACTIVE", "14:00:00", "14:03:00", "reconcile"),
         ("ACTIVE", "14:03:00", "", "reconcile"),
     ]
-    # ISSUE OCC. follows, because it counts the day's downtime windows.
-    assert dt.day_summary(dev, DATE)["issue_occurrences"] == 2
+    # Two of them are downtime, and the drill-down now lists windows the poll never saw.
+    summary = dt.day_summary(dev, DATE)
+    assert sum(1 for e in summary["events"] if not e["is_active"]) == 2
 
 
 async def test_refresh_leaves_other_days_alone_and_closes_the_carried_in_window(

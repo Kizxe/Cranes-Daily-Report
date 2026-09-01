@@ -409,11 +409,20 @@ def day_summary(device_id: int, date: str) -> dict:
     if from_counter:
         hours = from_counter
 
-    # ISSUE OCC. is how many downtime windows the day actually holds — the same rows
-    # the site-detail drill-down and the report's DOWNTIME EVENTS table list, so the
-    # number can always be checked against the list under it. (It used to be the
-    # trigger's "<sensor> 1D" key; that key is still captured, but it counts faults
-    # by its own rule-chain definition and disagreed with the events on screen.)
+    # ISSUE OCC. is the trigger's own daily fault count, "<sensor> 1D" — the same number
+    # the Fault Counter device breaks down per device, and the one the site has always
+    # been read against (restored 2026-09-01, after a day counting windows ourselves).
+    # Counting windows instead looked reasonable but does not survive contact with the
+    # data: the rule chain flags STATIC after 15 min of no change and STALLED after 30,
+    # and those flags clear in a minute or less, so one sensor produces dozens of
+    # windows a day where the trigger counts 2 faults. Our own count of the day's
+    # downtime windows is the fallback when a device has no 1D key.
+    with read_conn() as conn:
+        daily = _role_value(conn, device_id, "daily_issues", date)
+    try:
+        occurrences = int(float(daily)) if daily is not None else occurrences
+    except (TypeError, ValueError):
+        pass
 
     # Percentage of the DAY, not of the covered window. Dividing by `covered` would
     # let a device with only 4h of events read 100% active.

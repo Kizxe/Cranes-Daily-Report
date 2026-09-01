@@ -137,7 +137,7 @@ site* and writes it back onto the trigger, as one key per sensor per family:
 | `forTotalUse_<sensor>` | `[51704534, 133102008]` | **`[inactive_ms, active_ms]`**, cumulative |
 | `ActiveInActive_<sensor>` | `["A_1788…","N_14:21:44",51704534,133102008]` | current state + the same pair |
 | `IssueOcc_<sensor>` | `419` | issue occurrences to date |
-| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight — captured, but not what ISSUE OCC. prints |
+| `<sensor> 1D` | `10.0` | fault count for the current day, resets at midnight — this is ISSUE OCC. |
 
 `NumedTrigger` alone carries **566 keys**. Comma-joining them all into one REST call
 overflows the request line and ThingsBoard answers `400` with an HTML error page — the
@@ -225,7 +225,7 @@ defaults remain only as a backstop for hand-written SQL.
        │
        │  downtime_service.day_summary()
        │    active/affected hours ← forTotalUse_ differenced day over day
-       │    issue occurrences     ← count of the day's downtime windows
+       │    issue occurrences     ← "<sensor> 1D" (windows are the fallback)
        │    events list           ← status_events, clipped to the day and
        │                              debounced by min_event_seconds (120s)
        ▼
@@ -241,7 +241,7 @@ This is the table to keep open while working on the report.
 | **STATUS** pill | `deviceStatus_<sensor>`, else `active_<sensor>` | latest snapshot value for `role='status'`; `true`/`false` normalise to `ACTIVE`/`INACTIVE` |
 | **ACTIVE HRS** | `forTotalUse_[1]` | today's capture minus yesterday's — the counter is cumulative |
 | **AFFECTED HRS** | `forTotalUse_[0]` | same difference |
-| **ISSUE OCC.** | `status_events` | how many debounced downtime windows overlap the day — the same rows DOWNTIME EVENTS lists, so the count always matches the list. (`<sensor> 1D` is still captured, but stopped driving this column on 2026-09-01: it counts faults by the rule chain's own definition and disagreed with the events on screen.) |
+| **ISSUE OCC.** | `<sensor> 1D` | the trigger's daily fault count, resets at midnight. It will not tally with the DOWNTIME EVENTS rows below it, and should not: the rule chain raises STATIC after 15 min of no change and STALLED after 30, and those flags clear in about a minute, so a sensor can hold 33 windows on a day the trigger counts 2 faults. Counting windows ourselves was tried on 2026-09-01 and reverted. Falls back to our window count for a device with no 1D key. |
 | **ENGINEER RECOMMENDATION** | `remarks` where `device_id` is set | active devices with none auto-fill `No action.` |
 | **REMARK** (page 1) | `remarks` where `device_id IS NULL` | many per site per day |
 | **DOWNTIME EVENTS** | `status_events` | built by the poll loop; capped per device/site so a flapping device can't flood the PDF |

@@ -113,6 +113,6 @@ def test_reconcile_endpoint_rebuilds_the_day_from_history(client, monkeypatch):
 
     evs = client.get(f"/api/downtime/events/{did}?date=2026-08-30").json()
     assert [e["status"] for e in evs] == ["ACTIVE", "INACTIVE", "ACTIVE"]   # newest first
-    assert client.get(f"/api/downtime/devices/{did}?date=2026-08-30").json()[
-        "issue_occurrences"] == 1
+    assert [e["start_ts"][11:19] for e in evs] == ["09:05:00", "09:00:00", "08:00:00"]
+    assert evs[1]["duration_seconds"] == 300
 
