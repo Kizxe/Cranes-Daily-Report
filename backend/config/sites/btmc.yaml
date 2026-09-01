@@ -1,0 +1,131 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# BTMC — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger BTMCTriggers --name BTMC --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (BTMCTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: BTMC
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: BTMCTriggers
+  tb_device_id: 82b83090-d0e6-11f0-8150-1ffa4442f0c7
+devices:
+  - name: BTMC Flowmeter
+    device_type: Flowmeter
+    tb_device_id: 04c45f30-fbeb-11f0-a38e-e56ade1a22b0
+    keys:
+      - key_name: active_BTMC Flowmeter
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC Flowmeter
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC Flowmeter
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_BTMC Flowmeter
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_BTMC Flowmeter
+        role: total_use
+        source: trigger
+  - name: BTMC OT1
+    device_type: RHT
+    tb_device_id: 90101b10-a457-11f0-8150-1ffa4442f0c7
+    keys:
+      - key_name: active_BTMC OT1
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC OT1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC OT1
+        role: inactive_ts
+        source: trigger
+      - key_name: forTotalUse_BTMC OT1
+        role: total_use
+        source: trigger
+  - name: BTMC OT2
+    device_type: RHT
+    tb_device_id: 968405b0-a457-11f0-8150-1ffa4442f0c7
+    keys:
+      - key_name: active_BTMC OT2
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC OT2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC OT2
+        role: inactive_ts
+        source: trigger
+      - key_name: forTotalUse_BTMC OT2
+        role: total_use
+        source: trigger
+  - name: BTMC OT3
+    device_type: RHT
+    tb_device_id: 9cbbf8c0-a457-11f0-8150-1ffa4442f0c7
+    keys:
+      - key_name: active_BTMC OT3
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC OT3
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC OT3
+        role: inactive_ts
+        source: trigger
+      - key_name: forTotalUse_BTMC OT3
+        role: total_use
+        source: trigger
+  - name: BTMC OT4
+    device_type: RHT
+    tb_device_id: a2d9ad10-a457-11f0-8150-1ffa4442f0c7
+    keys:
+      - key_name: active_BTMC OT4
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC OT4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC OT4
+        role: inactive_ts
+        source: trigger
+      - key_name: forTotalUse_BTMC OT4
+        role: total_use
+        source: trigger
+  - name: BTMC OT5
+    device_type: RHT
+    tb_device_id: a975b920-a457-11f0-8150-1ffa4442f0c7
+    keys:
+      - key_name: active_BTMC OT5
+        role: status
+        source: trigger
+      - key_name: activeTs_BTMC OT5
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_BTMC OT5
+        role: inactive_ts
+        source: trigger
+      - key_name: forTotalUse_BTMC OT5
+        role: total_use
+        source: trigger

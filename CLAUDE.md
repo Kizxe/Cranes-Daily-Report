@@ -152,12 +152,23 @@ reads it.
    existed live for 33/34 devices but was missing from the hand-typed file, so it was
    added. **`Old EGL 1F` has no matching key on `KPJAPTriggers` at all** (`active_`,
    `activeTs_`, `forTotalUse_` all absent) — left configured (reads UNKNOWN, harmless)
-   rather than guessed at; confirm with the user whether it's a typo for `Old EGL GF`,
-   not yet wired up, or on a different trigger. Every KPJAP device has `tb_device_id:
-   null` (no sensor is its own TB device here either), so downtime for the whole site
-   runs on the flag-walk fallback, not the gap-based one — expected, not a bug; matches
-   how `RTD CH1/CH2`/`UFM` already work at NUMed.
-   20 sites to go.
+   rather than guessed at — **resolved**: confirmed with the user it was a typo/duplicate
+   of `Old EGL GF` (the only one of the two that exists on `KPJAPTriggers`), removed,
+   pruned from the DB. 33 devices. Every KPJAP device has `tb_device_id: null` (no
+   sensor is its own TB device here either), so downtime for the whole site runs on the
+   flag-walk fallback, not the gap-based one — expected, not a bug; matches how
+   `RTD CH1/CH2`/`UFM` already work at NUMed.
+   **BTMC done 2026-09-01** — 6 devices, generated via the discover script then hand-
+   trimmed by the user (dropped a bare `BTMC` entry, same system-flag pattern as
+   NUMed's; corrected OT1–OT5 from the script's `Other` guess to `RHT`). Unlike KPJAP,
+   every device here has its own `tb_device_id`, so downtime runs the gap-based path.
+   Full wiring trace: `docs/onboarding-btmc.md`. **Flagged, not fixed — BTMC's telemetry
+   reads stale across the board** (every `active_` value 5.5–7 days old, every
+   `forTotalUse_` counter frozen at `[0,0]`, checked device by device) — synced in
+   anyway on the user's call since the site is believed to be mid-commissioning; expect
+   ACTIVE / 0.0 hrs everywhere until ThingsBoard's rule chain for `BTMCTriggers` starts
+   writing current values. ThingsBoard-side, not fixable here.
+   19 sites to go.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.
