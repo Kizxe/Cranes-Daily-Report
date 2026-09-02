@@ -1,0 +1,716 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Kerry — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger KerryTrigger --name Kerry --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (KerryTrigger) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Kerry
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: KerryTrigger
+  tb_device_id: d8f5edb1-d0b1-11f0-8150-1ffa4442f0c7
+devices:
+- name: Building Management System (BMS)
+  device_type: Other
+  tb_device_id: c86f4f30-f007-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Building Management System (BMS)
+    role: status
+    source: trigger
+  - key_name: activeTs_Building Management System (BMS)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Building Management System (BMS)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Building Management System (BMS)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Building Management System (BMS)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: DPM Chiller 1 and 3
+  device_type: DPM
+  tb_device_id: 5acfff00-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_DPM Chiller 1 and 3
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM Chiller 1 and 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM Chiller 1 and 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM Chiller 1 and 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM Chiller 1 and 3
+    role: total_use
+    source: trigger
+  - key_name: DPM Chiller 1 and 3 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: DPM Chiller 2 and 4
+  device_type: DPM
+  tb_device_id: 520468c0-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_DPM Chiller 2 and 4
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM Chiller 2 and 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM Chiller 2 and 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM Chiller 2 and 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM Chiller 2 and 4
+    role: total_use
+    source: trigger
+  - key_name: DPM Chiller 2 and 4 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Kerry
+  device_type: Other
+  tb_device_id: 245cac50-fd57-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Kerry
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry
+    role: total_use
+    source: trigger
+  - key_name: Kerry 1D
+    role: daily_issues
+    source: trigger
+  - key_name: temperature
+    role: heartbeat
+- name: Kerry BMS
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry BMS
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry BMS
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry BMS
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry BMS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry BMS
+    role: total_use
+    source: trigger
+- name: Kerry DPM
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry DPM
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry DPM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry DPM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry DPM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry DPM
+    role: total_use
+    source: trigger
+- name: Kerry DPMCH1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry DPMCH1
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry DPMCH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry DPMCH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry DPMCH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry DPMCH1
+    role: total_use
+    source: trigger
+- name: Kerry DPMCH2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry DPMCH2
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry DPMCH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry DPMCH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry DPMCH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry DPMCH2
+    role: total_use
+    source: trigger
+- name: Kerry Flowmeter
+  device_type: Flowmeter
+  tb_device_id: 49fda920-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Kerry Flowmeter
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry Flowmeter
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry Flowmeter
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry Flowmeter
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry Flowmeter
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Kerry RHT Dryer2 L4
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT Dryer2 L4
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT Dryer2 L4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT Dryer2 L4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT Dryer2 L4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT Dryer2 L4
+    role: total_use
+    source: trigger
+- name: Kerry RHT Dryer2 L5
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT Dryer2 L5
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT Dryer2 L5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT Dryer2 L5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT Dryer2 L5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT Dryer2 L5
+    role: total_use
+    source: trigger
+- name: Kerry RHT Guard 1
+  device_type: RHT
+  tb_device_id: 4c2e20c0-3ad2-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Kerry RHT Guard 1
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT Guard 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT Guard 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT Guard 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT Guard 1
+    role: total_use
+    source: trigger
+  - key_name: Kerry RHT Guard 1 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Kerry RHT Guard 2
+  device_type: RHT
+  tb_device_id: 33d89320-3ad2-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Kerry RHT Guard 2
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT Guard 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT Guard 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT Guard 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT Guard 2
+    role: total_use
+    source: trigger
+  - key_name: Kerry RHT Guard 2 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Kerry RHT LVL 4
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT LVL 4
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT LVL 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT LVL 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT LVL 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT LVL 4
+    role: total_use
+    source: trigger
+- name: Kerry RHT LVL 5
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT LVL 5
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT LVL 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT LVL 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT LVL 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT LVL 5
+    role: total_use
+    source: trigger
+- name: Kerry RHT PR 1
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT PR 1
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT PR 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT PR 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT PR 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT PR 1
+    role: total_use
+    source: trigger
+- name: Kerry RHT PR 2
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RHT PR 2
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RHT PR 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RHT PR 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RHT PR 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RHT PR 2
+    role: total_use
+    source: trigger
+- name: Kerry RTD Ground
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RTD Ground
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RTD Ground
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RTD Ground
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RTD Ground
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RTD Ground
+    role: total_use
+    source: trigger
+- name: Kerry RTD dryerL2
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RTD dryerL2
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RTD dryerL2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RTD dryerL2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RTD dryerL2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RTD dryerL2
+    role: total_use
+    source: trigger
+- name: Kerry RTD dryerL4
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RTD dryerL4
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RTD dryerL4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RTD dryerL4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RTD dryerL4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RTD dryerL4
+    role: total_use
+    source: trigger
+- name: Kerry RTD dryerL5
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry RTD dryerL5
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry RTD dryerL5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry RTD dryerL5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry RTD dryerL5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry RTD dryerL5
+    role: total_use
+    source: trigger
+- name: Kerry Telegram
+  device_type: Other
+  tb_device_id: eca948b3-00af-11f1-a38e-e56ade1a22b0
+  keys:
+  - key_name: active_Kerry Telegram
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Kerry Telegram
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Kerry Telegram
+    role: total_use
+    source: trigger
+  - key_name: kerry_device_status
+    role: heartbeat
+- name: Kerry VSD
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Kerry VSD
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry VSD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry VSD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry VSD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry VSD
+    role: total_use
+    source: trigger
+- name: Kerry guard house 2 rht
+  device_type: RHT
+  tb_device_id: f5225f80-50a2-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Kerry guard house 2 rht
+    role: status
+    source: trigger
+  - key_name: activeTs_Kerry guard house 2 rht
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Kerry guard house 2 rht
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Kerry guard house 2 rht
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Kerry guard house 2 rht
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RHT Dryer 2 Level 4
+  device_type: RHT
+  tb_device_id: 0a09be30-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RHT Dryer 2 Level 4
+    role: status
+    source: trigger
+  - key_name: activeTs_RHT Dryer 2 Level 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RHT Dryer 2 Level 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RHT Dryer 2 Level 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RHT Dryer 2 Level 4
+    role: total_use
+    source: trigger
+  - key_name: RHT Dryer 2 Level 4 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RHT Dryer 2 Level 5
+  device_type: RHT
+  tb_device_id: 211f9fe0-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RHT Dryer 2 Level 5
+    role: status
+    source: trigger
+  - key_name: activeTs_RHT Dryer 2 Level 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RHT Dryer 2 Level 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RHT Dryer 2 Level 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RHT Dryer 2 Level 5
+    role: total_use
+    source: trigger
+  - key_name: RHT Dryer 2 Level 5 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RHT Packing Room 1
+  device_type: RHT
+  tb_device_id: 29a4b740-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RHT Packing Room 1
+    role: status
+    source: trigger
+  - key_name: activeTs_RHT Packing Room 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RHT Packing Room 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RHT Packing Room 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RHT Packing Room 1
+    role: total_use
+    source: trigger
+  - key_name: RHT Packing Room 1 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RHT Packing Room 2
+  device_type: RHT
+  tb_device_id: fac163b0-f007-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RHT Packing Room 2
+    role: status
+    source: trigger
+  - key_name: activeTs_RHT Packing Room 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RHT Packing Room 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RHT Packing Room 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RHT Packing Room 2
+    role: total_use
+    source: trigger
+  - key_name: RHT Packing Room 2 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RTD Chiller Plant
+  device_type: RTD
+  tb_device_id: de357f60-f007-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RTD Chiller Plant
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD Chiller Plant
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD Chiller Plant
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD Chiller Plant
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD Chiller Plant
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RTD Dryer 1 Level 2
+  device_type: RTD
+  tb_device_id: 3f8d8aa0-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RTD Dryer 1 Level 2
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD Dryer 1 Level 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD Dryer 1 Level 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD Dryer 1 Level 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD Dryer 1 Level 2
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RTD Dryer 2 Level 4
+  device_type: RTD
+  tb_device_id: 37140c00-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RTD Dryer 2 Level 4
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD Dryer 2 Level 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD Dryer 2 Level 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD Dryer 2 Level 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD Dryer 2 Level 4
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: RTD Dryer 2 Level 5
+  device_type: RTD
+  tb_device_id: f1aeb250-f007-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_RTD Dryer 2 Level 5
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD Dryer 2 Level 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD Dryer 2 Level 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD Dryer 2 Level 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD Dryer 2 Level 5
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: VSD
+  device_type: Other
+  tb_device_id: 02ffd520-f008-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_VSD
+    role: status
+    source: trigger
+  - key_name: activeTs_VSD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_VSD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_VSD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_VSD
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat

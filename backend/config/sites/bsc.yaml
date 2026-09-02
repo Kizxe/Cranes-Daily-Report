@@ -1,0 +1,782 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# BSC — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger BSC Cranes Triggers --name BSC --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (BSC Cranes Triggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: BSC
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: BSC Cranes Triggers
+  tb_device_id: 72fd6670-95fd-11f1-9490-85a518ecea8d
+devices:
+- name: Annexe First Floor (F18, F141 FK6)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe First Floor (F18, F141 FK6)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe First Floor (F18, F141 FK6)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe First Floor (F18, F141 FK6)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe First Floor (F18, F141 FK6)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe First Floor (F18, F141 FK6)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe First Floor (F18, F141 FK6)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe First Floor (F18, F141 FK6)
+    role: total_use
+    source: trigger
+- name: Annexe Ground Floor (Lot G133)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe Ground Floor (Lot G133)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe Ground Floor (Lot G133)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe Ground Floor (Lot G133)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe Ground Floor (Lot G133)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe Ground Floor (Lot G133)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe Ground Floor (Lot G133)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe Ground Floor (Lot G133)
+    role: total_use
+    source: trigger
+- name: Annexe Second Floor 1 (Lot S117A)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe Second Floor 1 (Lot S117A)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe Second Floor 1 (Lot S117A)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe Second Floor 1 (Lot S117A)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe Second Floor 1 (Lot S117A)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe Second Floor 1 (Lot S117A)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe Second Floor 1 (Lot S117A)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe Second Floor 1 (Lot S117A)
+    role: total_use
+    source: trigger
+- name: Annexe Second Floor 2 (Lot 128)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe Second Floor 2 (Lot 128)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe Second Floor 2 (Lot 128)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe Second Floor 2 (Lot 128)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe Second Floor 2 (Lot 128)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe Second Floor 2 (Lot 128)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe Second Floor 2 (Lot 128)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe Second Floor 2 (Lot 128)
+    role: total_use
+    source: trigger
+- name: Annexe Third Floor 1 (Lot 118)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe Third Floor 1 (Lot 118)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe Third Floor 1 (Lot 118)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe Third Floor 1 (Lot 118)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe Third Floor 1 (Lot 118)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe Third Floor 1 (Lot 118)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe Third Floor 1 (Lot 118)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe Third Floor 1 (Lot 118)
+    role: total_use
+    source: trigger
+- name: Annexe Third Floor 2 (Lot T125 & T126)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Annexe Third Floor 2 (Lot T125 & T126)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Annexe Third Floor 2 (Lot T125 & T126)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Annexe Third Floor 2 (Lot T125 & T126)
+    role: severity
+    source: trigger
+  - key_name: activeTs_Annexe Third Floor 2 (Lot T125 & T126)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Annexe Third Floor 2 (Lot T125 & T126)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Annexe Third Floor 2 (Lot T125 & T126)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Annexe Third Floor 2 (Lot T125 & T126)
+    role: total_use
+    source: trigger
+- name: East First Floor 1 (Lot F5)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East First Floor 1 (Lot F5)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East First Floor 1 (Lot F5)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East First Floor 1 (Lot F5)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East First Floor 1 (Lot F5)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East First Floor 1 (Lot F5)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East First Floor 1 (Lot F5)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East First Floor 1 (Lot F5)
+    role: total_use
+    source: trigger
+- name: East First Floor 2 (Lot F11B & F12)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East First Floor 2 (Lot F11B & F12)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East First Floor 2 (Lot F11B & F12)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East First Floor 2 (Lot F11B & F12)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East First Floor 2 (Lot F11B & F12)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East First Floor 2 (Lot F11B & F12)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East First Floor 2 (Lot F11B & F12)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East First Floor 2 (Lot F11B & F12)
+    role: total_use
+    source: trigger
+- name: East First Floor 3 (F1 & F6)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East First Floor 3 (F1 & F6)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East First Floor 3 (F1 & F6)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East First Floor 3 (F1 & F6)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East First Floor 3 (F1 & F6)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East First Floor 3 (F1 & F6)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East First Floor 3 (F1 & F6)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East First Floor 3 (F1 & F6)
+    role: total_use
+    source: trigger
+- name: East Fourth Floor (Lot 4.10.4.12 & 4.13)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Fourth Floor (Lot 4.10.4.12 & 4.13)
+    role: total_use
+    source: trigger
+- name: East Ground Floor 1 (G1)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Ground Floor 1 (G1)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Ground Floor 1 (G1)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Ground Floor 1 (G1)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Ground Floor 1 (G1)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Ground Floor 1 (G1)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Ground Floor 1 (G1)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Ground Floor 1 (G1)
+    role: total_use
+    source: trigger
+- name: East Ground Floor 2 (G3)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Ground Floor 2 (G3)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Ground Floor 2 (G3)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Ground Floor 2 (G3)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Ground Floor 2 (G3)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Ground Floor 2 (G3)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Ground Floor 2 (G3)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Ground Floor 2 (G3)
+    role: total_use
+    source: trigger
+- name: East Second Floor 1 (S2)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Second Floor 1 (S2)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Second Floor 1 (S2)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Second Floor 1 (S2)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Second Floor 1 (S2)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Second Floor 1 (S2)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Second Floor 1 (S2)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Second Floor 1 (S2)
+    role: total_use
+    source: trigger
+- name: East Second Floor 2 (Lot 56)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Second Floor 2 (Lot 56)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Second Floor 2 (Lot 56)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Second Floor 2 (Lot 56)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Second Floor 2 (Lot 56)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Second Floor 2 (Lot 56)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Second Floor 2 (Lot 56)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Second Floor 2 (Lot 56)
+    role: total_use
+    source: trigger
+- name: East Second Floor 3 (Lot 12A - 13)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Second Floor 3 (Lot 12A - 13)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Second Floor 3 (Lot 12A - 13)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Second Floor 3 (Lot 12A - 13)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Second Floor 3 (Lot 12A - 13)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Second Floor 3 (Lot 12A - 13)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Second Floor 3 (Lot 12A - 13)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Second Floor 3 (Lot 12A - 13)
+    role: total_use
+    source: trigger
+- name: East Third Floor 1 (Lot T3)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Third Floor 1 (Lot T3)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Third Floor 1 (Lot T3)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Third Floor 1 (Lot T3)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Third Floor 1 (Lot T3)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Third Floor 1 (Lot T3)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Third Floor 1 (Lot T3)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Third Floor 1 (Lot T3)
+    role: total_use
+    source: trigger
+- name: East Third Floor 2 (T6A & T6B)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Third Floor 2 (T6A & T6B)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Third Floor 2 (T6A & T6B)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Third Floor 2 (T6A & T6B)
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Third Floor 2 (T6A & T6B)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Third Floor 2 (T6A & T6B)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Third Floor 2 (T6A & T6B)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Third Floor 2 (T6A & T6B)
+    role: total_use
+    source: trigger
+- name: East Third Floor 3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_East Third Floor 3
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_East Third Floor 3
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_East Third Floor 3
+    role: severity
+    source: trigger
+  - key_name: activeTs_East Third Floor 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_East Third Floor 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_East Third Floor 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_East Third Floor 3
+    role: total_use
+    source: trigger
+- name: Outdoor East
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Outdoor East
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Outdoor East
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Outdoor East
+    role: severity
+    source: trigger
+  - key_name: activeTs_Outdoor East
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Outdoor East
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Outdoor East
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Outdoor East
+    role: total_use
+    source: trigger
+- name: Outdoor West
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Outdoor West
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Outdoor West
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Outdoor West
+    role: severity
+    source: trigger
+  - key_name: activeTs_Outdoor West
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Outdoor West
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Outdoor West
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Outdoor West
+    role: total_use
+    source: trigger
+- name: West First Floor 1 (F103)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West First Floor 1 (F103)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West First Floor 1 (F103)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West First Floor 1 (F103)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West First Floor 1 (F103)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West First Floor 1 (F103)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West First Floor 1 (F103)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West First Floor 1 (F103)
+    role: total_use
+    source: trigger
+- name: West First Floor 2 (Lot F122)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West First Floor 2 (Lot F122)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West First Floor 2 (Lot F122)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West First Floor 2 (Lot F122)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West First Floor 2 (Lot F122)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West First Floor 2 (Lot F122)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West First Floor 2 (Lot F122)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West First Floor 2 (Lot F122)
+    role: total_use
+    source: trigger
+- name: West First Floor 3 (Lot 114A - Lot 115C)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West First Floor 3 (Lot 114A - Lot 115C)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West First Floor 3 (Lot 114A - Lot 115C)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West First Floor 3 (Lot 114A - Lot 115C)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West First Floor 3 (Lot 114A - Lot 115C)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West First Floor 3 (Lot 114A - Lot 115C)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West First Floor 3 (Lot 114A - Lot 115C)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West First Floor 3 (Lot 114A - Lot 115C)
+    role: total_use
+    source: trigger
+- name: West Ground Floor 1 (Lot G121)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Ground Floor 1 (Lot G121)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Ground Floor 1 (Lot G121)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Ground Floor 1 (Lot G121)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Ground Floor 1 (Lot G121)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Ground Floor 1 (Lot G121)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Ground Floor 1 (Lot G121)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Ground Floor 1 (Lot G121)
+    role: total_use
+    source: trigger
+- name: West Ground Floor 2 (Lot G126/127/128)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Ground Floor 2 (Lot G126/127/128)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Ground Floor 2 (Lot G126/127/128)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Ground Floor 2 (Lot G126/127/128)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Ground Floor 2 (Lot G126/127/128)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Ground Floor 2 (Lot G126/127/128)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Ground Floor 2 (Lot G126/127/128)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Ground Floor 2 (Lot G126/127/128)
+    role: total_use
+    source: trigger
+- name: West Ground Floor 3 (Lot G106)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Ground Floor 3 (Lot G106)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Ground Floor 3 (Lot G106)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Ground Floor 3 (Lot G106)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Ground Floor 3 (Lot G106)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Ground Floor 3 (Lot G106)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Ground Floor 3 (Lot G106)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Ground Floor 3 (Lot G106)
+    role: total_use
+    source: trigger
+- name: West Second Floor 1 (Lot 5116)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Second Floor 1 (Lot 5116)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Second Floor 1 (Lot 5116)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Second Floor 1 (Lot 5116)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Second Floor 1 (Lot 5116)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Second Floor 1 (Lot 5116)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Second Floor 1 (Lot 5116)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Second Floor 1 (Lot 5116)
+    role: total_use
+    source: trigger
+- name: West Second Floor 2 (Lot 5103)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Second Floor 2 (Lot 5103)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Second Floor 2 (Lot 5103)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Second Floor 2 (Lot 5103)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Second Floor 2 (Lot 5103)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Second Floor 2 (Lot 5103)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Second Floor 2 (Lot 5103)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Second Floor 2 (Lot 5103)
+    role: total_use
+    source: trigger
+- name: West Second Floor 3 (Lot 5121)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Second Floor 3 (Lot 5121)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Second Floor 3 (Lot 5121)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Second Floor 3 (Lot 5121)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Second Floor 3 (Lot 5121)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Second Floor 3 (Lot 5121)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Second Floor 3 (Lot 5121)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Second Floor 3 (Lot 5121)
+    role: total_use
+    source: trigger
+- name: West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: severity
+    source: trigger
+  - key_name: activeTs_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_West Third Floor (T09,T10,T11,T12,T13,T14,T15)
+    role: total_use
+    source: trigger

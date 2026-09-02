@@ -1,0 +1,1032 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Sanmina — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger SanminaTriggers --name Sanmina --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (SanminaTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Sanmina
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: SanminaTriggers
+  tb_device_id: 659d1ce0-cc0a-11f0-8150-1ffa4442f0c7
+devices:
+- name: APX Next (Mid)
+  device_type: Other
+  tb_device_id: a4be7490-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_APX Next (Mid)
+    role: status
+    source: trigger
+  - key_name: activeTs_APX Next (Mid)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_APX Next (Mid)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_APX Next (Mid)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_APX Next (Mid)
+    role: total_use
+    source: trigger
+  - key_name: APX Next (Mid) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: BTC Leggacy
+  device_type: Other
+  tb_device_id: d8aec530-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_BTC Leggacy
+    role: status
+    source: trigger
+  - key_name: activeTs_BTC Leggacy
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_BTC Leggacy
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_BTC Leggacy
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_BTC Leggacy
+    role: total_use
+    source: trigger
+  - key_name: BTC Leggacy 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery 2 (End)
+  device_type: Other
+  tb_device_id: 3a94bff0-45cb-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery 2 (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Battery 2 (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Battery 2 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Battery 2 (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Battery 2 (End)
+    role: total_use
+    source: trigger
+  - key_name: Battery 2 (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery 2 (Front)
+  device_type: Other
+  tb_device_id: 641acc30-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery 2 (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Battery 2 (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Battery 2 (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Battery 2 (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Battery 2 (Front)
+    role: total_use
+    source: trigger
+  - key_name: Battery 2 (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery A (End)
+  device_type: Other
+  tb_device_id: b9d20120-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery A (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Battery A (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Battery A (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Battery A (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Battery A (End)
+    role: total_use
+    source: trigger
+  - key_name: Battery A (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery A (Front)
+  device_type: Other
+  tb_device_id: a2721e20-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery A (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Battery A (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Battery A (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Battery A (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Battery A (Front)
+    role: total_use
+    source: trigger
+  - key_name: Battery A (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Berbaru (End)
+  device_type: Other
+  tb_device_id: 700e1a30-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Berbaru (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Berbaru (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Berbaru (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Berbaru (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Berbaru (End)
+    role: total_use
+    source: trigger
+  - key_name: Berbaru (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Berbaru (Front)
+  device_type: Other
+  tb_device_id: 8678eed0-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Berbaru (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Berbaru (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Berbaru (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Berbaru (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Berbaru (Front)
+    role: total_use
+    source: trigger
+  - key_name: Berbaru (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CBNG BE
+  device_type: Other
+  tb_device_id: 43be42c0-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_CBNG BE
+    role: status
+    source: trigger
+  - key_name: activeTs_CBNG BE
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CBNG BE
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CBNG BE
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CBNG BE
+    role: total_use
+    source: trigger
+  - key_name: CBNG BE 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Changeover Room
+  device_type: Other
+  tb_device_id: a00bf370-5adf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Changeover Room
+    role: status
+    source: trigger
+  - key_name: activeTs_Changeover Room
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Changeover Room
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Changeover Room
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Changeover Room
+    role: total_use
+    source: trigger
+  - key_name: Changeover Room 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: DPM CH1
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH1
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH1
+    role: total_use
+    source: trigger
+- name: DPM CH2
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH2
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH2
+    role: total_use
+    source: trigger
+- name: DPM CH3
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH3
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH3
+    role: total_use
+    source: trigger
+- name: Fusion Lex L11 (End)
+  device_type: Other
+  tb_device_id: c68b1020-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Fusion Lex L11 (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Fusion Lex L11 (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Fusion Lex L11 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Fusion Lex L11 (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Fusion Lex L11 (End)
+    role: total_use
+    source: trigger
+  - key_name: Fusion Lex L11 (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Gmoi (Front)
+  device_type: Other
+  tb_device_id: ce9b5ac0-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Gmoi (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Gmoi (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Gmoi (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Gmoi (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Gmoi (Front)
+    role: total_use
+    source: trigger
+  - key_name: Gmoi (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: L5 Tetra (Portable)
+  device_type: Other
+  tb_device_id: 2d9c9a30-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_L5 Tetra (Portable)
+    role: status
+    source: trigger
+  - key_name: activeTs_L5 Tetra (Portable)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_L5 Tetra (Portable)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_L5 Tetra (Portable)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_L5 Tetra (Portable)
+    role: total_use
+    source: trigger
+  - key_name: L5 Tetra (Portable) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Lavender (End)
+  device_type: Other
+  tb_device_id: 65c4da10-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Lavender (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Lavender (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Lavender (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Lavender (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Lavender (End)
+    role: total_use
+    source: trigger
+  - key_name: Lavender (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mantaray
+  device_type: Other
+  tb_device_id: 2543fbf0-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Mantaray
+    role: status
+    source: trigger
+  - key_name: activeTs_Mantaray
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mantaray
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mantaray
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mantaray
+    role: total_use
+    source: trigger
+  - key_name: Mantaray 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Melur (End)
+  device_type: Other
+  tb_device_id: b32d9800-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Melur (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Melur (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Melur (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Melur (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Melur (End)
+    role: total_use
+    source: trigger
+  - key_name: Melur (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Melur (Front)
+  device_type: Other
+  tb_device_id: 591a1860-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Melur (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Melur (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Melur (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Melur (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Melur (Front)
+    role: total_use
+    source: trigger
+  - key_name: Melur (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Paradise Port 4 (End)
+  device_type: Other
+  tb_device_id: 4ddecfc0-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Paradise Port 4 (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Paradise Port 4 (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Paradise Port 4 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Paradise Port 4 (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Paradise Port 4 (End)
+    role: total_use
+    source: trigger
+  - key_name: Paradise Port 4 (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Paradise Port 4 (Front)
+  device_type: Other
+  tb_device_id: 495caa60-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Paradise Port 4 (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Paradise Port 4 (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Paradise Port 4 (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Paradise Port 4 (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Paradise Port 4 (Front)
+    role: total_use
+    source: trigger
+  - key_name: Paradise Port 4 (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Post Reflow
+  device_type: Other
+  tb_device_id: c4d9ab50-ae33-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Post Reflow
+    role: status
+    source: trigger
+  - key_name: activeTs_Post Reflow
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Post Reflow
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Post Reflow
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Post Reflow
+    role: total_use
+    source: trigger
+  - key_name: Post Reflow 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Production Toilet UFM(C Lab)
+  device_type: UFM
+  tb_device_id: dfdbf5b0-7913-11f1-9dc4-796c2a0fd3f5
+  keys:
+  - key_name: active_Production Toilet UFM(C Lab)
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: S3 HLA
+  device_type: Other
+  tb_device_id: 3fdbbbf0-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_S3 HLA
+    role: status
+    source: trigger
+  - key_name: activeTs_S3 HLA
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_S3 HLA
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_S3 HLA
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_S3 HLA
+    role: total_use
+    source: trigger
+  - key_name: S3 HLA 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sakura (End)
+  device_type: Other
+  tb_device_id: 009464b0-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sakura (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Sakura (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sakura (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sakura (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sakura (End)
+    role: total_use
+    source: trigger
+  - key_name: Sakura (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sakura (Front)
+  device_type: Other
+  tb_device_id: 26483010-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sakura (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Sakura (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sakura (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sakura (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sakura (Front)
+    role: total_use
+    source: trigger
+  - key_name: Sakura (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina
+  device_type: Other
+  tb_device_id: 8ed5e820-82ff-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sanmina
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina
+    role: total_use
+    source: trigger
+  - key_name: Sanmina 1D
+    role: daily_issues
+    source: trigger
+  - key_name: SYSTEM_000_00_
+    role: heartbeat
+- name: Sanmina DPM
+  device_type: DPM
+  tb_device_id: 5a7904c0-45d0-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sanmina DPM
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina DPM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina DPM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina DPM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina DPM
+    role: total_use
+    source: trigger
+  - key_name: Sanmina DPM 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Flowmeter 1
+  device_type: Flowmeter
+  tb_device_id: 17358290-4ff5-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sanmina Flowmeter 1
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina Flowmeter 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina Flowmeter 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina Flowmeter 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina Flowmeter 1
+    role: total_use
+    source: trigger
+  - key_name: Sanmina Flowmeter 1 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Flowmeter 2
+  device_type: Flowmeter
+  tb_device_id: 1adfc5e0-4ff5-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sanmina Flowmeter 2
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina Flowmeter 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina Flowmeter 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina Flowmeter 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina Flowmeter 2
+    role: total_use
+    source: trigger
+  - key_name: Sanmina Flowmeter 2 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Flowmeter 3 (Cooling tower)
+  device_type: Flowmeter
+  tb_device_id: 8c232c50-5a68-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina Flowmeter 3 (Cooling tower)
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina Flowmeter 3 (Cooling tower)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina Flowmeter 3 (Cooling tower)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina Flowmeter 3 (Cooling tower)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina Flowmeter 3 (Cooling tower)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Flowmeter 4 (Main Domestic Supply)
+  device_type: Flowmeter
+  tb_device_id: e9576530-5a6d-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina Flowmeter 4 (Main Domestic Supply)
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina Flowmeter 4 (Main Domestic Supply)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina Flowmeter 4 (Main Domestic Supply)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina Flowmeter 4 (Main Domestic Supply)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina Flowmeter 4 (Main Domestic Supply)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Outdoor East RHT
+  device_type: RHT
+  tb_device_id: 74267040-6b83-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina Outdoor East RHT
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina Outdoor West RHT
+  device_type: RHT
+  tb_device_id: ef644610-6b83-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina Outdoor West RHT
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina PH1 Flowmeter
+  device_type: Flowmeter
+  tb_device_id: 91355880-6b89-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina PH1 Flowmeter
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina PH2 Flowmeter
+  device_type: Flowmeter
+  tb_device_id: c0d0ff90-6b89-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Sanmina PH2 Flowmeter
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina RODI
+  device_type: Other
+  tb_device_id: 613ec9e0-84e8-11f1-9490-85a518ecea8d
+  keys:
+  - key_name: active_Sanmina RODI
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina RTD
+  device_type: RTD
+  tb_device_id: 204c52a0-4ff5-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sanmina RTD
+    role: status
+    source: trigger
+  - key_name: activeTs_Sanmina RTD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Sanmina RTD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Sanmina RTD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Sanmina RTD
+    role: total_use
+    source: trigger
+  - key_name: Sanmina RTD 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Sanmina VIP_toilet&Canteen
+  device_type: Other
+  tb_device_id: dd7c8df0-818f-11f1-9490-85a518ecea8d
+  keys:
+  - key_name: active_Sanmina VIP_toilet&Canteen
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tanjung (End)
+  device_type: Other
+  tb_device_id: a1e88db0-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tanjung (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Tanjung (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Tanjung (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Tanjung (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Tanjung (End)
+    role: total_use
+    source: trigger
+  - key_name: Tanjung (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tanjung (Front)
+  device_type: Other
+  tb_device_id: 9a0db580-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tanjung (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Tanjung (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Tanjung (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Tanjung (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Tanjung (Front)
+    role: total_use
+    source: trigger
+  - key_name: Tanjung (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tetra 2 (End)
+  device_type: Other
+  tb_device_id: 79526d70-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tetra 2 (End)
+    role: status
+    source: trigger
+  - key_name: activeTs_Tetra 2 (End)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Tetra 2 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Tetra 2 (End)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Tetra 2 (End)
+    role: total_use
+    source: trigger
+  - key_name: Tetra 2 (End) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tetra 2 (Front)
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Tetra 2 (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Tetra 2 (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Tetra 2 (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Tetra 2 (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Tetra 2 (Front)
+    role: total_use
+    source: trigger
+  - key_name: Tetra 2 (Front) 1D
+    role: daily_issues
+    source: trigger
+- name: Tetra 2 Start BE 1
+  device_type: Other
+  tb_device_id: 62054f20-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tetra 2 Start BE 1
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Tetra 2 Start BE 1
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Tetra 2 Start BE 1
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tetra 3B (Front)
+  device_type: Other
+  tb_device_id: 73a87600-4ff4-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tetra 3B (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Tetra 3B (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Tetra 3B (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Tetra 3B (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Tetra 3B (Front)
+    role: total_use
+    source: trigger
+  - key_name: Tetra 3B (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Toki Accessories (Front)
+  device_type: Other
+  tb_device_id: fcd723b0-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Toki Accessories (Front)
+    role: status
+    source: trigger
+  - key_name: activeTs_Toki Accessories (Front)
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Toki Accessories (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Toki Accessories (Front)
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Toki Accessories (Front)
+    role: total_use
+    source: trigger
+  - key_name: Toki Accessories (Front) 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: WYMAX Tetra Start
+  device_type: Other
+  tb_device_id: 16f8a1c0-90a6-11f1-9490-85a518ecea8d
+  keys:
+  - key_name: active_WYMAX Tetra Start
+    role: status
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat

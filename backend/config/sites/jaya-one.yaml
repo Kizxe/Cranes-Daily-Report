@@ -1,0 +1,1128 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Jaya One — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger JayaOneTriggers --name Jaya One --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (JayaOneTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Jaya One
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: JayaOneTriggers
+  tb_device_id: 9201bd90-528d-11f1-affa-4b17a85c1ccb
+devices:
+- name: AEON Front
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AEON Front
+    role: status
+    source: trigger
+  - key_name: activeTs_AEON Front
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AEON Front
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AEON Front
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AEON Front
+    role: total_use
+    source: trigger
+  - key_name: AEON Front 1D
+    role: daily_issues
+    source: trigger
+- name: AEON Pillar
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AEON Pillar
+    role: status
+    source: trigger
+  - key_name: activeTs_AEON Pillar
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AEON Pillar
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AEON Pillar
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AEON Pillar
+    role: total_use
+    source: trigger
+  - key_name: AEON Pillar 1D
+    role: daily_issues
+    source: trigger
+- name: AEON Wall
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AEON Wall
+    role: status
+    source: trigger
+  - key_name: activeTs_AEON Wall
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AEON Wall
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AEON Wall
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AEON Wall
+    role: total_use
+    source: trigger
+  - key_name: AEON Wall 1D
+    role: daily_issues
+    source: trigger
+- name: AHU Chilled Water Pressure
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU Chilled Water Pressure
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU Chilled Water Pressure
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU Chilled Water Pressure
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU Chilled Water Pressure
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU Chilled Water Pressure
+    role: total_use
+    source: trigger
+- name: AHU-B2-1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-B2-1
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-B2-1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-B2-1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-B2-1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-B2-1
+    role: total_use
+    source: trigger
+- name: AHU-B2-2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-B2-2
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-B2-2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-B2-2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-B2-2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-B2-2
+    role: total_use
+    source: trigger
+- name: AHU-B2-3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-B2-3
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-B2-3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-B2-3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-B2-3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-B2-3
+    role: total_use
+    source: trigger
+- name: AHU-B2-4
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-B2-4
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-B2-4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-B2-4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-B2-4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-B2-4
+    role: total_use
+    source: trigger
+- name: AHU-CG-GRD
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-CG-GRD
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-CG-GRD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-CG-GRD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-CG-GRD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-CG-GRD
+    role: total_use
+    source: trigger
+- name: AHU-CG-L1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-CG-L1
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-CG-L1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-CG-L1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-CG-L1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-CG-L1
+    role: total_use
+    source: trigger
+- name: AHU-GF-1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-GF-1
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-GF-1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-GF-1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-GF-1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-GF-1
+    role: total_use
+    source: trigger
+- name: AHU-GF-2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-GF-2
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-GF-2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-GF-2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-GF-2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-GF-2
+    role: total_use
+    source: trigger
+- name: AHU-GF-3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-GF-3
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-GF-3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-GF-3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-GF-3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-GF-3
+    role: total_use
+    source: trigger
+- name: AHU-GF-4
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-GF-4
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-GF-4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-GF-4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-GF-4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-GF-4
+    role: total_use
+    source: trigger
+- name: AHU-GF-5
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-GF-5
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-GF-5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-GF-5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-GF-5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-GF-5
+    role: total_use
+    source: trigger
+- name: AHU-L1-2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-L1-2
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-L1-2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-L1-2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-L1-2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-L1-2
+    role: total_use
+    source: trigger
+- name: AHU-L1-3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-L1-3
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-L1-3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-L1-3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-L1-3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-L1-3
+    role: total_use
+    source: trigger
+- name: AHU-L1-5
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AHU-L1-5
+    role: status
+    source: trigger
+  - key_name: activeTs_AHU-L1-5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AHU-L1-5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AHU-L1-5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AHU-L1-5
+    role: total_use
+    source: trigger
+- name: Bump Front
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Bump Front
+    role: status
+    source: trigger
+  - key_name: activeTs_Bump Front
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Bump Front
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Bump Front
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Bump Front
+    role: total_use
+    source: trigger
+  - key_name: Bump Front 1D
+    role: daily_issues
+    source: trigger
+- name: Bump Side
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Bump Side
+    role: status
+    source: trigger
+  - key_name: activeTs_Bump Side
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Bump Side
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Bump Side
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Bump Side
+    role: total_use
+    source: trigger
+  - key_name: Bump Side 1D
+    role: daily_issues
+    source: trigger
+- name: CG Ground Floor
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CG Ground Floor
+    role: status
+    source: trigger
+  - key_name: activeTs_CG Ground Floor
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CG Ground Floor
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CG Ground Floor
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CG Ground Floor
+    role: total_use
+    source: trigger
+  - key_name: CG Ground Floor 1D
+    role: daily_issues
+    source: trigger
+- name: CG Level 1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CG Level 1
+    role: status
+    source: trigger
+  - key_name: activeTs_CG Level 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CG Level 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CG Level 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CG Level 1
+    role: total_use
+    source: trigger
+  - key_name: CG Level 1 1D
+    role: daily_issues
+    source: trigger
+- name: CHW Pump1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CHW Pump1
+    role: status
+    source: trigger
+  - key_name: activeTs_CHW Pump1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CHW Pump1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CHW Pump1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CHW Pump1
+    role: total_use
+    source: trigger
+- name: CHW Pump2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CHW Pump2
+    role: status
+    source: trigger
+  - key_name: activeTs_CHW Pump2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CHW Pump2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CHW Pump2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CHW Pump2
+    role: total_use
+    source: trigger
+- name: CHW Pump3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CHW Pump3
+    role: status
+    source: trigger
+  - key_name: activeTs_CHW Pump3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CHW Pump3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CHW Pump3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CHW Pump3
+    role: total_use
+    source: trigger
+- name: CHW UFM
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_CHW UFM
+    role: status
+    source: trigger
+  - key_name: activeTs_CHW UFM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CHW UFM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CHW UFM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CHW UFM
+    role: total_use
+    source: trigger
+  - key_name: CHW UFM 1D
+    role: daily_issues
+    source: trigger
+- name: CT 1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 1
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 1
+    role: total_use
+    source: trigger
+- name: CT 2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 2
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 2
+    role: total_use
+    source: trigger
+- name: CT 3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 3
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 3
+    role: total_use
+    source: trigger
+- name: CT 4
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 4
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 4
+    role: total_use
+    source: trigger
+- name: CT 5
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 5
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 5
+    role: total_use
+    source: trigger
+- name: CT 6
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CT 6
+    role: status
+    source: trigger
+  - key_name: activeTs_CT 6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CT 6
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CT 6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CT 6
+    role: total_use
+    source: trigger
+- name: CW Pump1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CW Pump1
+    role: status
+    source: trigger
+  - key_name: activeTs_CW Pump1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CW Pump1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CW Pump1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CW Pump1
+    role: total_use
+    source: trigger
+- name: CW Pump2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CW Pump2
+    role: status
+    source: trigger
+  - key_name: activeTs_CW Pump2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CW Pump2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CW Pump2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CW Pump2
+    role: total_use
+    source: trigger
+- name: CW Pump3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_CW Pump3
+    role: status
+    source: trigger
+  - key_name: activeTs_CW Pump3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CW Pump3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CW Pump3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CW Pump3
+    role: total_use
+    source: trigger
+- name: CW UFM
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_CW UFM
+    role: status
+    source: trigger
+  - key_name: activeTs_CW UFM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CW UFM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CW UFM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CW UFM
+    role: total_use
+    source: trigger
+  - key_name: CW UFM 1D
+    role: daily_issues
+    source: trigger
+- name: DPM CH1
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH1
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH1
+    role: total_use
+    source: trigger
+  - key_name: DPM CH1 1D
+    role: daily_issues
+    source: trigger
+- name: DPM CH2
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH2
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH2
+    role: total_use
+    source: trigger
+  - key_name: DPM CH2 1D
+    role: daily_issues
+    source: trigger
+- name: DPM CH3
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH3
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH3
+    role: total_use
+    source: trigger
+  - key_name: DPM CH3 1D
+    role: daily_issues
+    source: trigger
+- name: Godubab
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Godubab
+    role: status
+    source: trigger
+  - key_name: activeTs_Godubab
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Godubab
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Godubab
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Godubab
+    role: total_use
+    source: trigger
+  - key_name: Godubab 1D
+    role: daily_issues
+    source: trigger
+- name: Jaya One
+  device_type: Other
+  tb_device_id: ee84be10-c0f6-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Jaya One
+    role: status
+    source: trigger
+  - key_name: Jaya One 1D
+    role: daily_issues
+    source: trigger
+  - key_name: Energy 3 (kWh)
+    role: heartbeat
+- name: Jaya One AHU
+  device_type: Other
+  tb_device_id: 09ffd600-229c-11f1-a38e-e56ade1a22b0
+  keys:
+  - key_name: active_Jaya One AHU
+    role: status
+    source: trigger
+  - key_name: AhuBaseline
+    role: heartbeat
+- name: Jaya One RHT
+  device_type: RHT
+  tb_device_id: 9edb2f80-0560-11f1-a38e-e56ade1a22b0
+  keys:
+  - key_name: active_Jaya One RHT
+    role: status
+    source: trigger
+  - key_name: Jaya One RHT 1D
+    role: daily_issues
+    source: trigger
+  - key_name: RHT09_DevHGF
+    role: heartbeat
+- name: Minibowl Front
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Minibowl Front
+    role: status
+    source: trigger
+  - key_name: activeTs_Minibowl Front
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Minibowl Front
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Minibowl Front
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Minibowl Front
+    role: total_use
+    source: trigger
+  - key_name: Minibowl Front 1D
+    role: daily_issues
+    source: trigger
+- name: Minibowl Side
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Minibowl Side
+    role: status
+    source: trigger
+  - key_name: activeTs_Minibowl Side
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Minibowl Side
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Minibowl Side
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Minibowl Side
+    role: total_use
+    source: trigger
+  - key_name: Minibowl Side 1D
+    role: daily_issues
+    source: trigger
+- name: Mr DIY
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Mr DIY
+    role: status
+    source: trigger
+  - key_name: activeTs_Mr DIY
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mr DIY
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mr DIY
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mr DIY
+    role: total_use
+    source: trigger
+  - key_name: Mr DIY 1D
+    role: daily_issues
+    source: trigger
+- name: Ollie & Hana
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Ollie & Hana
+    role: status
+    source: trigger
+  - key_name: activeTs_Ollie & Hana
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Ollie & Hana
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Ollie & Hana
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Ollie & Hana
+    role: total_use
+    source: trigger
+  - key_name: Ollie & Hana 1D
+    role: daily_issues
+    source: trigger
+- name: Original Classic Front
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Original Classic Front
+    role: status
+    source: trigger
+  - key_name: activeTs_Original Classic Front
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Original Classic Front
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Original Classic Front
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Original Classic Front
+    role: total_use
+    source: trigger
+  - key_name: Original Classic Front 1D
+    role: daily_issues
+    source: trigger
+- name: Original Classic Inside
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Original Classic Inside
+    role: status
+    source: trigger
+  - key_name: activeTs_Original Classic Inside
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Original Classic Inside
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Original Classic Inside
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Original Classic Inside
+    role: total_use
+    source: trigger
+  - key_name: Original Classic Inside 1D
+    role: daily_issues
+    source: trigger
+- name: Outdoor East
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Outdoor East
+    role: status
+    source: trigger
+  - key_name: activeTs_Outdoor East
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Outdoor East
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Outdoor East
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Outdoor East
+    role: total_use
+    source: trigger
+  - key_name: Outdoor East 1D
+    role: daily_issues
+    source: trigger
+- name: Outdoor West
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Outdoor West
+    role: status
+    source: trigger
+  - key_name: activeTs_Outdoor West
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Outdoor West
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Outdoor West
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Outdoor West
+    role: total_use
+    source: trigger
+  - key_name: Outdoor West 1D
+    role: daily_issues
+    source: trigger
+- name: RTD CH1
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_RTD CH1
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD CH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD CH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD CH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD CH1
+    role: total_use
+    source: trigger
+  - key_name: RTD CH1 1D
+    role: daily_issues
+    source: trigger
+- name: RTD CH2
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_RTD CH2
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD CH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD CH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD CH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD CH2
+    role: total_use
+    source: trigger
+  - key_name: RTD CH2 1D
+    role: daily_issues
+    source: trigger
+- name: RTD CH3
+  device_type: RTD
+  tb_device_id: null
+  keys:
+  - key_name: active_RTD CH3
+    role: status
+    source: trigger
+  - key_name: activeTs_RTD CH3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_RTD CH3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_RTD CH3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_RTD CH3
+    role: total_use
+    source: trigger
+  - key_name: RTD CH3 1D
+    role: daily_issues
+    source: trigger
+- name: We Love Science
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_We Love Science
+    role: status
+    source: trigger
+  - key_name: activeTs_We Love Science
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_We Love Science
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_We Love Science
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_We Love Science
+    role: total_use
+    source: trigger
+  - key_name: We Love Science 1D
+    role: daily_issues
+    source: trigger

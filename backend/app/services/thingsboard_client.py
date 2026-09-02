@@ -119,15 +119,29 @@ class ThingsBoardClient:
 
     async def latest_timeseries(self, device_id: str, keys: list[str]) -> dict[str, list[dict]]:
         """{'status': [{'ts': 1690000000000, 'value': 'ACTIVE'}], ...}"""
+        # Some sensors are named with commas in them — `DPM Chiller 7,8,13`, BSC's
+        # `West Third Floor (T09,T10,...)`. ThingsBoard splits the `keys` parameter on
+        # commas server-side (percent-encoding doesn't help, it decodes first), so such
+        # a key comes back as two fragments with value None and the device silently
+        # reads UNKNOWN forever. The unfiltered read has no `keys` to split, so fetch
+        # every key once and pick those out.
+        plain = [k for k in keys if "," not in k]
+        commaed = [k for k in keys if "," in k]
+
         out: dict[str, list[dict]] = {}
-        for i in range(0, len(keys), self.KEY_BATCH):
+        for i in range(0, len(plain), self.KEY_BATCH):
             out.update(
                 await self._request(
                     "GET",
                     f"/plugins/telemetry/DEVICE/{device_id}/values/timeseries",
-                    params={"keys": ",".join(keys[i : i + self.KEY_BATCH])},
+                    params={"keys": ",".join(plain[i : i + self.KEY_BATCH])},
                 )
             )
+        if commaed:
+            everything = await self._request(
+                "GET", f"/plugins/telemetry/DEVICE/{device_id}/values/timeseries"
+            )
+            out.update({k: everything[k] for k in commaed if k in everything})
         return out
 
     async def latest_attributes(self, device_id: str, keys: list[str] | None = None) -> list[dict]:

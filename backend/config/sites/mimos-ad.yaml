@@ -1,0 +1,749 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# MIMOS Ad — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger MimosAdTriggers --name MIMOS Ad --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (MimosAdTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: MIMOS Ad
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: MimosAdTriggers
+  tb_device_id: 507753a0-cff5-11f0-8150-1ffa4442f0c7
+devices:
+- name: Mimos FlowMeter
+  device_type: Flowmeter
+  tb_device_id: ee949060-7cf9-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Mimos FlowMeter
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos FlowMeter
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos FlowMeter
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos FlowMeter
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos FlowMeter
+    role: total_use
+    source: trigger
+  - key_name: Mimos FlowMeter 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 1
+  device_type: Other
+  tb_device_id: d740aba0-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 1
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 1
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 2
+  device_type: Other
+  tb_device_id: dba58c60-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 2
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 2
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 3
+  device_type: Other
+  tb_device_id: df5af340-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 3
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 3
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 4
+  device_type: Other
+  tb_device_id: e33e9610-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 4
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 4
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 5
+  device_type: Other
+  tb_device_id: e6cdd750-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 5
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 5
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 6
+  device_type: Other
+  tb_device_id: ea5e2a00-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 6
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 6
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 6
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 7
+  device_type: Other
+  tb_device_id: f2d20350-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 7
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 7
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 7
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 7
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 7
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 8
+  device_type: Other
+  tb_device_id: f7467470-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 8
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 8
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 8
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 8
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 8
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAd Temp 9
+  device_type: Other
+  tb_device_id: fb3ba370-d3d1-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAd Temp 9
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAd Temp 9
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAd Temp 9
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAd Temp 9
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAd Temp 9
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: MimosAdCT
+  device_type: Other
+  tb_device_id: 0d59d1f0-d31c-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_MimosAdCT
+    role: status
+    source: trigger
+  - key_name: activeTs_MimosAdCT
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MimosAdCT
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MimosAdCT
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MimosAdCT
+    role: total_use
+    source: trigger
+  - key_name: MimosAdCT 1D
+    role: daily_issues
+    source: trigger
+  - key_name: lastConnectTime
+    role: heartbeat
+- name: Mimos_ad_DPM
+  device_type: Other
+  tb_device_id: 8acbcb70-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_DPM
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_DPM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_DPM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_DPM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_DPM
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_DPM 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_EastSens
+  device_type: Other
+  tb_device_id: a28e40d0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_EastSens
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_EastSens
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_EastSens
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_EastSens
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_EastSens
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_EastSens 1D
+    role: daily_issues
+    source: trigger
+  - key_name: temperature
+    role: heartbeat
+- name: Mimos_ad_RHT1
+  device_type: Other
+  tb_device_id: 14e7bdb0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT1
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT1
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT1 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT10
+  device_type: Other
+  tb_device_id: 52db6bd0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT10
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT10
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT10
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT10
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT10
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT10 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT11
+  device_type: Other
+  tb_device_id: 58bdc4d0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT11
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT11
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT11
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT11
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT11
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT11 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT12
+  device_type: Other
+  tb_device_id: 5eccac10-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT12
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT12
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT12
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT12
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT12
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT12 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT13
+  device_type: Other
+  tb_device_id: 6b9c8c80-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT13
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT13
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT13
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT13
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT13
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT13 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT14
+  device_type: Other
+  tb_device_id: 71017820-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT14
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT14
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT14
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT14
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT14
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT14 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT15
+  device_type: Other
+  tb_device_id: 770255a0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT15
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT15
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT15
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT15
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT15
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT15 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT16
+  device_type: Other
+  tb_device_id: 7cb4ec10-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT16
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT16
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT16
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT16
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT16
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT16 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT17
+  device_type: Other
+  tb_device_id: 821d5a20-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT17
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT17
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT17
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT17
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT17
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT17 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT2
+  device_type: Other
+  tb_device_id: 1f389460-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT2
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT2
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT2 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT3
+  device_type: Other
+  tb_device_id: 28232450-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT3
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT3
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT3 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT4
+  device_type: Other
+  tb_device_id: 2f05d650-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT4
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT4
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT4 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT5
+  device_type: Other
+  tb_device_id: 35ef3f10-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT5
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT5
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT5 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT6
+  device_type: Other
+  tb_device_id: 3c194f70-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT6
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT6
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT6
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT6 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT7
+  device_type: Other
+  tb_device_id: 41d61f10-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT7
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT7
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT7
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT7
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT7
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT7 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT8
+  device_type: Other
+  tb_device_id: 476c2cd0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT8
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT8
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT8
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT8
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT8
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT8 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RHT9
+  device_type: Other
+  tb_device_id: 4d139fb0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RHT9
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RHT9
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RHT9
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RHT9
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RHT9
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RHT9 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Mimos_ad_RTD
+  device_type: Other
+  tb_device_id: 936bbdd0-ba26-11ef-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Mimos_ad_RTD
+    role: status
+    source: trigger
+  - key_name: activeTs_Mimos_ad_RTD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Mimos_ad_RTD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Mimos_ad_RTD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Mimos_ad_RTD
+    role: total_use
+    source: trigger
+  - key_name: Mimos_ad_RTD 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat

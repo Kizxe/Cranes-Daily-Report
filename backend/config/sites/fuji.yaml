@@ -1,0 +1,2289 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Fuji — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger FujiTriggers --name Fuji --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (FujiTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Fuji
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: FujiTriggers
+  tb_device_id: 745ed5e0-c9d3-11f0-8150-1ffa4442f0c7
+devices:
+- name: APX Next (Mid)
+  device_type: Other
+  tb_device_id: a4be7490-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_APX Next (Mid)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_APX Next (Mid)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_APX Next (Mid)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: B.Implant-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Implant-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Implant-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Implant-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Implant-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Implant-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Implant-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Implant-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Implant-A TMP
+    role: total_use
+    source: trigger
+- name: B.Implant-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Implant-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Implant-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Implant-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Implant-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Implant-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Implant-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Implant-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Implant-B TMP
+    role: total_use
+    source: trigger
+- name: B.Litho-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Litho-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Litho-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Litho-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Litho-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Litho-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Litho-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Litho-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Litho-A TMP
+    role: total_use
+    source: trigger
+- name: B.Litho-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Litho-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Litho-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Litho-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Litho-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Litho-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Litho-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Litho-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Litho-B TMP
+    role: total_use
+    source: trigger
+- name: B.Litho-C TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Litho-C TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Litho-C TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Litho-C TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Litho-C TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Litho-C TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Litho-C TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Litho-C TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Litho-C TMP
+    role: total_use
+    source: trigger
+- name: B.Sputter-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B.Sputter-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B.Sputter-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B.Sputter-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B.Sputter-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B.Sputter-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B.Sputter-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B.Sputter-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B.Sputter-A TMP
+    role: total_use
+    source: trigger
+- name: B2.Implant1 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B2.Implant1 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B2.Implant1 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B2.Implant1 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B2.Implant1 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B2.Implant1 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B2.Implant1 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B2.Implant1 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B2.Implant1 TMP
+    role: total_use
+    source: trigger
+- name: B2.Implant2 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B2.Implant2 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B2.Implant2 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B2.Implant2 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B2.Implant2 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B2.Implant2 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B2.Implant2 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B2.Implant2 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B2.Implant2 TMP
+    role: total_use
+    source: trigger
+- name: B2.Implant3 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B2.Implant3 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B2.Implant3 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B2.Implant3 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B2.Implant3 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B2.Implant3 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B2.Implant3 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B2.Implant3 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B2.Implant3 TMP
+    role: total_use
+    source: trigger
+- name: B2.Sputter TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_B2.Sputter TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_B2.Sputter TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_B2.Sputter TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_B2.Sputter TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_B2.Sputter TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_B2.Sputter TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_B2.Sputter TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_B2.Sputter TMP
+    role: total_use
+    source: trigger
+- name: BTC Leggacy
+  device_type: Other
+  tb_device_id: d8aec530-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_BTC Leggacy
+    role: status
+    source: trigger
+  - key_name: InactiveTs_BTC Leggacy
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_BTC Leggacy
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery 2 (End)
+  device_type: Other
+  tb_device_id: 3a94bff0-45cb-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery 2 (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Battery 2 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Battery 2 (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Battery A (End)
+  device_type: Other
+  tb_device_id: b9d20120-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Battery A (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Battery A (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Battery A (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Berbaru (End)
+  device_type: Other
+  tb_device_id: 700e1a30-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Berbaru (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Berbaru (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Berbaru (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: C.Room 1 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_C.Room 1 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_C.Room 1 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_C.Room 1 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_C.Room 1 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_C.Room 1 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_C.Room 1 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_C.Room 1 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_C.Room 1 TMP
+    role: total_use
+    source: trigger
+- name: C.Room 2 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_C.Room 2 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_C.Room 2 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_C.Room 2 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_C.Room 2 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_C.Room 2 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_C.Room 2 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_C.Room 2 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_C.Room 2 TMP
+    role: total_use
+    source: trigger
+- name: C.Room 3 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_C.Room 3 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_C.Room 3 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_C.Room 3 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_C.Room 3 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_C.Room 3 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_C.Room 3 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_C.Room 3 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_C.Room 3 TMP
+    role: total_use
+    source: trigger
+- name: C.Room 4 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_C.Room 4 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_C.Room 4 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_C.Room 4 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_C.Room 4 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_C.Room 4 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_C.Room 4 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_C.Room 4 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_C.Room 4 TMP
+    role: total_use
+    source: trigger
+- name: Changeover Room
+  device_type: Other
+  tb_device_id: a00bf370-5adf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Changeover Room
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Changeover Room
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Changeover Room
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Chiller 13
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 13
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 13
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 13
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 13
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 13
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 13
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 13
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 13
+    role: total_use
+    source: trigger
+- name: Chiller 14
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 14
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 14
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 14
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 14
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 14
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 14
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 14
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 14
+    role: total_use
+    source: trigger
+- name: Chiller 15
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 15
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 15
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 15
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 15
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 15
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 15
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 15
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 15
+    role: total_use
+    source: trigger
+- name: Chiller 16
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 16
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 16
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 16
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 16
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 16
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 16
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 16
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 16
+    role: total_use
+    source: trigger
+- name: Chiller 6
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 6
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 6
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 6
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 6
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 6
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 6
+    role: total_use
+    source: trigger
+- name: Chiller 7
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 7
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 7
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 7
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 7
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 7
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 7
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 7
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 7
+    role: total_use
+    source: trigger
+- name: Chiller 8
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Chiller 8
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Chiller 8
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Chiller 8
+    role: severity
+    source: trigger
+  - key_name: activeTs_Chiller 8
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Chiller 8
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Chiller 8
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Chiller 8
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Chiller 8
+    role: total_use
+    source: trigger
+- name: DPM CH1
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH1
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH1
+    role: total_use
+    source: trigger
+- name: DPM CH2
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH2
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH2
+    role: total_use
+    source: trigger
+- name: DPM CH3
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH3
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM CH3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM CH3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM CH3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM CH3
+    role: total_use
+    source: trigger
+- name: DPM CH4
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH4
+    role: status
+    source: trigger
+  - key_name: InactiveTs_DPM CH4
+    role: inactive_ts
+    source: trigger
+- name: DPM CH5
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH5
+    role: status
+    source: trigger
+  - key_name: InactiveTs_DPM CH5
+    role: inactive_ts
+    source: trigger
+- name: DPM CH6
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH6
+    role: status
+    source: trigger
+  - key_name: InactiveTs_DPM CH6
+    role: inactive_ts
+    source: trigger
+- name: DPM CH7
+  device_type: DPM
+  tb_device_id: null
+  keys:
+  - key_name: active_DPM CH7
+    role: status
+    source: trigger
+  - key_name: InactiveTs_DPM CH7
+    role: inactive_ts
+    source: trigger
+- name: DPM Chiller 14,15,16
+  device_type: DPM
+  tb_device_id: 6fb2c690-02ec-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_DPM Chiller 14,15,16
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM Chiller 14,15,16
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM Chiller 14,15,16
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM Chiller 14,15,16
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM Chiller 14,15,16
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: DPM Chiller 6
+  device_type: DPM
+  tb_device_id: 5c191350-02ec-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_DPM Chiller 6
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM Chiller 6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM Chiller 6
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM Chiller 6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM Chiller 6
+    role: total_use
+    source: trigger
+  - key_name: DPM Chiller 6 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: DPM Chiller 7,8,13
+  device_type: DPM
+  tb_device_id: 899537a0-045e-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_DPM Chiller 7,8,13
+    role: status
+    source: trigger
+  - key_name: activeTs_DPM Chiller 7,8,13
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_DPM Chiller 7,8,13
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_DPM Chiller 7,8,13
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_DPM Chiller 7,8,13
+    role: total_use
+    source: trigger
+  - key_name: DPM Chiller 7,8,13 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: EI Packing TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_EI Packing TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_EI Packing TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_EI Packing TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_EI Packing TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_EI Packing TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_EI Packing TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_EI Packing TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_EI Packing TMP
+    role: total_use
+    source: trigger
+- name: F.BG-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.BG-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.BG-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.BG-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.BG-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.BG-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.BG-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.BG-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.BG-A TMP
+    role: total_use
+    source: trigger
+- name: F.BG-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.BG-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.BG-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.BG-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.BG-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.BG-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.BG-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.BG-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.BG-B TMP
+    role: total_use
+    source: trigger
+- name: F.Diffusion-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Diffusion-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Diffusion-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Diffusion-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Diffusion-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Diffusion-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Diffusion-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Diffusion-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Diffusion-A TMP
+    role: total_use
+    source: trigger
+- name: F.Diffusion-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Diffusion-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Diffusion-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Diffusion-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Diffusion-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Diffusion-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Diffusion-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Diffusion-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Diffusion-B TMP
+    role: total_use
+    source: trigger
+- name: F.Etching1-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Etching1-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Etching1-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Etching1-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Etching1-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Etching1-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Etching1-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Etching1-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Etching1-A TMP
+    role: total_use
+    source: trigger
+- name: F.Etching1-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Etching1-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Etching1-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Etching1-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Etching1-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Etching1-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Etching1-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Etching1-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Etching1-B TMP
+    role: total_use
+    source: trigger
+- name: F.Etching2-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Etching2-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Etching2-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Etching2-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Etching2-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Etching2-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Etching2-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Etching2-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Etching2-A TMP
+    role: total_use
+    source: trigger
+- name: F.Etching2-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Etching2-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Etching2-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Etching2-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Etching2-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Etching2-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Etching2-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Etching2-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Etching2-B TMP
+    role: total_use
+    source: trigger
+- name: F.Implant-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Implant-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Implant-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Implant-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Implant-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Implant-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Implant-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Implant-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Implant-A TMP
+    role: total_use
+    source: trigger
+- name: F.Implant-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Implant-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Implant-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Implant-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Implant-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Implant-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Implant-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Implant-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Implant-B TMP
+    role: total_use
+    source: trigger
+- name: F.Litho-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Litho-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Litho-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Litho-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Litho-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Litho-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Litho-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Litho-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Litho-A TMP
+    role: total_use
+    source: trigger
+- name: F.Litho-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F.Litho-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F.Litho-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F.Litho-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F.Litho-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F.Litho-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F.Litho-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F.Litho-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F.Litho-B TMP
+    role: total_use
+    source: trigger
+- name: F2.Diffusion TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F2.Diffusion TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F2.Diffusion TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F2.Diffusion TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F2.Diffusion TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F2.Diffusion TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F2.Diffusion TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F2.Diffusion TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F2.Diffusion TMP
+    role: total_use
+    source: trigger
+- name: F2.Etching TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F2.Etching TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F2.Etching TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F2.Etching TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F2.Etching TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F2.Etching TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F2.Etching TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F2.Etching TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F2.Etching TMP
+    role: total_use
+    source: trigger
+- name: F2.Etching2 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F2.Etching2 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F2.Etching2 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F2.Etching2 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F2.Etching2 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F2.Etching2 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F2.Etching2 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F2.Etching2 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F2.Etching2 TMP
+    role: total_use
+    source: trigger
+- name: F2.Litho TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F2.Litho TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F2.Litho TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F2.Litho TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F2.Litho TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F2.Litho TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F2.Litho TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F2.Litho TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F2.Litho TMP
+    role: total_use
+    source: trigger
+- name: F2.Wetstation TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_F2.Wetstation TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_F2.Wetstation TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_F2.Wetstation TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_F2.Wetstation TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_F2.Wetstation TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_F2.Wetstation TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_F2.Wetstation TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_F2.Wetstation TMP
+    role: total_use
+    source: trigger
+- name: FUJI
+  device_type: Other
+  tb_device_id: 06b85ff0-102b-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_FUJI
+    role: status
+    source: trigger
+  - key_name: activeTs_FUJI
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_FUJI
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_FUJI
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_FUJI
+    role: total_use
+    source: trigger
+  - key_name: FUJI 1D
+    role: daily_issues
+    source: trigger
+  - key_name: pwr3
+    role: heartbeat
+- name: FUJI BMS TCP
+  device_type: Other
+  tb_device_id: 1e0c7590-6617-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_FUJI BMS TCP
+    role: status
+    source: trigger
+  - key_name: activeTs_FUJI BMS TCP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_FUJI BMS TCP
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_FUJI BMS TCP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_FUJI BMS TCP
+    role: total_use
+    source: trigger
+  - key_name: M1_CHWS_Temp
+    role: heartbeat
+- name: Fuji RHT External
+  device_type: RHT
+  tb_device_id: 925df660-09fe-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_Fuji RHT External
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Fuji RHT External
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Fuji RHT External
+    role: severity
+    source: trigger
+  - key_name: activeTs_Fuji RHT External
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Fuji RHT External
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Fuji RHT External
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Fuji RHT External
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Fuji RHT External
+    role: total_use
+    source: trigger
+  - key_name: Fuji RHT External 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Fuji RHT External 2
+  device_type: RHT
+  tb_device_id: b774e4f0-b957-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Fuji RHT External 2
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_Fuji RHT External 2
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_Fuji RHT External 2
+    role: severity
+    source: trigger
+  - key_name: activeTs_Fuji RHT External 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Fuji RHT External 2
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_Fuji RHT External 2
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_Fuji RHT External 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Fuji RHT External 2
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: FujiModichiller
+  device_type: Other
+  tb_device_id: 4449f5d0-0965-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_FujiModichiller
+    role: status
+    source: trigger
+  - key_name: activeTs_FujiModichiller
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_FujiModichiller
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_FujiModichiller
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_FujiModichiller
+    role: total_use
+    source: trigger
+  - key_name: FujiModichiller 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Fusion Lex L11 (End)
+  device_type: Other
+  tb_device_id: c68b1020-45cd-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Fusion Lex L11 (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Fusion Lex L11 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Fusion Lex L11 (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: GuardHouse
+  device_type: Other
+  tb_device_id: 8a3fd710-0962-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_GuardHouse
+    role: status
+    source: trigger
+  - key_name: activeTs_GuardHouse
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_GuardHouse
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_GuardHouse
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_GuardHouse
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: HI Packing TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_HI Packing TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_HI Packing TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_HI Packing TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_HI Packing TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_HI Packing TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_HI Packing TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_HI Packing TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_HI Packing TMP
+    role: total_use
+    source: trigger
+- name: L.Marking TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_L.Marking TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_L.Marking TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_L.Marking TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_L.Marking TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_L.Marking TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_L.Marking TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_L.Marking TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_L.Marking TMP
+    role: total_use
+    source: trigger
+- name: Lavender (End)
+  device_type: Other
+  tb_device_id: 65c4da10-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Lavender (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Lavender (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Lavender (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: M.Corridor-A TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M.Corridor-A TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M.Corridor-A TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M.Corridor-A TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M.Corridor-A TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M.Corridor-A TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M.Corridor-A TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M.Corridor-A TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M.Corridor-A TMP
+    role: total_use
+    source: trigger
+- name: M.Corridor-B TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M.Corridor-B TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M.Corridor-B TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M.Corridor-B TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M.Corridor-B TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M.Corridor-B TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M.Corridor-B TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M.Corridor-B TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M.Corridor-B TMP
+    role: total_use
+    source: trigger
+- name: M1Office
+  device_type: Other
+  tb_device_id: 91c558c0-0962-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_M1Office
+    role: status
+    source: trigger
+  - key_name: activeTs_M1Office
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M1Office
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_M1Office
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M1Office
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: M1_CHWS
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M1_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M1_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M1_CHWS
+    role: severity
+    source: trigger
+  - key_name: activeTs_M1_CHWS
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_M1_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M1_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M1_CHWS
+    role: total_use
+    source: trigger
+- name: M2 Test 1 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2 Test 1 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2 Test 1 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2 Test 1 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2 Test 1 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M2 Test 1 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M2 Test 1 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2 Test 1 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2 Test 1 TMP
+    role: total_use
+    source: trigger
+- name: M2 Test 2 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2 Test 2 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2 Test 2 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2 Test 2 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2 Test 2 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M2 Test 2 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M2 Test 2 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2 Test 2 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2 Test 2 TMP
+    role: total_use
+    source: trigger
+- name: M2 Test 3 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2 Test 3 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2 Test 3 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2 Test 3 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2 Test 3 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M2 Test 3 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M2 Test 3 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2 Test 3 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2 Test 3 TMP
+    role: total_use
+    source: trigger
+- name: M2 Test 4 TMP
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2 Test 4 TMP
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2 Test 4 TMP
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2 Test 4 TMP
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2 Test 4 TMP
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M2 Test 4 TMP
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M2 Test 4 TMP
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2 Test 4 TMP
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2 Test 4 TMP
+    role: total_use
+    source: trigger
+- name: M2Office
+  device_type: Other
+  tb_device_id: 9845c680-0962-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_M2Office
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2Office
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2Office
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2Office
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_M2Office
+    role: inactive_ts
+    source: trigger
+  - key_name: IssueOcc_M2Office
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2Office
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2Office
+    role: total_use
+    source: trigger
+  - key_name: M2Office 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: M2_CHWR
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2_CHWR
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2_CHWR
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2_CHWR
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2_CHWR
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_M2_CHWR
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2_CHWR
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2_CHWR
+    role: total_use
+    source: trigger
+- name: M2_CHWS
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_M2_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_M2_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_M2_CHWS
+    role: severity
+    source: trigger
+  - key_name: activeTs_M2_CHWS
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_M2_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_M2_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_M2_CHWS
+    role: total_use
+    source: trigger
+- name: Melur (End)
+  device_type: Other
+  tb_device_id: b32d9800-45cc-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Melur (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Melur (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Melur (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: PCWR
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_PCWR
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_PCWR
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_PCWR
+    role: severity
+    source: trigger
+  - key_name: activeTs_PCWR
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_PCWR
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_PCWR
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_PCWR
+    role: total_use
+    source: trigger
+- name: PCWS
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_PCWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_PCWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_PCWS
+    role: severity
+    source: trigger
+  - key_name: activeTs_PCWS
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_PCWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_PCWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_PCWS
+    role: total_use
+    source: trigger
+- name: Paradise Port 4 (End)
+  device_type: Other
+  tb_device_id: 4ddecfc0-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Paradise Port 4 (End)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Paradise Port 4 (End)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Paradise Port 4 (End)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: S1_CHWS
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_S1_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_S1_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_S1_CHWS
+    role: severity
+    source: trigger
+  - key_name: activeTs_S1_CHWS
+    role: active_ts
+    source: trigger
+  - key_name: IssueOcc_S1_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_S1_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_S1_CHWS
+    role: total_use
+    source: trigger
+- name: Sakura (Front)
+  device_type: Other
+  tb_device_id: 26483010-45ce-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Sakura (Front)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Sakura (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Sakura (Front)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Tetra 3B (Front)
+  device_type: Other
+  tb_device_id: 73a87600-4ff4-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Tetra 3B (Front)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Tetra 3B (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Tetra 3B (Front)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Toki Accessories (Front)
+  device_type: Other
+  tb_device_id: fcd723b0-45cf-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Toki Accessories (Front)
+    role: status
+    source: trigger
+  - key_name: InactiveTs_Toki Accessories (Front)
+    role: inactive_ts
+    source: trigger
+  - key_name: forTotalUse_Toki Accessories (Front)
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: UFM 1F2F_CHWS
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM 1F2F_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM 1F2F_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM 1F2F_CHWS
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM 1F2F_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM 1F2F_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM 1F2F_CHWS
+    role: total_use
+    source: trigger
+- name: UFM GF_CHWS
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM GF_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM GF_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM GF_CHWS
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM GF_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM GF_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM GF_CHWS
+    role: total_use
+    source: trigger
+- name: UFM M1 CHWS
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM M1 CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM M1 CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM M1 CHWS
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM M1 CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM M1 CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM M1 CHWS
+    role: total_use
+    source: trigger
+- name: UFM M1_HEADER_CHWS
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM M1_HEADER_CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM M1_HEADER_CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM M1_HEADER_CHWS
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM M1_HEADER_CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM M1_HEADER_CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM M1_HEADER_CHWS
+    role: total_use
+    source: trigger
+- name: UFM M1flow
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM M1flow
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM M1flow
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM M1flow
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM M1flow
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM M1flow
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM M1flow
+    role: total_use
+    source: trigger
+- name: UFM M2flow
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM M2flow
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM M2flow
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM M2flow
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM M2flow
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM M2flow
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM M2flow
+    role: total_use
+    source: trigger
+- name: UFM S1-CHWS
+  device_type: UFM
+  tb_device_id: null
+  keys:
+  - key_name: active_UFM S1-CHWS
+    role: active_flag
+    source: trigger
+  - key_name: deviceStatus_UFM S1-CHWS
+    role: status
+    source: trigger
+  - key_name: deviceSeverity_UFM S1-CHWS
+    role: severity
+    source: trigger
+  - key_name: IssueOcc_UFM S1-CHWS
+    role: issue_count
+    source: trigger
+  - key_name: ActiveInActive_UFM S1-CHWS
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_UFM S1-CHWS
+    role: total_use
+    source: trigger
+- name: fuji modiport http
+  device_type: Other
+  tb_device_id: c05ce640-482c-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_fuji modiport http
+    role: status
+    source: trigger
+  - key_name: activeTs_fuji modiport http
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_fuji modiport http
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_fuji modiport http
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_fuji modiport http
+    role: total_use
+    source: trigger
+  - key_name: R-13 Condenser Refrigerant Pressure
+    role: heartbeat
+- name: tempRTH1
+  device_type: Other
+  tb_device_id: 4799cde0-0885-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_tempRTH1
+    role: status
+    source: trigger
+  - key_name: activeTs_tempRTH1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_tempRTH1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_tempRTH1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_tempRTH1
+    role: total_use
+    source: trigger
+  - key_name: tempRTH1 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: tempRTH2
+  device_type: Other
+  tb_device_id: 50dba590-0885-11f0-82da-edc9c62fd9f4
+  keys:
+  - key_name: active_tempRTH2
+    role: status
+    source: trigger
+  - key_name: activeTs_tempRTH2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_tempRTH2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_tempRTH2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_tempRTH2
+    role: total_use
+    source: trigger
+  - key_name: tempRTH2 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat

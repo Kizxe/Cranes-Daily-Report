@@ -1,0 +1,383 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Computime — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger ComputimeTrigger --name Computime --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (ComputimeTrigger) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Computime
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: ComputimeTrigger
+  tb_device_id: 56ef7ce0-ca77-11f0-8150-1ffa4442f0c7
+devices:
+- name: CPT RODI
+  device_type: Other
+  tb_device_id: d4757e70-c136-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_CPT RODI
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT RODI
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT RODI
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT RODI
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT RODI
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT Waste Water Flow
+  device_type: Other
+  tb_device_id: 5a2256c0-c136-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_CPT Waste Water Flow
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT Waste Water Flow
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT Waste Water Flow
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT Waste Water Flow
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT Waste Water Flow
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-DPM
+  device_type: DPM
+  tb_device_id: ba3ca030-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-DPM
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-DPM
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-DPM
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-DPM
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-DPM
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-DPM 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - BEnd WW
+  device_type: RHT
+  tb_device_id: 456ee470-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - BEnd WW
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - BEnd WW
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - BEnd WW
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - BEnd WW
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - BEnd WW
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - BEnd WW 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - Coat Room WW
+  device_type: RHT
+  tb_device_id: 1e4bf8b0-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - Coat Room WW
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - Coat Room WW
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - Coat Room WW
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - Coat Room WW
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - Coat Room WW
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - Coat Room WW 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - East
+  device_type: RHT
+  tb_device_id: 977398b0-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - East
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - East
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - East
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - East
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - East
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - East 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - Lab Room
+  device_type: RHT
+  tb_device_id: 020bc360-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - Lab Room
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - Lab Room
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - Lab Room
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - Lab Room
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - Lab Room
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - Lab Room 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - MH Room
+  device_type: RHT
+  tb_device_id: a74bb010-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - MH Room
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - MH Room
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - MH Room
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - MH Room
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - MH Room
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - MH Room 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - Midway BEnd
+  device_type: RHT
+  tb_device_id: e9138d20-8cfa-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - Midway BEnd
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - Midway BEnd
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - Midway BEnd
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - Midway BEnd
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - Midway BEnd
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - Midway BEnd 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - Temp Room
+  device_type: RHT
+  tb_device_id: 0f380690-8cf9-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - Temp Room
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - Temp Room
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - Temp Room
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - Temp Room
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - Temp Room
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - Temp Room 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - WSolder WW
+  device_type: RHT
+  tb_device_id: bc26c450-8cf8-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - WSolder WW
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - WSolder WW
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - WSolder WW
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - WSolder WW
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - WSolder WW
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - WSolder WW 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RHT - West
+  device_type: RHT
+  tb_device_id: 8e6cce30-8cfb-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RHT - West
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RHT - West
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RHT - West
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RHT - West
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RHT - West
+    role: total_use
+    source: trigger
+  - key_name: CPT-PG-RHT - West 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT-PG-RTD
+  device_type: RTD
+  tb_device_id: 73964260-8cf8-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_CPT-PG-RTD
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT-PG-RTD
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT-PG-RTD
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT-PG-RTD
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT-PG-RTD
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: CPT_Flowmeter
+  device_type: Other
+  tb_device_id: aa63c890-8ee0-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_CPT_Flowmeter
+    role: status
+    source: trigger
+  - key_name: activeTs_CPT_Flowmeter
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_CPT_Flowmeter
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_CPT_Flowmeter
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_CPT_Flowmeter
+    role: total_use
+    source: trigger
+  - key_name: CPT_Flowmeter 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Computime Data
+  device_type: Other
+  tb_device_id: f1fa76c0-8cfe-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_Computime Data
+    role: status
+    source: trigger
+  - key_name: activeTs_Computime Data
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Computime Data
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Computime Data
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Computime Data
+    role: total_use
+    source: trigger
+  - key_name: Computime Data 1D
+    role: daily_issues
+    source: trigger
+  - key_name: 'xxENT_008_06_ '
+    role: heartbeat

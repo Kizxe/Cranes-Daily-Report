@@ -1,0 +1,80 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# MIMOS Fab — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger MimosFabTriggers --name MIMOS Fab --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (MimosFabTriggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: MIMOS Fab
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: MimosFabTriggers
+  tb_device_id: 58cddac0-d012-11f0-8150-1ffa4442f0c7
+devices:
+- name: MIMOS Fab Chiller
+  device_type: Other
+  tb_device_id: 055e4df0-8cf4-11ef-9f3b-6d8fbe567f6e
+  keys:
+  - key_name: active_MIMOS Fab Chiller
+    role: status
+    source: trigger
+  - key_name: activeTs_MIMOS Fab Chiller
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MIMOS Fab Chiller
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MIMOS Fab Chiller
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MIMOS Fab Chiller
+    role: total_use
+    source: trigger
+  - key_name: MIMOS Fab Chiller 1D
+    role: daily_issues
+    source: trigger
+  - key_name: temperature
+    role: heartbeat
+- name: mimosfab flowrates
+  device_type: Other
+  tb_device_id: 85303360-8fd5-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_mimosfab flowrates
+    role: status
+    source: trigger
+  - key_name: activeTs_mimosfab flowrates
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_mimosfab flowrates
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_mimosfab flowrates
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_mimosfab flowrates
+    role: total_use
+    source: trigger
+  - key_name: mimosfab flowrates 1D
+    role: daily_issues
+    source: trigger
+  - key_name: MF3
+    role: heartbeat

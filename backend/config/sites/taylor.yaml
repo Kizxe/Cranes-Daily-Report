@@ -1,0 +1,371 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Taylor — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger TaylorTrigger --name Taylor --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (TaylorTrigger) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Taylor
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: TaylorTrigger
+  tb_device_id: f55e57b0-fb33-11f0-a38e-e56ade1a22b0
+devices:
+- name: Block A & B
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Block A & B
+    role: status
+    source: trigger
+  - key_name: activeTs_Block A & B
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Block A & B
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Block A & B
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Block A & B
+    role: total_use
+    source: trigger
+- name: Block C
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Block C
+    role: status
+    source: trigger
+  - key_name: activeTs_Block C
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Block C
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Block C
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Block C
+    role: total_use
+    source: trigger
+- name: Block D
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Block D
+    role: status
+    source: trigger
+  - key_name: activeTs_Block D
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Block D
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Block D
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Block D
+    role: total_use
+    source: trigger
+- name: Block E
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Block E
+    role: status
+    source: trigger
+  - key_name: activeTs_Block E
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Block E
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Block E
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Block E
+    role: total_use
+    source: trigger
+- name: Cooling Tower
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Cooling Tower
+    role: status
+    source: trigger
+  - key_name: activeTs_Cooling Tower
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Cooling Tower
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Cooling Tower
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Cooling Tower
+    role: total_use
+    source: trigger
+- name: MSB 1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_MSB 1
+    role: status
+    source: trigger
+  - key_name: activeTs_MSB 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MSB 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MSB 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MSB 1
+    role: total_use
+    source: trigger
+- name: MSB 2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_MSB 2
+    role: status
+    source: trigger
+  - key_name: activeTs_MSB 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MSB 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MSB 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MSB 2
+    role: total_use
+    source: trigger
+- name: MSB 3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_MSB 3
+    role: status
+    source: trigger
+  - key_name: activeTs_MSB 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MSB 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MSB 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MSB 3
+    role: total_use
+    source: trigger
+- name: MSB 4
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_MSB 4
+    role: status
+    source: trigger
+  - key_name: activeTs_MSB 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_MSB 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_MSB 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_MSB 4
+    role: total_use
+    source: trigger
+- name: Taylor
+  device_type: Other
+  tb_device_id: 2107baf0-491d-11f1-affa-4b17a85c1ccb
+  keys:
+  - key_name: active_Taylor
+    role: status
+    source: trigger
+  - key_name: activeTs_Taylor
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Taylor
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Taylor
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Taylor
+    role: total_use
+    source: trigger
+  - key_name: Current 3 (A)
+    role: heartbeat
+- name: 'Taylor''s Flowmeter: Block A (and B)'
+  device_type: Flowmeter
+  tb_device_id: 2a170f30-5e34-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: 'active_Taylor''s Flowmeter: Block A (and B)'
+    role: status
+    source: trigger
+  - key_name: 'activeTs_Taylor''s Flowmeter: Block A (and B)'
+    role: active_ts
+    source: trigger
+  - key_name: 'InactiveTs_Taylor''s Flowmeter: Block A (and B)'
+    role: inactive_ts
+    source: trigger
+  - key_name: 'ActiveInActive_Taylor''s Flowmeter: Block A (and B)'
+    role: uptime_split
+    source: trigger
+  - key_name: 'forTotalUse_Taylor''s Flowmeter: Block A (and B)'
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: 'Taylor''s Flowmeter: Block C'
+  device_type: Flowmeter
+  tb_device_id: 9f4c34d0-5d6f-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: 'active_Taylor''s Flowmeter: Block C'
+    role: status
+    source: trigger
+  - key_name: 'activeTs_Taylor''s Flowmeter: Block C'
+    role: active_ts
+    source: trigger
+  - key_name: 'InactiveTs_Taylor''s Flowmeter: Block C'
+    role: inactive_ts
+    source: trigger
+  - key_name: 'ActiveInActive_Taylor''s Flowmeter: Block C'
+    role: uptime_split
+    source: trigger
+  - key_name: 'forTotalUse_Taylor''s Flowmeter: Block C'
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: 'Taylor''s Flowmeter: Block D'
+  device_type: Flowmeter
+  tb_device_id: e8174100-5d6a-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: 'active_Taylor''s Flowmeter: Block D'
+    role: status
+    source: trigger
+  - key_name: 'activeTs_Taylor''s Flowmeter: Block D'
+    role: active_ts
+    source: trigger
+  - key_name: 'InactiveTs_Taylor''s Flowmeter: Block D'
+    role: inactive_ts
+    source: trigger
+  - key_name: 'ActiveInActive_Taylor''s Flowmeter: Block D'
+    role: uptime_split
+    source: trigger
+  - key_name: 'forTotalUse_Taylor''s Flowmeter: Block D'
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: 'Taylor''s Flowmeter: Block E'
+  device_type: Flowmeter
+  tb_device_id: ca4b9771-5d6f-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: 'active_Taylor''s Flowmeter: Block E'
+    role: status
+    source: trigger
+  - key_name: 'activeTs_Taylor''s Flowmeter: Block E'
+    role: active_ts
+    source: trigger
+  - key_name: 'InactiveTs_Taylor''s Flowmeter: Block E'
+    role: inactive_ts
+    source: trigger
+  - key_name: 'ActiveInActive_Taylor''s Flowmeter: Block E'
+    role: uptime_split
+    source: trigger
+  - key_name: 'forTotalUse_Taylor''s Flowmeter: Block E'
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: 'Taylor''s Flowmeter: Cooling Tower'
+  device_type: Flowmeter
+  tb_device_id: 427f4700-6090-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: 'active_Taylor''s Flowmeter: Cooling Tower'
+    role: status
+    source: trigger
+  - key_name: 'activeTs_Taylor''s Flowmeter: Cooling Tower'
+    role: active_ts
+    source: trigger
+  - key_name: 'InactiveTs_Taylor''s Flowmeter: Cooling Tower'
+    role: inactive_ts
+    source: trigger
+  - key_name: 'ActiveInActive_Taylor''s Flowmeter: Cooling Tower'
+    role: uptime_split
+    source: trigger
+  - key_name: 'forTotalUse_Taylor''s Flowmeter: Cooling Tower'
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Taylors MSB DPM 1 & 2
+  device_type: DPM
+  tb_device_id: 8fa37bb0-7435-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Taylors MSB DPM 1 & 2
+    role: status
+    source: trigger
+  - key_name: activeTs_Taylors MSB DPM 1 & 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Taylors MSB DPM 1 & 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Taylors MSB DPM 1 & 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Taylors MSB DPM 1 & 2
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
+- name: Taylors MSB DPM 3 & 4
+  device_type: DPM
+  tb_device_id: 34b3cae0-744c-11f0-8150-1ffa4442f0c7
+  keys:
+  - key_name: active_Taylors MSB DPM 3 & 4
+    role: status
+    source: trigger
+  - key_name: activeTs_Taylors MSB DPM 3 & 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Taylors MSB DPM 3 & 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Taylors MSB DPM 3 & 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Taylors MSB DPM 3 & 4
+    role: total_use
+    source: trigger
+  - key_name: 'Seq #'
+    role: heartbeat
