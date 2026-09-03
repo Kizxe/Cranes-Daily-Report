@@ -200,3 +200,44 @@ async def test_no_page_content_overruns_the_footer():
             f"past the footer"
         )
         assert not info["spills"], f"page {info['n']} has cells spilling: {info['spills']}"
+
+
+@pytest.mark.asyncio
+async def test_sites_overview_paginates_past_the_cover():
+    """Enough sites to overflow the cover must continue, not run over the footer.
+
+    The overview table rendered every site in one go, which fit while there were 3
+    configured and ran clean off the bottom of page 1 at 16 — the rows printed
+    straight through the footer rule.
+    """
+    for i in range(16):
+        make_site(f"Site {i:02d}", [device(f"RHT {i}")], sort_order=i)
+
+    ctx = report_service.build_context(DATE)
+    covers = [p for p in ctx["pages"] if p["kind"] in ("cover", "cover-cont")]
+
+    assert len(covers) > 1, "16 sites still claim to fit on the cover alone"
+    assert covers[0]["kind"] == "cover"
+    assert all(p["kind"] == "cover-cont" for p in covers[1:])
+
+    # Every site appears exactly once, in order, across the cover pages.
+    listed = [s["name"] for p in covers for s in p["sites"]]
+    assert listed == [s["name"] for s in ctx["sites"]]
+
+    # The jump-link note belongs on the last cover page only.
+    assert [p["cover_last"] for p in covers] == [False] * (len(covers) - 1) + [True]
+
+    out = await report_service.generate_report(DATE, trigger="manual")
+    assert out["status"] == "generated", out["error"]
+    with pdfplumber.open(out["pdf_path"]) as pdf:
+        assert len(pdf.pages) == ctx["total_pages"]
+
+
+@pytest.mark.asyncio
+async def test_single_site_still_fits_one_cover_page():
+    """The common case must not gain a blank continuation page."""
+    make_site("NUMed", [device("Numed RHT Wet Lab")])
+    ctx = report_service.build_context(DATE)
+
+    assert [p["kind"] for p in ctx["pages"]].count("cover-cont") == 0
+    assert ctx["pages"][0]["cover_last"] is True

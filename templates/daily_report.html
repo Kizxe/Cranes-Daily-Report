@@ -208,6 +208,39 @@
   </div>
 {%- endmacro -%}
 
+{#- The SITES OVERVIEW table, shared by the cover and its continuation pages. At 16
+    sites it no longer fits on the cover alone, so report_layout splits `sites`
+    across pages and each one renders its own slice through here. -#}
+{%- macro overview_table(rows) -%}
+  <table>
+    <colgroup>
+      <col style="width:108px"><col style="width:61px"><col style="width:74px">
+      <col style="width:61px"><col style="width:129px"><col>
+    </colgroup>
+    <thead><tr>
+      <th>SITE</th><th>DEVICES</th><th>NO DATA HRS</th><th>ACTIVE %</th>
+      <th>CURRENT STATUS</th><th>REMARK</th>
+    </tr></thead>
+    <tbody>
+    {% for s in rows %}
+      <tr>
+        <td>
+          <div class="sitename"><a href="#{{ s.anchor }}">{{ s.name }}</a></div>
+          <div style="margin-top:7px"><span class="pill {{ s.health }}">{{ s.health }}</span></div>
+        </td>
+        <td>{{ s.devices }}</td>
+        <td>{{ s.no_data_hrs|hrs }}</td>
+        <td class="sev-{{ 'ok' if s.active_pct >= 95 else 'bad' }}">{{ s.active_pct|hrs }}%</td>
+        <td>{{ s.status_breakdown }}</td>
+        <td class="sev-{{ s.remark_severity }}">{{ s.remark or "—" }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="empty">No sites configured.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{%- endmacro -%}
+
 {% for pg in pages %}
 <div class="page"{% if pg.anchor %} id="{{ pg.anchor }}"{% endif %}>
 {{ chrome(pg.number) }}
@@ -230,35 +263,20 @@
 
   <div class="sec"><span class="dash"></span><span class="lbl">SITES OVERVIEW</span><span class="rule"></span></div>
 
-  <table>
-    <colgroup>
-      <col style="width:108px"><col style="width:61px"><col style="width:74px">
-      <col style="width:61px"><col style="width:129px"><col>
-    </colgroup>
-    <thead><tr>
-      <th>SITE</th><th>DEVICES</th><th>NO DATA HRS</th><th>ACTIVE %</th>
-      <th>CURRENT STATUS</th><th>REMARK</th>
-    </tr></thead>
-    <tbody>
-    {% for s in sites %}
-      <tr>
-        <td>
-          <div class="sitename"><a href="#{{ s.anchor }}">{{ s.name }}</a></div>
-          <div style="margin-top:7px"><span class="pill {{ s.health }}">{{ s.health }}</span></div>
-        </td>
-        <td>{{ s.devices }}</td>
-        <td>{{ s.no_data_hrs|hrs }}</td>
-        <td class="sev-{{ 'ok' if s.active_pct >= 95 else 'bad' }}">{{ s.active_pct|hrs }}%</td>
-        <td>{{ s.status_breakdown }}</td>
-        <td class="sev-{{ s.remark_severity }}">{{ s.remark or "—" }}</td>
-      </tr>
-    {% else %}
-      <tr><td colspan="6" class="empty">No sites configured.</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  {{ overview_table(pg.sites) }}
 
+  {% if pg.cover_last %}
   <div class="foot-note">* Click a site name above to jump directly to its detailed device report.</div>
+  {% endif %}
+
+{% elif pg.kind == 'cover-cont' %}
+  <div class="sec"><span class="dash"></span><span class="lbl">SITES OVERVIEW (CONT.)</span><span class="rule"></span></div>
+
+  {{ overview_table(pg.sites) }}
+
+  {% if pg.cover_last %}
+  <div class="foot-note">* Click a site name above to jump directly to its detailed device report.</div>
+  {% endif %}
 
 {% else %}
   {% set site = pg.site %}

@@ -341,13 +341,14 @@ def build_context(date: str) -> dict:
 
     total_devices = sum(s["devices"] for s in site_rows)
     total_active = sum(s["current_active"] for s in site_rows)
-    pages = report_layout.paginate(site_details)
+    is_draft = _is_draft(date)
+    pages = report_layout.paginate(site_details, site_rows, is_draft)
     return {
         "date": date,
         "date_human": datetime.fromisoformat(date).strftime("%d %b %Y"),
         "doc_number": doc_number(date),
         "generated_at": datetime.now(TZ).strftime("%d %b %Y %H:%M %Z"),
-        "is_draft": _is_draft(date),
+        "is_draft": is_draft,
         "monitored_sites": len(groups),
         "total_devices": total_devices,
         "current_active": total_active,

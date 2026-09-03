@@ -46,9 +46,45 @@ REC_CHARS = 34          # the ~216px REMARK column (STATUS widened 80->88 on 202
 EVENT_CHARS = 25        # the 160px DEVICE column of the LONGEST OUTAGES table
 SUMMARY_CHARS = 30      # the 190px DEVICE column of the DOWNTIME SUMMARY table
 
+# ---- SITES OVERVIEW, the cover table ------------------------------------------
+# It used to render every site in one go, which was fine at 3 sites and ran straight
+# over the footer at 16. Its cells are the page-level `tbody td` (11.5px/1.5), NOT the
+# smaller `.in-sec` body the constants above describe, so it needs its own set.
+COVER_CHROME_PX = 301        # head.bottom -> tbody.top: h1 + subtitle + stats + section + thead
+COVER_DRAFT_PX = 71          # the DRAFT banner, when it's there: 29 margin + 42 box
+COVER_CONT_CHROME_PX = 106   # a continuation page: section header + thead only
+
+OVERVIEW_LINE_PX = 18        # one wrapped line of the 11.5px/1.5 body (17.25, rounded up)
+OVERVIEW_NAME_LINE_PX = 17   # one line of .sitename, 11.5px/1.4 (16.1, rounded up)
+OVERVIEW_PILL_PX = 26        # the HEALTHY/ATTENTION pill under the name: 7 margin + 19
+OVERVIEW_PAD_PX = 19         # the row's vertical padding (9+9) + border
+
+# Characters per line = (column width - 20.3px padding) / 6.9px, the measured advance
+# of JetBrains Mono at 11.5px. Keep in step with the cover table's <colgroup>.
+SITE_CHARS = 12         # the 108px SITE column
+STATUS_CHARS = 15       # the 129px CURRENT STATUS column
+OVERVIEW_REMARK_CHARS = 32   # the ~243px REMARK column, whatever is left over
+
 
 def _lines(text: str, width: int) -> int:
     return len(textwrap.wrap(text or "", width)) or 1
+
+
+def overview_px(site: dict) -> int:
+    """Height of one SITES OVERVIEW row — the tallest of its wrapping columns.
+
+    The SITE cell is the name stacked over its health pill, so it sets the floor at
+    one line (61px) and grows faster than the text columns after that: "Robert Bosch
+    Extended Name" wraps to three lines in 108px and is taller than any status
+    breakdown beside it.
+    """
+    name_px = (_lines(site.get("name"), SITE_CHARS) * OVERVIEW_NAME_LINE_PX
+               + OVERVIEW_PILL_PX)
+    text_lines = max(
+        _lines(site.get("status_breakdown"), STATUS_CHARS),
+        _lines(site.get("remark") or "—", OVERVIEW_REMARK_CHARS),
+    )
+    return max(name_px, text_lines * OVERVIEW_LINE_PX) + OVERVIEW_PAD_PX
 
 
 def device_px(device: dict) -> int:
@@ -85,6 +121,7 @@ def _new_page(site: dict, first: bool) -> dict:
         "site": site,
         "first": first,
         "devices": [],
+        "sites": [],
         "summary": [],
         "summary_start": False,
         "events": [],
@@ -92,13 +129,41 @@ def _new_page(site: dict, first: bool) -> dict:
     }
 
 
-def paginate(site_details: list[dict]) -> list[dict]:
+def _new_cover_page(kind: str) -> dict:
+    return {
+        "kind": kind, "number": 0, "anchor": None, "site": None,
+        "first": True, "devices": [], "sites": [], "summary": [],
+        "summary_start": False, "events": [], "events_start": False,
+    }
+
+
+def _cover_pages(sites: list[dict], is_draft: bool) -> list[dict]:
+    """The cover, plus a continuation page per overflow of the SITES OVERVIEW table.
+
+    The cover carries the title block and the stats strip, so it fits far fewer rows
+    than a continuation page does — about 10 against 15.
+    """
+    pages = [_new_cover_page("cover")]
+    used = COVER_CHROME_PX + (COVER_DRAFT_PX if is_draft else 0)
+
+    for s in sites:
+        h = overview_px(s)
+        if pages[-1]["sites"] and used + h > CONTENT_PX:
+            pages.append(_new_cover_page("cover-cont"))
+            used = COVER_CONT_CHROME_PX
+        pages[-1]["sites"].append(s)
+        used += h
+
+    for p in pages:
+        p["cover_last"] = False
+    pages[-1]["cover_last"] = True      # the "click a site name" note goes here
+    return pages
+
+
+def paginate(site_details: list[dict], sites: list[dict] | None = None,
+             is_draft: bool = False) -> list[dict]:
     """Cover page, then as many pages per site as its devices and events need."""
-    pages: list[dict] = [{
-        "kind": "cover", "number": 0, "anchor": None, "site": None,
-        "first": True, "devices": [], "summary": [], "summary_start": False,
-        "events": [], "events_start": False,
-    }]
+    pages: list[dict] = _cover_pages(sites or [], is_draft)
 
     for site in site_details:
         page = _new_page(site, first=True)
