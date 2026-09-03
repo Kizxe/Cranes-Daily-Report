@@ -30,21 +30,6 @@ trigger:
   device_name: FujiTriggers
   tb_device_id: 745ed5e0-c9d3-11f0-8150-1ffa4442f0c7
 devices:
-- name: APX Next (Mid)
-  device_type: Other
-  tb_device_id: a4be7490-45ce-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_APX Next (Mid)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_APX Next (Mid)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_APX Next (Mid)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: B.Implant-A TMP
   device_type: Other
   tb_device_id: null
@@ -325,66 +310,6 @@ devices:
   - key_name: forTotalUse_B2.Sputter TMP
     role: total_use
     source: trigger
-- name: BTC Leggacy
-  device_type: Other
-  tb_device_id: d8aec530-45cd-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_BTC Leggacy
-    role: status
-    source: trigger
-  - key_name: InactiveTs_BTC Leggacy
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_BTC Leggacy
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Battery 2 (End)
-  device_type: Other
-  tb_device_id: 3a94bff0-45cb-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Battery 2 (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Battery 2 (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Battery 2 (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Battery A (End)
-  device_type: Other
-  tb_device_id: b9d20120-45cf-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Battery A (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Battery A (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Battery A (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Berbaru (End)
-  device_type: Other
-  tb_device_id: 700e1a30-45cd-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Berbaru (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Berbaru (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Berbaru (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: C.Room 1 TMP
   device_type: Other
   tb_device_id: null
@@ -497,21 +422,6 @@ devices:
   - key_name: forTotalUse_C.Room 4 TMP
     role: total_use
     source: trigger
-- name: Changeover Room
-  device_type: Other
-  tb_device_id: a00bf370-5adf-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Changeover Room
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Changeover Room
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Changeover Room
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: Chiller 13
   device_type: Other
   tb_device_id: null
@@ -1510,21 +1420,6 @@ devices:
     source: trigger
   - key_name: 'Seq #'
     role: heartbeat
-- name: Fusion Lex L11 (End)
-  device_type: Other
-  tb_device_id: c68b1020-45cd-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Fusion Lex L11 (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Fusion Lex L11 (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Fusion Lex L11 (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: GuardHouse
   device_type: Other
   tb_device_id: 8a3fd710-0962-11f0-82da-edc9c62fd9f4
@@ -1602,21 +1497,6 @@ devices:
   - key_name: forTotalUse_L.Marking TMP
     role: total_use
     source: trigger
-- name: Lavender (End)
-  device_type: Other
-  tb_device_id: 65c4da10-45cc-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Lavender (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Lavender (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Lavender (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: M.Corridor-A TMP
   device_type: Other
   tb_device_id: null
@@ -1914,21 +1794,6 @@ devices:
   - key_name: forTotalUse_M2_CHWS
     role: total_use
     source: trigger
-- name: Melur (End)
-  device_type: Other
-  tb_device_id: b32d9800-45cc-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Melur (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Melur (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Melur (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: PCWR
   device_type: Other
   tb_device_id: null
@@ -1979,21 +1844,6 @@ devices:
   - key_name: forTotalUse_PCWS
     role: total_use
     source: trigger
-- name: Paradise Port 4 (End)
-  device_type: Other
-  tb_device_id: 4ddecfc0-45cf-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Paradise Port 4 (End)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Paradise Port 4 (End)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Paradise Port 4 (End)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: S1_CHWS
   device_type: Other
   tb_device_id: null
@@ -2019,51 +1869,6 @@ devices:
   - key_name: forTotalUse_S1_CHWS
     role: total_use
     source: trigger
-- name: Sakura (Front)
-  device_type: Other
-  tb_device_id: 26483010-45ce-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Sakura (Front)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Sakura (Front)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Sakura (Front)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Tetra 3B (Front)
-  device_type: Other
-  tb_device_id: 73a87600-4ff4-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Tetra 3B (Front)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Tetra 3B (Front)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Tetra 3B (Front)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Toki Accessories (Front)
-  device_type: Other
-  tb_device_id: fcd723b0-45cf-11f0-8150-1ffa4442f0c7
-  keys:
-  - key_name: active_Toki Accessories (Front)
-    role: status
-    source: trigger
-  - key_name: InactiveTs_Toki Accessories (Front)
-    role: inactive_ts
-    source: trigger
-  - key_name: forTotalUse_Toki Accessories (Front)
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: UFM 1F2F_CHWS
   device_type: UFM
   tb_device_id: null
@@ -2237,7 +2042,7 @@ devices:
   - key_name: forTotalUse_fuji modiport http
     role: total_use
     source: trigger
-  - key_name: R-13 Condenser Refrigerant Pressure
+  - key_name: newparams1
     role: heartbeat
 - name: tempRTH1
   device_type: Other

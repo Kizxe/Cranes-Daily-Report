@@ -705,27 +705,6 @@ devices:
     source: trigger
   - key_name: 'Seq #'
     role: heartbeat
-- name: Meatrol DPM
-  device_type: DPM
-  tb_device_id: a30e4050-ea78-11ef-82da-edc9c62fd9f4
-  keys:
-  - key_name: active_Meatrol DPM
-    role: status
-    source: trigger
-  - key_name: activeTs_Meatrol DPM
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Meatrol DPM
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_Meatrol DPM
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Meatrol DPM
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
 - name: Module Level 1-1
   device_type: Other
   tb_device_id: a8426690-4b31-11f0-8150-1ffa4442f0c7
