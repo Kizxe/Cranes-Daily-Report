@@ -83,14 +83,32 @@ reads it.
 - **Don't use the trigger's `Active Device` / `Inactive Device` counters.** The rule chain
   computes them over its own subset (19+4 against a 34-sensor roster on NUMed) and they drift
   minute to minute. Report counts are derived from our own roster instead.
-- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows. Default is now **5 min** (`downtime_poll_minutes`), and `scheduler.start()` fires one catch-up poll ~5 s after boot so a restart leaves no gap. The loop only runs while the process is up, so the container must run 24/7 (`restart: unless-stopped`); for any stretch it was down, `scripts/backfill_downtime.py --date <day>` rebuilds that day's `status_events` from the trigger's status-key history (mirror of `backfill_counters.py`; skips devices that already have events that day).
+- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows. **Both timers are OFF as of 2026-09-03** (`downtime_poll_minutes: 0`, `reconcile_minutes: 0`)
+  — the live ThingsBoard instance had slowed to the point of timing a poll out
+  (`httpx.ReadTimeout` at 16:42), and the loop was costing ~64 requests every 5 minutes,
+  ~760 an hour, around the clock at 537 devices. **The app now calls ThingsBoard only at
+  23:59 and when someone asks it to** (`POST /api/captures/run`, `/api/downtime/poll`,
+  `/api/downtime/reconcile`). The boot catch-up poll is registered with the loop, so it
+  is off too — a restart now makes zero TB calls.
+  The report doesn't suffer: CURRENT STATUS is read from the 23:59 snapshot
+  (`current_status_map` queries `snapshots`, not `status_events`), and the nightly job
+  reconciles the whole day from TB history before rendering, which is what actually
+  catches short outages — the poll only ever sampled them. What's lost is *intraday*
+  freshness: between runs the dashboard and drill-down show the last capture, not live
+  status. Set either minute value non-zero to bring the timer back (one setting each;
+  `tests/test_scheduler_jobs.py` pins both directions).
+  For any stretch the process was down, `scripts/backfill_downtime.py --date <day>`
+  rebuilds that day's `status_events` from the trigger's status-key history (mirror of
+  `backfill_counters.py`; skips devices that already have events that day).
 - **Reconcile from ThingsBoard history** (added 2026-09-01): the poll only *samples*, so a
   device that dropped and recovered inside one interval never reached `status_events` —
   measured on NUMed at 11:32 that day, the poll held 28 downtime windows while the triggers'
   own `1D` counters summed to 98. `reconcile_service.reconcile_day(date, refresh=True)` walks
   the status key's full TB history and replaces that day's rows with every transition TB
-  recorded. Runs hourly on today (`reconcile_minutes`, 0 disables) and once more at the top of
-  the 23:59 job before the report is built; `POST /api/downtime/reconcile?date=` and
+  recorded. **The hourly pass is off since 2026-09-03** (`reconcile_minutes: 0`, see the
+  bullet above); it still runs at the top of
+  the 23:59 job before the report is built, which is the pass that matters —
+  `POST /api/downtime/reconcile?date=` and
   `scripts/backfill_downtime.py --date <day> --refresh` are the manual doors. Without
   `--refresh` the script keeps its old gap-fill behaviour (only days with no events at all).
   A device whose history comes back empty is left untouched — a TB blip must never blank out

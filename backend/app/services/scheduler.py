@@ -92,30 +92,35 @@ def start() -> None:
         CronTrigger(hour=settings.snapshot_hour, minute=settings.snapshot_minute, timezone=TZ),
         id="nightly", replace_existing=True, misfire_grace_time=3600, coalesce=True,
     )
-    scheduler.add_job(
-        downtime_job,
-        IntervalTrigger(minutes=settings.downtime_poll_minutes, timezone=TZ),
-        id="downtime", replace_existing=True, max_instances=1, coalesce=True,
-    )
+    # Both timers are optional. At 0 the app makes no ThingsBoard call of its own
+    # between nightly runs — see settings.downtime_poll_minutes for why that is the
+    # default and what it costs.
+    if settings.downtime_poll_minutes:
+        scheduler.add_job(
+            downtime_job,
+            IntervalTrigger(minutes=settings.downtime_poll_minutes, timezone=TZ),
+            id="downtime", replace_existing=True, max_instances=1, coalesce=True,
+        )
+        # Catch-up poll a few seconds after boot — a restart shouldn't leave a blind
+        # spot the length of a whole poll interval before downtime is next checked.
+        # Pointless when nothing polls on a timer, so it goes with the loop.
+        scheduler.add_job(
+            downtime_job,
+            "date", run_date=datetime.now(TZ) + timedelta(seconds=5),
+            id="downtime-catchup", replace_existing=True, max_instances=1,
+        )
     if settings.reconcile_minutes:
         scheduler.add_job(
             reconcile_job,
             IntervalTrigger(minutes=settings.reconcile_minutes, timezone=TZ),
             id="reconcile", replace_existing=True, max_instances=1, coalesce=True,
         )
-    # Catch-up poll a few seconds after boot — a restart shouldn't leave a blind spot
-    # the length of a whole poll interval before downtime is next checked.
-    scheduler.add_job(
-        downtime_job,
-        "date", run_date=datetime.now(TZ) + timedelta(seconds=5),
-        id="downtime-catchup", replace_existing=True, max_instances=1,
-    )
     scheduler.start()
+    every = lambda m: f"every {m} min" if m else "never"  # noqa: E731
     log.info(
-        "scheduler started: nightly %02d:%02d %s, downtime every %d min, "
-        "reconcile every %s min",
+        "scheduler started: nightly %02d:%02d %s, downtime poll %s, reconcile %s",
         settings.snapshot_hour, settings.snapshot_minute, settings.timezone,
-        settings.downtime_poll_minutes, settings.reconcile_minutes or "never",
+        every(settings.downtime_poll_minutes), every(settings.reconcile_minutes),
     )
 
 

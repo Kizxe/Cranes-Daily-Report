@@ -41,12 +41,23 @@ class Settings(BaseSettings):
     timezone: str = "Asia/Kuala_Lumpur"
     snapshot_hour: int = 23
     snapshot_minute: int = 59
-    # Downtime polling cadence (minutes). CLAUDE.md: 5–15 min is fine.
-    downtime_poll_minutes: int = 5
-    # How often today's events are rebuilt from ThingsBoard history. The poll only
-    # samples, so a drop-and-recover inside one interval never reaches status_events;
-    # the reconcile pass reads every transition TB recorded. 0 disables it.
-    reconcile_minutes: int = 60
+    # Downtime polling cadence (minutes). 0 = never poll on a timer.
+    #
+    # Both timers are OFF (2026-09-03, user's call): the ThingsBoard instance had gone
+    # slow enough to time out a poll outright, and the loop was costing ~64 requests
+    # every 5 minutes, ~760 an hour, around the clock. So the app now touches TB only
+    # at 23:59 and when someone asks it to.
+    #
+    # The report does not suffer for it. CURRENT STATUS is read from the 23:59
+    # snapshot, not from the poll, and the nightly job reconciles the whole day from
+    # TB's own history before rendering — which is what actually catches short
+    # outages; the poll only ever sampled them. What you lose is *intraday* freshness:
+    # between runs the dashboard and the drill-down show the last capture, not live
+    # status. POST /api/downtime/poll and POST /api/captures/run refresh on demand.
+    downtime_poll_minutes: int = 0
+    # How often today's events are rebuilt from ThingsBoard history. 0 disables it —
+    # the nightly job reconciles the day anyway, right before the report is built.
+    reconcile_minutes: int = 0
     # How far either side of the day to look for the transitions surrounding it.
     reconcile_lookback_days: int = 7
     # A downtime event is the sensor going quiet for this long. This is what
