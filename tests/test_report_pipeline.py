@@ -78,13 +78,35 @@ def test_render_html_has_the_sections_and_none_of_the_removed_ones():
     assert "Computime" in html
     assert "SQUARECLOUD MALAYSIA" in html
     assert "DEVICE TYPE BREAKDOWN" in html
-    assert "DOWNTIME SUMMARY" in html
-    assert "LONGEST OUTAGES" in html
     # Removed by request: PIC follow-ups, the signal column, the duration Category
     # column, and the reports/ path that leaked into a client-facing document.
     assert "PIC FOLLOW-UP" not in html
     assert "SIGNAL HEALTH" not in html
     assert f"reports/{DATE}" not in html
+    # Switched off 2026-09-03, to come back later — see report_downtime_sections.
+    assert "DOWNTIME SUMMARY" not in html
+    assert "LONGEST OUTAGES" not in html
+
+
+def test_downtime_sections_stay_off_but_the_data_behind_them_survives():
+    """Off in the PDF only. The context still carries both, ready to switch back on."""
+    make_site("NUMed", [device("A_RHT", status="INACTIVE", affected_h=3.0, issues=2)])
+    ctx = report_service.build_context(DATE)
+    [site] = ctx["site_details"]
+
+    assert site["downtime"], "the summary rows stopped being computed"
+    assert not any(p["summary_start"] or p["events_start"] for p in ctx["pages"])
+    assert not any(p["summary"] or p["events"] for p in ctx["pages"])
+
+
+def test_downtime_sections_come_back_when_the_setting_is_on(monkeypatch):
+    """The one flip that restores them, so the removal stays reversible."""
+    monkeypatch.setattr(report_service.settings, "report_downtime_sections", True)
+    make_site("NUMed", [device("A_RHT", status="INACTIVE", affected_h=3.0, issues=2)])
+    html = report_service.render_html(DATE)
+
+    assert "DOWNTIME SUMMARY" in html
+    assert "LONGEST OUTAGES" in html
 
 
 @pytest.mark.asyncio

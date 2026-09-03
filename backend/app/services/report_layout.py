@@ -161,8 +161,14 @@ def _cover_pages(sites: list[dict], is_draft: bool) -> list[dict]:
 
 
 def paginate(site_details: list[dict], sites: list[dict] | None = None,
-             is_draft: bool = False) -> list[dict]:
-    """Cover page, then as many pages per site as its devices and events need."""
+             is_draft: bool = False, downtime_sections: bool = True) -> list[dict]:
+    """Cover page, then as many pages per site as its devices and events need.
+
+    `downtime_sections` False leaves DOWNTIME SUMMARY and LONGEST OUTAGES off the
+    report (settings.report_downtime_sections). The template gates both on the
+    summary_start / events_start flags set below, so not setting them drops the
+    sections and the space they'd have claimed in one go.
+    """
     pages: list[dict] = _cover_pages(sites or [], is_draft)
 
     for site in site_details:
@@ -182,7 +188,7 @@ def paginate(site_details: list[dict], sites: list[dict] | None = None,
         # DOWNTIME SUMMARY, then LONGEST OUTAGES. Each keeps its header with at least
         # one row, else the whole section moves to the next page rather than orphaning
         # the label.
-        summary = site.get("downtime") or []
+        summary = (site.get("downtime") or []) if downtime_sections else []
         if summary:
             if used + SECTION_PX + EVENT_ROW_PX > budget:
                 pages.append(page)
@@ -201,7 +207,7 @@ def paginate(site_details: list[dict], sites: list[dict] | None = None,
                 page["summary"].append(row)
                 used += h
 
-        events = site.get("events") or []
+        events = (site.get("events") or []) if downtime_sections else []
         if events:
             if used + SECTION_PX + EVENT_ROW_PX > budget:
                 pages.append(page)
@@ -219,7 +225,7 @@ def paginate(site_details: list[dict], sites: list[dict] | None = None,
                     page["events_start"] = True
                 page["events"].append(ev)
                 used += ev_h
-        else:
+        elif downtime_sections:
             # Still render the section so the empty state ("No downtime events
             # recorded...") appears, if it fits.
             if used + SECTION_PX + EVENT_ROW_PX <= budget:

@@ -342,7 +342,8 @@ def build_context(date: str) -> dict:
     total_devices = sum(s["devices"] for s in site_rows)
     total_active = sum(s["current_active"] for s in site_rows)
     is_draft = _is_draft(date)
-    pages = report_layout.paginate(site_details, site_rows, is_draft)
+    pages = report_layout.paginate(site_details, site_rows, is_draft,
+                                   settings.report_downtime_sections)
     return {
         "date": date,
         "date_human": datetime.fromisoformat(date).strftime("%d %b %Y"),

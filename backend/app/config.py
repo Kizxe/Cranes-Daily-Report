@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     retention_days: int = 0
 
     # --- Report: the DOWNTIME sections ------------------------------------
+    # DOWNTIME SUMMARY and LONGEST OUTAGES are switched off in the PDF for now
+    # (2026-09-03, user's call — "later will use for another time"). Nothing is
+    # deleted: both are still computed into the context, the drill-down and
+    # GET /api/downtime/events/{device_id} are untouched, and the template and
+    # page-fitting for them are intact. Set this true to print them again.
+    report_downtime_sections: bool = False
     # The PDF prints a per-device summary (one row per device that dropped, always
     # complete) and then this many individual windows, longest first. A day holds ~100
     # windows across a site; listing them all buried the outages that matter and cost
