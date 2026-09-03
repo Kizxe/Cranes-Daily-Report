@@ -20,11 +20,11 @@
 # Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
 # ─────────────────────────────────────────────────────────────────────────────
 
-name: BTMC
+name: Bukit Tinggi Medical Centre
 kind: device
 tb_group_id: null
-site_label: null
-system_type: null
+site_label: Hospital / Klang, Selangor
+system_type: Chiller Optimization System (COpti)
 expected_report_hours: 24
 trigger:
   device_name: BTMCTriggers

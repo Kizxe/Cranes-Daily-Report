@@ -23,787 +23,787 @@
 name: Robert Bosch
 kind: device
 tb_group_id: null
-site_label: null
-system_type: null
+site_label: Factory / Bayan Lepas, Penang
+system_type: Chiller Optimization System (COpti)
 expected_report_hours: 24
 trigger:
   device_name: Robert Bosch Triggers
   tb_device_id: bddc14f0-0b12-11f1-a38e-e56ade1a22b0
 devices:
-- name: B102 CM Lab
-  device_type: Other
-  tb_device_id: 143799a0-f27c-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102 CM Lab
-    role: status
-    source: trigger
-  - key_name: activeTs_B102 CM Lab
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102 CM Lab
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102 CM Lab
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102 CM Lab
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B102 FA Lab
-  device_type: Other
-  tb_device_id: b4b7d0d0-f27b-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102 FA Lab
-    role: status
-    source: trigger
-  - key_name: activeTs_B102 FA Lab
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102 FA Lab
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102 FA Lab
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102 FA Lab
-    role: total_use
-    source: trigger
-  - key_name: temperature
-    role: heartbeat
-- name: B102 FF
-  device_type: Other
-  tb_device_id: c625a360-f27b-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102 FF
-    role: status
-    source: trigger
-  - key_name: activeTs_B102 FF
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102 FF
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102 FF
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102 FF
-    role: total_use
-    source: trigger
-  - key_name: temperature
-    role: heartbeat
-- name: B102 Maze Store
-  device_type: Other
-  tb_device_id: 06291eb0-f27c-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102 Maze Store
-    role: status
-    source: trigger
-  - key_name: activeTs_B102 Maze Store
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102 Maze Store
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102 Maze Store
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102 Maze Store
-    role: total_use
-    source: trigger
-  - key_name: temperature
-    role: heartbeat
-- name: B102 Metrology Lab
-  device_type: Other
-  tb_device_id: de494b90-f27b-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102 Metrology Lab
-    role: status
-    source: trigger
-  - key_name: activeTs_B102 Metrology Lab
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102 Metrology Lab
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102 Metrology Lab
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102 Metrology Lab
-    role: total_use
-    source: trigger
-  - key_name: temperature
-    role: heartbeat
-- name: B102_QMM_L1_Office
-  device_type: Other
-  tb_device_id: f46563f0-f27b-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B102_QMM_L1_Office
-    role: status
-    source: trigger
-  - key_name: activeTs_B102_QMM_L1_Office
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B102_QMM_L1_Office
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B102_QMM_L1_Office
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B102_QMM_L1_Office
-    role: total_use
-    source: trigger
-  - key_name: temperature
-    role: heartbeat
-- name: B103_1
-  device_type: Other
-  tb_device_id: 08ef0220-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B103_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B103_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B103_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B103_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B103_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B103_2
-  device_type: Other
-  tb_device_id: 153f2b40-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B103_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B103_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B103_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B103_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B103_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B103_3
-  device_type: Other
-  tb_device_id: 35c324c0-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B103_3
-    role: status
-    source: trigger
-  - key_name: activeTs_B103_3
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B103_3
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B103_3
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B103_3
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B103_4
-  device_type: Other
-  tb_device_id: 4080ee10-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B103_4
-    role: status
-    source: trigger
-  - key_name: activeTs_B103_4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B103_4
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B103_4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B103_4
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B103_Packing
-  device_type: Other
-  tb_device_id: 2bff4bd0-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B103_Packing
-    role: status
-    source: trigger
-  - key_name: activeTs_B103_Packing
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B103_Packing
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B103_Packing
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B103_Packing
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B105_External
-  device_type: Other
-  tb_device_id: d3134b50-dd4e-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B105_External
-    role: status
-    source: trigger
-  - key_name: activeTs_B105_External
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B105_External
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B105_External
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B105_External
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108 W1 Warehouse
-  device_type: Other
-  tb_device_id: 29714140-f27c-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108 W1 Warehouse
-    role: status
-    source: trigger
-  - key_name: activeTs_B108 W1 Warehouse
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108 W1 Warehouse
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108 W1 Warehouse
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108 W1 Warehouse
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108 W3_1
-  device_type: Other
-  tb_device_id: 3a05f1e0-f27c-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108 W3_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B108 W3_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108 W3_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108 W3_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108 W3_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108 W3_2
-  device_type: Other
-  tb_device_id: 493fcd70-f27c-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108 W3_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B108 W3_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108 W3_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108 W3_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108 W3_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108_MOE3_1
-  device_type: Other
-  tb_device_id: 9667a960-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108_MOE3_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B108_MOE3_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108_MOE3_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108_MOE3_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108_MOE3_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108_MOE3_2
-  device_type: Other
-  tb_device_id: e73bb060-dfc7-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108_MOE3_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B108_MOE3_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108_MOE3_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108_MOE3_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108_MOE3_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108_MOE3_Packing
-  device_type: Other
-  tb_device_id: 732ca630-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108_MOE3_Packing
-    role: status
-    source: trigger
-  - key_name: activeTs_B108_MOE3_Packing
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108_MOE3_Packing
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108_MOE3_Packing
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108_MOE3_Packing
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108_SMT_MI_1
-  device_type: Other
-  tb_device_id: 26198250-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108_SMT_MI_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B108_SMT_MI_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108_SMT_MI_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108_SMT_MI_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108_SMT_MI_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B108_SMT_MI_2
-  device_type: Other
-  tb_device_id: 3271c1c0-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B108_SMT_MI_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B108_SMT_MI_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B108_SMT_MI_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B108_SMT_MI_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B108_SMT_MI_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B109_SMT_1
-  device_type: Other
-  tb_device_id: 3fef4750-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B109_SMT_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B109_SMT_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B109_SMT_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B109_SMT_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B109_SMT_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B109_SMT_2
-  device_type: Other
-  tb_device_id: 58a28550-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B109_SMT_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B109_SMT_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B109_SMT_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B109_SMT_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B109_SMT_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B109_SMT_3
-  device_type: Other
-  tb_device_id: 4c5bab00-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B109_SMT_3
-    role: status
-    source: trigger
-  - key_name: activeTs_B109_SMT_3
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B109_SMT_3
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B109_SMT_3
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B109_SMT_3
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B109_SMT_4
-  device_type: Other
-  tb_device_id: 65f09670-dfc6-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B109_SMT_4
-    role: status
-    source: trigger
-  - key_name: activeTs_B109_SMT_4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B109_SMT_4
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B109_SMT_4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B109_SMT_4
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112 2F Office 1
-  device_type: Other
-  tb_device_id: 71c525f0-f0e8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112 2F Office 1
-    role: status
-    source: trigger
-  - key_name: activeTs_B112 2F Office 1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112 2F Office 1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112 2F Office 1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112 2F Office 1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112 2F Office 2
-  device_type: Other
-  tb_device_id: 8c917ff0-f0e8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112 2F Office 2
-    role: status
-    source: trigger
-  - key_name: activeTs_B112 2F Office 2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112 2F Office 2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112 2F Office 2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112 2F Office 2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112 FF Office 1
-  device_type: Other
-  tb_device_id: 3d49a1c0-f0e8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112 FF Office 1
-    role: status
-    source: trigger
-  - key_name: activeTs_B112 FF Office 1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112 FF Office 1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112 FF Office 1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112 FF Office 1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112 FF Office 2
-  device_type: Other
-  tb_device_id: 5b4ce3d0-f0e8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112 FF Office 2
-    role: status
-    source: trigger
-  - key_name: activeTs_B112 FF Office 2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112 FF Office 2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112 FF Office 2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112 FF Office 2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112_1
-  device_type: Other
-  tb_device_id: 217da120-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112_1
-    role: status
-    source: trigger
-  - key_name: activeTs_B112_1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112_1
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112_1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112_1
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112_2
-  device_type: Other
-  tb_device_id: 5ff684d0-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112_2
-    role: status
-    source: trigger
-  - key_name: activeTs_B112_2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112_2
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112_2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112_2
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112_3
-  device_type: Other
-  tb_device_id: 568c8bb0-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112_3
-    role: status
-    source: trigger
-  - key_name: activeTs_B112_3
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112_3
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112_3
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112_3
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112_4
-  device_type: Other
-  tb_device_id: 4f55ed50-dfc8-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112_4
-    role: status
-    source: trigger
-  - key_name: activeTs_B112_4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112_4
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112_4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112_4
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: B112_Outdoor
-  device_type: Other
-  tb_device_id: fd1da5f0-dfc7-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_B112_Outdoor
-    role: status
-    source: trigger
-  - key_name: activeTs_B112_Outdoor
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_B112_Outdoor
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_B112_Outdoor
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_B112_Outdoor
-    role: total_use
-    source: trigger
-  - key_name: 'Seq #'
-    role: heartbeat
-- name: Robert Bosch
-  device_type: Other
-  tb_device_id: 6f0a2010-e1ff-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_Robert Bosch
-    role: status
-    source: trigger
-  - key_name: activeTs_Robert Bosch
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Robert Bosch
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_Robert Bosch
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Robert Bosch
-    role: total_use
-    source: trigger
-  - key_name: SYSTEM_000_00_
-    role: heartbeat
-- name: Robert Bosch Bacnet Recovery
-  device_type: Recovery
-  tb_device_id: 0aeb63c1-9535-11f1-9490-85a518ecea8d
-  keys:
-  - key_name: active_Robert Bosch Bacnet Recovery
-    role: status
-    source: trigger
-  - key_name: activeTs_Robert Bosch Bacnet Recovery
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Robert Bosch Bacnet Recovery
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_Robert Bosch Bacnet Recovery
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Robert Bosch Bacnet Recovery
-    role: total_use
-    source: trigger
-  - key_name: CH4Volts3
-    role: heartbeat
-- name: Robert Bosch Recovery
-  device_type: Recovery
-  tb_device_id: 277a9f80-949d-11f1-9490-85a518ecea8d
-  keys:
-  - key_name: active_Robert Bosch Recovery
-    role: status
-    source: trigger
-  - key_name: activeTs_Robert Bosch Recovery
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Robert Bosch Recovery
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_Robert Bosch Recovery
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Robert Bosch Recovery
-    role: total_use
-    source: trigger
-  - key_name: ChilHR_A01_08_
-    role: heartbeat
-- name: RobertBosch_Bacnet
-  device_type: Other
-  tb_device_id: 7f8aaea0-e20e-11f0-a0b2-1366f3bd8252
-  keys:
-  - key_name: active_RobertBosch_Bacnet
-    role: status
-    source: trigger
-  - key_name: activeTs_RobertBosch_Bacnet
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_RobertBosch_Bacnet
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_RobertBosch_Bacnet
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_RobertBosch_Bacnet
-    role: total_use
-    source: trigger
-  - key_name: BMS_CH1_CWPHz
-    role: heartbeat
+  - name: B102 CM Lab
+    device_type: Other
+    tb_device_id: 143799a0-f27c-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102 CM Lab
+        role: status
+        source: trigger
+      - key_name: activeTs_B102 CM Lab
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102 CM Lab
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102 CM Lab
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102 CM Lab
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B102 FA Lab
+    device_type: Other
+    tb_device_id: b4b7d0d0-f27b-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102 FA Lab
+        role: status
+        source: trigger
+      - key_name: activeTs_B102 FA Lab
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102 FA Lab
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102 FA Lab
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102 FA Lab
+        role: total_use
+        source: trigger
+      - key_name: temperature
+        role: heartbeat
+  - name: B102 FF
+    device_type: Other
+    tb_device_id: c625a360-f27b-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102 FF
+        role: status
+        source: trigger
+      - key_name: activeTs_B102 FF
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102 FF
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102 FF
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102 FF
+        role: total_use
+        source: trigger
+      - key_name: temperature
+        role: heartbeat
+  - name: B102 Maze Store
+    device_type: Other
+    tb_device_id: 06291eb0-f27c-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102 Maze Store
+        role: status
+        source: trigger
+      - key_name: activeTs_B102 Maze Store
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102 Maze Store
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102 Maze Store
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102 Maze Store
+        role: total_use
+        source: trigger
+      - key_name: temperature
+        role: heartbeat
+  - name: B102 Metrology Lab
+    device_type: Other
+    tb_device_id: de494b90-f27b-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102 Metrology Lab
+        role: status
+        source: trigger
+      - key_name: activeTs_B102 Metrology Lab
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102 Metrology Lab
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102 Metrology Lab
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102 Metrology Lab
+        role: total_use
+        source: trigger
+      - key_name: temperature
+        role: heartbeat
+  - name: B102_QMM_L1_Office
+    device_type: Other
+    tb_device_id: f46563f0-f27b-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B102_QMM_L1_Office
+        role: status
+        source: trigger
+      - key_name: activeTs_B102_QMM_L1_Office
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B102_QMM_L1_Office
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B102_QMM_L1_Office
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B102_QMM_L1_Office
+        role: total_use
+        source: trigger
+      - key_name: temperature
+        role: heartbeat
+  - name: B103_1
+    device_type: Other
+    tb_device_id: 08ef0220-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B103_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B103_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B103_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B103_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B103_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B103_2
+    device_type: Other
+    tb_device_id: 153f2b40-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B103_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B103_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B103_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B103_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B103_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B103_3
+    device_type: Other
+    tb_device_id: 35c324c0-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B103_3
+        role: status
+        source: trigger
+      - key_name: activeTs_B103_3
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B103_3
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B103_3
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B103_3
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B103_4
+    device_type: Other
+    tb_device_id: 4080ee10-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B103_4
+        role: status
+        source: trigger
+      - key_name: activeTs_B103_4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B103_4
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B103_4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B103_4
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B103_Packing
+    device_type: Other
+    tb_device_id: 2bff4bd0-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B103_Packing
+        role: status
+        source: trigger
+      - key_name: activeTs_B103_Packing
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B103_Packing
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B103_Packing
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B103_Packing
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B105_External
+    device_type: Other
+    tb_device_id: d3134b50-dd4e-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B105_External
+        role: status
+        source: trigger
+      - key_name: activeTs_B105_External
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B105_External
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B105_External
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B105_External
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108 W1 Warehouse
+    device_type: Other
+    tb_device_id: 29714140-f27c-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108 W1 Warehouse
+        role: status
+        source: trigger
+      - key_name: activeTs_B108 W1 Warehouse
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108 W1 Warehouse
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108 W1 Warehouse
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108 W1 Warehouse
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108 W3_1
+    device_type: Other
+    tb_device_id: 3a05f1e0-f27c-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108 W3_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B108 W3_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108 W3_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108 W3_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108 W3_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108 W3_2
+    device_type: Other
+    tb_device_id: 493fcd70-f27c-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108 W3_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B108 W3_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108 W3_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108 W3_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108 W3_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108_MOE3_1
+    device_type: Other
+    tb_device_id: 9667a960-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108_MOE3_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B108_MOE3_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108_MOE3_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108_MOE3_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108_MOE3_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108_MOE3_2
+    device_type: Other
+    tb_device_id: e73bb060-dfc7-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108_MOE3_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B108_MOE3_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108_MOE3_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108_MOE3_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108_MOE3_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108_MOE3_Packing
+    device_type: Other
+    tb_device_id: 732ca630-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108_MOE3_Packing
+        role: status
+        source: trigger
+      - key_name: activeTs_B108_MOE3_Packing
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108_MOE3_Packing
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108_MOE3_Packing
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108_MOE3_Packing
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108_SMT_MI_1
+    device_type: Other
+    tb_device_id: 26198250-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108_SMT_MI_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B108_SMT_MI_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108_SMT_MI_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108_SMT_MI_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108_SMT_MI_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B108_SMT_MI_2
+    device_type: Other
+    tb_device_id: 3271c1c0-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B108_SMT_MI_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B108_SMT_MI_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B108_SMT_MI_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B108_SMT_MI_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B108_SMT_MI_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B109_SMT_1
+    device_type: Other
+    tb_device_id: 3fef4750-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B109_SMT_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B109_SMT_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B109_SMT_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B109_SMT_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B109_SMT_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B109_SMT_2
+    device_type: Other
+    tb_device_id: 58a28550-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B109_SMT_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B109_SMT_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B109_SMT_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B109_SMT_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B109_SMT_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B109_SMT_3
+    device_type: Other
+    tb_device_id: 4c5bab00-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B109_SMT_3
+        role: status
+        source: trigger
+      - key_name: activeTs_B109_SMT_3
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B109_SMT_3
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B109_SMT_3
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B109_SMT_3
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B109_SMT_4
+    device_type: Other
+    tb_device_id: 65f09670-dfc6-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B109_SMT_4
+        role: status
+        source: trigger
+      - key_name: activeTs_B109_SMT_4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B109_SMT_4
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B109_SMT_4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B109_SMT_4
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112 2F Office 1
+    device_type: Other
+    tb_device_id: 71c525f0-f0e8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112 2F Office 1
+        role: status
+        source: trigger
+      - key_name: activeTs_B112 2F Office 1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112 2F Office 1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112 2F Office 1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112 2F Office 1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112 2F Office 2
+    device_type: Other
+    tb_device_id: 8c917ff0-f0e8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112 2F Office 2
+        role: status
+        source: trigger
+      - key_name: activeTs_B112 2F Office 2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112 2F Office 2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112 2F Office 2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112 2F Office 2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112 FF Office 1
+    device_type: Other
+    tb_device_id: 3d49a1c0-f0e8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112 FF Office 1
+        role: status
+        source: trigger
+      - key_name: activeTs_B112 FF Office 1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112 FF Office 1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112 FF Office 1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112 FF Office 1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112 FF Office 2
+    device_type: Other
+    tb_device_id: 5b4ce3d0-f0e8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112 FF Office 2
+        role: status
+        source: trigger
+      - key_name: activeTs_B112 FF Office 2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112 FF Office 2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112 FF Office 2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112 FF Office 2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112_1
+    device_type: Other
+    tb_device_id: 217da120-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112_1
+        role: status
+        source: trigger
+      - key_name: activeTs_B112_1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112_1
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112_1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112_1
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112_2
+    device_type: Other
+    tb_device_id: 5ff684d0-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112_2
+        role: status
+        source: trigger
+      - key_name: activeTs_B112_2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112_2
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112_2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112_2
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112_3
+    device_type: Other
+    tb_device_id: 568c8bb0-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112_3
+        role: status
+        source: trigger
+      - key_name: activeTs_B112_3
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112_3
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112_3
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112_3
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112_4
+    device_type: Other
+    tb_device_id: 4f55ed50-dfc8-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112_4
+        role: status
+        source: trigger
+      - key_name: activeTs_B112_4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112_4
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112_4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112_4
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: B112_Outdoor
+    device_type: Other
+    tb_device_id: fd1da5f0-dfc7-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_B112_Outdoor
+        role: status
+        source: trigger
+      - key_name: activeTs_B112_Outdoor
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_B112_Outdoor
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_B112_Outdoor
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_B112_Outdoor
+        role: total_use
+        source: trigger
+      - key_name: "Seq #"
+        role: heartbeat
+  - name: Robert Bosch
+    device_type: Other
+    tb_device_id: 6f0a2010-e1ff-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_Robert Bosch
+        role: status
+        source: trigger
+      - key_name: activeTs_Robert Bosch
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Robert Bosch
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_Robert Bosch
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Robert Bosch
+        role: total_use
+        source: trigger
+      - key_name: SYSTEM_000_00_
+        role: heartbeat
+  - name: Robert Bosch Bacnet Recovery
+    device_type: Recovery
+    tb_device_id: 0aeb63c1-9535-11f1-9490-85a518ecea8d
+    keys:
+      - key_name: active_Robert Bosch Bacnet Recovery
+        role: status
+        source: trigger
+      - key_name: activeTs_Robert Bosch Bacnet Recovery
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Robert Bosch Bacnet Recovery
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_Robert Bosch Bacnet Recovery
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Robert Bosch Bacnet Recovery
+        role: total_use
+        source: trigger
+      - key_name: CH4Volts3
+        role: heartbeat
+  - name: Robert Bosch Recovery
+    device_type: Recovery
+    tb_device_id: 277a9f80-949d-11f1-9490-85a518ecea8d
+    keys:
+      - key_name: active_Robert Bosch Recovery
+        role: status
+        source: trigger
+      - key_name: activeTs_Robert Bosch Recovery
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Robert Bosch Recovery
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_Robert Bosch Recovery
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Robert Bosch Recovery
+        role: total_use
+        source: trigger
+      - key_name: ChilHR_A01_08_
+        role: heartbeat
+  - name: RobertBosch_Bacnet
+    device_type: Other
+    tb_device_id: 7f8aaea0-e20e-11f0-a0b2-1366f3bd8252
+    keys:
+      - key_name: active_RobertBosch_Bacnet
+        role: status
+        source: trigger
+      - key_name: activeTs_RobertBosch_Bacnet
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_RobertBosch_Bacnet
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_RobertBosch_Bacnet
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_RobertBosch_Bacnet
+        role: total_use
+        source: trigger
+      - key_name: BMS_CH1_CWPHz
+        role: heartbeat

@@ -307,3 +307,108 @@ def test_frozen_counters_still_come_from_the_counter(site):
     s = dt.day_summary(did, "2026-08-31")
     assert s["source"] == "counter"
     assert (s["active_hours"], s["affected_hours"]) == (0.0, 0.0)
+
+
+# --- a site is identified by its trigger device, not its name -------------------
+
+def _write_site(sites, filename, doc):
+    (sites / filename).write_text(yaml.safe_dump(doc))
+
+
+def _numed(**over):
+    return {**SITE["groups"][0], **over}
+
+
+def test_renaming_a_site_updates_it_instead_of_creating_a_second_one(tmp_path, monkeypatch):
+    """The rename trap: `name` used to be the identity key.
+
+    Renaming a site in its YAML read as a brand-new site — it collided on
+    devices.tb_device_id, and on a site whose devices have none it silently created a
+    duplicate group carrying none of the history. Matching on the trigger device makes
+    a rename a plain edit.
+    """
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    _write_site(sites, "numed.yaml", _numed())
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
+    config_sync.sync_from_yaml()
+
+    with read_conn() as conn:
+        before = conn.execute("SELECT id, name FROM device_groups").fetchall()
+    assert [r["name"] for r in before] == ["NUMed"]
+
+    _write_site(sites, "numed.yaml",
+                _numed(name="Newcastle University Medicine Malaysia"))
+    config_sync.sync_from_yaml()
+
+    with read_conn() as conn:
+        after = conn.execute("SELECT id, name FROM device_groups").fetchall()
+        devices = conn.execute("SELECT COUNT(*) n FROM devices").fetchone()["n"]
+
+    assert len(after) == 1, "the rename created a second site"
+    assert after[0]["name"] == "Newcastle University Medicine Malaysia"
+    assert after[0]["id"] == before[0]["id"], "the group row was replaced, not renamed"
+    assert devices == 2, "devices were duplicated onto a new group"
+
+
+def test_devices_without_tb_ids_are_not_silently_duplicated(tmp_path, monkeypatch):
+    """The dangerous half: no tb_device_id means no UNIQUE to trip, so the old code
+    duplicated the whole site with no error at all."""
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    doc = {
+        "name": "KPJAP",
+        "trigger": {"device_name": "KPJAPTriggers", "tb_device_id": "trigger-uuid-0009"},
+        "devices": [{"name": "Cafeteria", "device_type": "RHT", "tb_device_id": None,
+                     "keys": [{"key_name": "active_Cafeteria", "role": "status",
+                               "source": "trigger"}]}],
+    }
+    _write_site(sites, "kpjap.yaml", doc)
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
+    config_sync.sync_from_yaml()
+
+    _write_site(sites, "kpjap.yaml", {**doc, "name": "KPJ Ampang Puteri"})
+    config_sync.sync_from_yaml()
+
+    with read_conn() as conn:
+        names = [r["name"] for r in conn.execute("SELECT name FROM device_groups")]
+        devices = conn.execute("SELECT COUNT(*) n FROM devices").fetchone()["n"]
+    assert names == ["KPJ Ampang Puteri"]
+    assert devices == 1
+
+
+def test_a_site_added_before_the_trigger_column_is_adopted_by_name(tmp_path, monkeypatch):
+    """First sync after the migration: the row has no tb_trigger_id yet, so it must be
+    matched by name that once and backfilled, not duplicated."""
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    _write_site(sites, "numed.yaml", _numed())
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
+    config_sync.sync_from_yaml()
+
+    with get_conn() as conn:          # simulate a pre-migration row
+        conn.execute("UPDATE device_groups SET tb_trigger_id = NULL")
+
+    config_sync.sync_from_yaml()
+
+    with read_conn() as conn:
+        rows = conn.execute("SELECT name, tb_trigger_id FROM device_groups").fetchall()
+    assert len(rows) == 1
+    assert rows[0]["tb_trigger_id"] == TRIGGER_ID, "the trigger id was not backfilled"
+
+
+def test_two_sites_may_not_share_a_trigger_device(tmp_path, monkeypatch):
+    """Same trigger in two files is a config mistake.
+
+    Now that the trigger identifies the site, the second file would otherwise just
+    rename the first site's row and the two would silently become one. It has to name
+    both files instead.
+    """
+    sites = tmp_path / "sites"
+    sites.mkdir()
+    _write_site(sites, "a.yaml", _numed(name="Site A"))
+    _write_site(sites, "b.yaml", _numed(name="Site B"))
+    monkeypatch.setattr(config_sync.settings, "sites_dir", sites)
+
+    with pytest.raises(ValueError, match="a trigger identifies exactly one site"):
+        config_sync.sync_from_yaml()

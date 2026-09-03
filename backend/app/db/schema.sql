@@ -6,6 +6,11 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS device_groups (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     tb_group_id     TEXT UNIQUE,                 -- ThingsBoard entity-group UUID
+    -- The site's trigger device UUID. This, not the name, is what config_sync matches
+    -- a site on, so renaming a site in its YAML updates this row instead of reading as
+    -- a brand-new site (which collided on devices.tb_device_id, or worse, silently
+    -- duplicated the site when its devices had none).
+    tb_trigger_id   TEXT UNIQUE,
     name            TEXT NOT NULL UNIQUE,        -- e.g. "Computime"
     kind            TEXT NOT NULL DEFAULT 'device',  -- device | alarm | trigger
     site_label      TEXT,                        -- "Factory · Penang, Malaysia"

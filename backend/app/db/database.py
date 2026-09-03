@@ -45,6 +45,19 @@ def _migrate(conn: sqlite3.Connection) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_remarks_device ON remarks(device_id)")
 
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(device_groups)")}
+    if "tb_trigger_id" not in cols:
+        # A site is identified by its trigger device, not its name, so that renaming a
+        # site in its YAML is just an edit. ALTER TABLE can't add a UNIQUE column, hence
+        # the separate partial index — partial so the pre-backfill NULLs don't collide
+        # with each other. config_sync fills it in on the next sync, matching on name
+        # that one time.
+        conn.execute("ALTER TABLE device_groups ADD COLUMN tb_trigger_id TEXT")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_device_groups_trigger "
+        "ON device_groups(tb_trigger_id) WHERE tb_trigger_id IS NOT NULL"
+    )
+
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(device_keys)")}
     if "tb_source_device_id" not in cols:
         # Status keys live on the site's trigger device, not the sensor. NULL keeps

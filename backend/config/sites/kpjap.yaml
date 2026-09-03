@@ -23,8 +23,8 @@
 name: KPJAP
 kind: device
 tb_group_id: null
-site_label: null
-system_type: null
+site_label: Hospital / Ampang, Selangor
+system_type: Chiller Optimization System (COpti)
 expected_report_hours: 24
 trigger:
   device_name: KPJAPTriggers

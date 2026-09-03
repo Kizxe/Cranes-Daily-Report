@@ -23,365 +23,365 @@
 name: G Hotel
 kind: device
 tb_group_id: null
-site_label: null
-system_type: null
+site_label: Hotel, Penang
+system_type: Chiller Optimization System (COpti)
 expected_report_hours: 24
 trigger:
   device_name: GHotel Cranes Triggers
   tb_device_id: bb3cda20-9237-11f1-9490-85a518ecea8d
 devices:
-- name: DPM CH1
-  device_type: DPM
-  tb_device_id: null
-  keys:
-  - key_name: active_DPM CH1
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_DPM CH1
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_DPM CH1
-    role: severity
-    source: trigger
-  - key_name: activeTs_DPM CH1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_DPM CH1
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_DPM CH1
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_DPM CH1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_DPM CH1
-    role: total_use
-    source: trigger
-- name: DPM CH2
-  device_type: DPM
-  tb_device_id: null
-  keys:
-  - key_name: active_DPM CH2
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_DPM CH2
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_DPM CH2
-    role: severity
-    source: trigger
-  - key_name: activeTs_DPM CH2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_DPM CH2
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_DPM CH2
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_DPM CH2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_DPM CH2
-    role: total_use
-    source: trigger
-- name: Outdoor East
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Outdoor East
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Outdoor East
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Outdoor East
-    role: severity
-    source: trigger
-  - key_name: activeTs_Outdoor East
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Outdoor East
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Outdoor East
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Outdoor East
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Outdoor East
-    role: total_use
-    source: trigger
-- name: Outdoor West
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Outdoor West
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Outdoor West
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Outdoor West
-    role: severity
-    source: trigger
-  - key_name: activeTs_Outdoor West
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Outdoor West
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Outdoor West
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Outdoor West
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Outdoor West
-    role: total_use
-    source: trigger
-- name: RTD CH1
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH1
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_RTD CH1
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_RTD CH1
-    role: severity
-    source: trigger
-  - key_name: activeTs_RTD CH1
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_RTD CH1
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_RTD CH1
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_RTD CH1
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_RTD CH1
-    role: total_use
-    source: trigger
-- name: RTD CH2
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH2
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_RTD CH2
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_RTD CH2
-    role: severity
-    source: trigger
-  - key_name: activeTs_RTD CH2
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_RTD CH2
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_RTD CH2
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_RTD CH2
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_RTD CH2
-    role: total_use
-    source: trigger
-- name: RTD CH3
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH3
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_RTD CH3
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_RTD CH3
-    role: severity
-    source: trigger
-  - key_name: activeTs_RTD CH3
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_RTD CH3
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_RTD CH3
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_RTD CH3
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_RTD CH3
-    role: total_use
-    source: trigger
-- name: RTD CH4
-  device_type: RTD
-  tb_device_id: null
-  keys:
-  - key_name: active_RTD CH4
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_RTD CH4
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_RTD CH4
-    role: severity
-    source: trigger
-  - key_name: activeTs_RTD CH4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_RTD CH4
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_RTD CH4
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_RTD CH4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_RTD CH4
-    role: total_use
-    source: trigger
-- name: UFM
-  device_type: UFM
-  tb_device_id: null
-  keys:
-  - key_name: active_UFM
-    role: status
-    source: trigger
-  - key_name: activeTs_UFM
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_UFM
-    role: inactive_ts
-    source: trigger
-  - key_name: ActiveInActive_UFM
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_UFM
-    role: total_use
-    source: trigger
-- name: Wing 1 Level 19
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Wing 1 Level 19
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Wing 1 Level 19
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Wing 1 Level 19
-    role: severity
-    source: trigger
-  - key_name: activeTs_Wing 1 Level 19
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Wing 1 Level 19
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Wing 1 Level 19
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Wing 1 Level 19
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Wing 1 Level 19
-    role: total_use
-    source: trigger
-- name: Wing 1 Level 4
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Wing 1 Level 4
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Wing 1 Level 4
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Wing 1 Level 4
-    role: severity
-    source: trigger
-  - key_name: activeTs_Wing 1 Level 4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Wing 1 Level 4
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Wing 1 Level 4
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Wing 1 Level 4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Wing 1 Level 4
-    role: total_use
-    source: trigger
-- name: Wing 2 Level 19
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Wing 2 Level 19
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Wing 2 Level 19
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Wing 2 Level 19
-    role: severity
-    source: trigger
-  - key_name: activeTs_Wing 2 Level 19
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Wing 2 Level 19
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Wing 2 Level 19
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Wing 2 Level 19
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Wing 2 Level 19
-    role: total_use
-    source: trigger
-- name: Wing 2 Level 4
-  device_type: Other
-  tb_device_id: null
-  keys:
-  - key_name: active_Wing 2 Level 4
-    role: active_flag
-    source: trigger
-  - key_name: deviceStatus_Wing 2 Level 4
-    role: status
-    source: trigger
-  - key_name: deviceSeverity_Wing 2 Level 4
-    role: severity
-    source: trigger
-  - key_name: activeTs_Wing 2 Level 4
-    role: active_ts
-    source: trigger
-  - key_name: InactiveTs_Wing 2 Level 4
-    role: inactive_ts
-    source: trigger
-  - key_name: IssueOcc_Wing 2 Level 4
-    role: issue_count
-    source: trigger
-  - key_name: ActiveInActive_Wing 2 Level 4
-    role: uptime_split
-    source: trigger
-  - key_name: forTotalUse_Wing 2 Level 4
-    role: total_use
-    source: trigger
+  - name: DPM CH1
+    device_type: DPM
+    tb_device_id: null
+    keys:
+      - key_name: active_DPM CH1
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_DPM CH1
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_DPM CH1
+        role: severity
+        source: trigger
+      - key_name: activeTs_DPM CH1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_DPM CH1
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_DPM CH1
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_DPM CH1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_DPM CH1
+        role: total_use
+        source: trigger
+  - name: DPM CH2
+    device_type: DPM
+    tb_device_id: null
+    keys:
+      - key_name: active_DPM CH2
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_DPM CH2
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_DPM CH2
+        role: severity
+        source: trigger
+      - key_name: activeTs_DPM CH2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_DPM CH2
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_DPM CH2
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_DPM CH2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_DPM CH2
+        role: total_use
+        source: trigger
+  - name: Outdoor East
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Outdoor East
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Outdoor East
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Outdoor East
+        role: severity
+        source: trigger
+      - key_name: activeTs_Outdoor East
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Outdoor East
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Outdoor East
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Outdoor East
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Outdoor East
+        role: total_use
+        source: trigger
+  - name: Outdoor West
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Outdoor West
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Outdoor West
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Outdoor West
+        role: severity
+        source: trigger
+      - key_name: activeTs_Outdoor West
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Outdoor West
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Outdoor West
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Outdoor West
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Outdoor West
+        role: total_use
+        source: trigger
+  - name: RTD CH1
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH1
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_RTD CH1
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_RTD CH1
+        role: severity
+        source: trigger
+      - key_name: activeTs_RTD CH1
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_RTD CH1
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_RTD CH1
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_RTD CH1
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_RTD CH1
+        role: total_use
+        source: trigger
+  - name: RTD CH2
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH2
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_RTD CH2
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_RTD CH2
+        role: severity
+        source: trigger
+      - key_name: activeTs_RTD CH2
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_RTD CH2
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_RTD CH2
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_RTD CH2
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_RTD CH2
+        role: total_use
+        source: trigger
+  - name: RTD CH3
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH3
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_RTD CH3
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_RTD CH3
+        role: severity
+        source: trigger
+      - key_name: activeTs_RTD CH3
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_RTD CH3
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_RTD CH3
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_RTD CH3
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_RTD CH3
+        role: total_use
+        source: trigger
+  - name: RTD CH4
+    device_type: RTD
+    tb_device_id: null
+    keys:
+      - key_name: active_RTD CH4
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_RTD CH4
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_RTD CH4
+        role: severity
+        source: trigger
+      - key_name: activeTs_RTD CH4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_RTD CH4
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_RTD CH4
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_RTD CH4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_RTD CH4
+        role: total_use
+        source: trigger
+  - name: UFM
+    device_type: UFM
+    tb_device_id: null
+    keys:
+      - key_name: active_UFM
+        role: status
+        source: trigger
+      - key_name: activeTs_UFM
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_UFM
+        role: inactive_ts
+        source: trigger
+      - key_name: ActiveInActive_UFM
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_UFM
+        role: total_use
+        source: trigger
+  - name: Wing 1 Level 19
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Wing 1 Level 19
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Wing 1 Level 19
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Wing 1 Level 19
+        role: severity
+        source: trigger
+      - key_name: activeTs_Wing 1 Level 19
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Wing 1 Level 19
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Wing 1 Level 19
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Wing 1 Level 19
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Wing 1 Level 19
+        role: total_use
+        source: trigger
+  - name: Wing 1 Level 4
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Wing 1 Level 4
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Wing 1 Level 4
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Wing 1 Level 4
+        role: severity
+        source: trigger
+      - key_name: activeTs_Wing 1 Level 4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Wing 1 Level 4
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Wing 1 Level 4
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Wing 1 Level 4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Wing 1 Level 4
+        role: total_use
+        source: trigger
+  - name: Wing 2 Level 19
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Wing 2 Level 19
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Wing 2 Level 19
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Wing 2 Level 19
+        role: severity
+        source: trigger
+      - key_name: activeTs_Wing 2 Level 19
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Wing 2 Level 19
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Wing 2 Level 19
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Wing 2 Level 19
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Wing 2 Level 19
+        role: total_use
+        source: trigger
+  - name: Wing 2 Level 4
+    device_type: Other
+    tb_device_id: null
+    keys:
+      - key_name: active_Wing 2 Level 4
+        role: active_flag
+        source: trigger
+      - key_name: deviceStatus_Wing 2 Level 4
+        role: status
+        source: trigger
+      - key_name: deviceSeverity_Wing 2 Level 4
+        role: severity
+        source: trigger
+      - key_name: activeTs_Wing 2 Level 4
+        role: active_ts
+        source: trigger
+      - key_name: InactiveTs_Wing 2 Level 4
+        role: inactive_ts
+        source: trigger
+      - key_name: IssueOcc_Wing 2 Level 4
+        role: issue_count
+        source: trigger
+      - key_name: ActiveInActive_Wing 2 Level 4
+        role: uptime_split
+        source: trigger
+      - key_name: forTotalUse_Wing 2 Level 4
+        role: total_use
+        source: trigger
