@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     thingsboard_password: str = ""
     # PE REST base is usually <url>/api. Confirm against the live instance.
     thingsboard_api_prefix: str = "/api"
+    # The instance answers most reads in well under a second but stalls unpredictably —
+    # measured 2026-09-03: the same call took 0.05s, then 8.4s, then over 30s. A capture
+    # is ~112 requests, so without retries a single stall lost the whole run.
+    tb_timeout_seconds: float = 30.0
+    tb_max_attempts: int = 3          # 1 = no retry
+    tb_retry_backoff_seconds: float = 1.0   # doubles each attempt
 
     # --- Paths (all under the repo root, bind-mounted in Docker) ---
     db_path: Path = REPO_ROOT / "backend" / "data" / "cranes.db"

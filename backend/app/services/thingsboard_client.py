@@ -8,6 +8,7 @@ via /auth/token before expiry.
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from typing import Any
 
@@ -20,6 +21,9 @@ class ThingsBoardError(RuntimeError):
     pass
 
 
+log = logging.getLogger("cranes.thingsboard")
+
+
 class ThingsBoardClient:
     def __init__(self) -> None:
         self._base = settings.tb_base
@@ -27,7 +31,7 @@ class ThingsBoardClient:
         self._refresh_token: str | None = None
         self._token_exp: float = 0.0
         self._lock = asyncio.Lock()
-        self._http = httpx.AsyncClient(timeout=30.0)
+        self._http = httpx.AsyncClient(timeout=settings.tb_timeout_seconds)
 
     async def close(self) -> None:
         await self._http.aclose()
@@ -38,8 +42,9 @@ class ThingsBoardClient:
             raise ThingsBoardError(
                 "THINGSBOARD_USERNAME / THINGSBOARD_PASSWORD not set — see .env.example"
             )
-        r = await self._http.post(
-            f"{self._base}/auth/login",
+        # Retried like every other call: a stall here fails the whole run, not one device.
+        r = await self._send(
+            "POST", f"{self._base}/auth/login", {},
             json={
                 "username": settings.thingsboard_username,
                 "password": settings.thingsboard_password,
@@ -58,11 +63,12 @@ class ThingsBoardClient:
             if self._token and time.time() < self._token_exp:
                 return
             if self._refresh_token:
-                r = await self._http.post(
-                    f"{self._base}/auth/token",
-                    json={"refreshToken": self._refresh_token},
-                )
-                if r.status_code == 200:
+                try:
+                    r = await self._send("POST", f"{self._base}/auth/token", {},
+                                         json={"refreshToken": self._refresh_token})
+                except ThingsBoardError:
+                    r = None      # fall through to a full login rather than give up
+                if r is not None and r.status_code == 200:
                     data = r.json()
                     self._token = data["token"]
                     self._refresh_token = data.get("refreshToken", self._refresh_token)
@@ -70,23 +76,55 @@ class ThingsBoardClient:
                     return
             await self._login()
 
+    async def _send(self, method: str, url: str, headers: dict, **kw: Any) -> httpx.Response:
+        """One request, retried through the instance's stalls.
+
+        httpx raises TransportError (ReadTimeout, ConnectError, ...) rather than
+        returning a response, and it is NOT a ThingsBoardError — so before this existed
+        it sailed straight past the `except ThingsBoardError` in snapshot_service and
+        downtime_service that exist to let one unreadable device degrade to empty
+        values. One stalled read out of a capture's ~112 therefore killed the whole
+        run: three failed manual captures at 17:20 on 2026-09-03, all ReadTimeout.
+
+        Retrying is the right shape here rather than a longer timeout — the same call
+        measured 0.05s, 8.4s and >30s minutes apart, so it is a stall to ride out, not
+        a slow response to wait for. Exhausted retries raise ThingsBoardError, which
+        the callers already know how to degrade.
+        """
+        attempts = max(1, settings.tb_max_attempts)
+        for attempt in range(1, attempts + 1):
+            try:
+                return await self._http.request(method, url, headers=headers, **kw)
+            except httpx.TransportError as e:   # covers ReadTimeout, ConnectError, ...
+                if attempt == attempts:
+                    raise ThingsBoardError(
+                        f"{method} {url} failed after {attempts} attempt(s): "
+                        f"{type(e).__name__}"
+                    ) from e
+                delay = settings.tb_retry_backoff_seconds * 2 ** (attempt - 1)
+                log.warning("%s %s: %s — retry %d/%d in %.1fs",
+                            method, url.rsplit("/", 1)[-1][:60], type(e).__name__,
+                            attempt, attempts - 1, delay)
+                await asyncio.sleep(delay)
+        raise AssertionError("unreachable")   # pragma: no cover
+
     async def _request(self, method: str, path: str, **kw: Any) -> Any:
         if self._http.is_closed:
             # close() runs on app shutdown; a later call (a second app lifespan in
             # one process, or a manual capture during shutdown) must not die on a
             # closed pool.
-            self._http = httpx.AsyncClient(timeout=30.0)
+            self._http = httpx.AsyncClient(timeout=settings.tb_timeout_seconds)
         await self._ensure_token()
         headers = kw.pop("headers", {})
         headers["X-Authorization"] = f"Bearer {self._token}"
         url = f"{self._base}{path}"
-        r = await self._http.request(method, url, headers=headers, **kw)
+        r = await self._send(method, url, headers, **kw)
         if r.status_code == 401:
             # token rejected — force a fresh login once
             self._token = None
             await self._ensure_token()
             headers["X-Authorization"] = f"Bearer {self._token}"
-            r = await self._http.request(method, url, headers=headers, **kw)
+            r = await self._send(method, url, headers, **kw)
         if r.status_code >= 400:
             raise ThingsBoardError(f"{method} {path} -> {r.status_code} {r.text[:300]}")
         if r.headers.get("content-type", "").startswith("application/json"):
