@@ -9,7 +9,7 @@ where each report number comes from: `docs/ARCHITECTURE.md`
 (shareable page: https://claude.ai/code/artifact/9cb3f082-1fa1-44e8-a76e-c5b32e9d30cb)
 
 ## What this is
-A localhost app that pulls device telemetry from ThingsBoard for 22 device/alarm/trigger groups, snapshots every key daily at 23:59 (plus on-demand via an "Import Data" button), detects active↔inactive downtime windows, takes a site remark plus a per-device engineer recommendation, and renders a daily PDF report (matching an already-approved design system: JetBrains Mono, Source Serif 4) saved into `reports/YYYY-MM-DD/` so it's just a folder someone can open.
+A localhost app that pulls device telemetry from ThingsBoard for all 16 sites (537 devices — the plan's "22 groups" was a pre-API estimate), snapshots every key daily at 23:59 (plus on-demand via an "Import Data" button), detects active↔inactive downtime windows, takes a site remark plus a per-device engineer recommendation, and renders a daily PDF report (matching an already-approved design system: JetBrains Mono, Source Serif 4) saved into `reports/YYYY-MM-DD/` so it's just a folder someone can open.
 
 > **Report colours come from the approved PDF, not from this file.** The sample uses
 > navy `#0e1b36` (table headers only) and ink `#1a1a1a` — not the `#0E2340` this doc
@@ -83,19 +83,21 @@ reads it.
 - **Don't use the trigger's `Active Device` / `Inactive Device` counters.** The rule chain
   computes them over its own subset (19+4 against a 34-sensor roster on NUMed) and they drift
   minute to minute. Report counts are derived from our own roster instead.
-- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows. **Both timers are OFF as of 2026-09-03** (`downtime_poll_minutes: 0`, `reconcile_minutes: 0`)
-  — the live ThingsBoard instance had slowed to the point of timing a poll out
-  (`httpx.ReadTimeout` at 16:42), and the loop was costing ~64 requests every 5 minutes,
-  ~760 an hour, around the clock at 537 devices. **The app now calls ThingsBoard only at
-  23:59 and when someone asks it to** (`POST /api/captures/run`, `/api/downtime/poll`,
-  `/api/downtime/reconcile`). The boot catch-up poll is registered with the loop, so it
-  is off too — a restart now makes zero TB calls.
-  The report doesn't suffer: CURRENT STATUS is read from the 23:59 snapshot
+- **Downtime polling**: poll each device's status key every 5–15 min, write a `status_events` row only on change. Not worried about ThingsBoard rate limits — ThingsBoard's rule chain already computes status server-side, so this is just reading a settled key. One batched read per *trigger* device covers a whole site, and an event is dated from `activeTs_`/`InactiveTs_` rather than poll time, so the poll interval no longer rounds off downtime windows. **The poll runs every 10 minutes as of 2026-09-04** (`downtime_poll_minutes: 10`);
+  **the reconcile timer stays off** (`reconcile_minutes: 0`). Both had been off since
+  2026-09-03, when the live instance slowed to the point of timing a poll out
+  (`httpx.ReadTimeout` at 16:42). The cost is now measured rather than feared: the poll
+  is ONE batched read per trigger device, and with all 16 sites onboarded that is
+  **16 requests per poll covering all 537 devices — 96 an hour**, against ~192 at the
+  old 5-minute cadence. The boot catch-up poll is registered with the loop, so it is
+  back too — a restart leaves a blind spot of seconds, not a whole interval.
+  What this buys is *intraday* freshness: between nightly runs the dashboard and the
+  drill-down show current status rather than the last capture. The report never
+  depended on it — CURRENT STATUS is read from the 23:59 snapshot
   (`current_status_map` queries `snapshots`, not `status_events`), and the nightly job
   reconciles the whole day from TB history before rendering, which is what actually
-  catches short outages — the poll only ever sampled them. What's lost is *intraday*
-  freshness: between runs the dashboard and drill-down show the last capture, not live
-  status. Set either minute value non-zero to bring the timer back (one setting each;
+  catches short outages; the poll only ever sampled them. So if the instance goes slow
+  again, `downtime_poll_minutes: 0` costs the dashboard, not the PDF (one setting each;
   `tests/test_scheduler_jobs.py` pins both directions).
   For any stretch the process was down, `scripts/backfill_downtime.py --date <day>`
   rebuilds that day's `status_events` from the trigger's status-key history (mirror of
@@ -105,8 +107,8 @@ reads it.
   measured on NUMed at 11:32 that day, the poll held 28 downtime windows while the triggers'
   own `1D` counters summed to 98. `reconcile_service.reconcile_day(date, refresh=True)` walks
   the status key's full TB history and replaces that day's rows with every transition TB
-  recorded. **The hourly pass is off since 2026-09-03** (`reconcile_minutes: 0`, see the
-  bullet above); it still runs at the top of
+  recorded. **The hourly pass is off since 2026-09-03 and stayed off when the poll came
+  back on 2026-09-04** (`reconcile_minutes: 0`, see the bullet above); it still runs at the top of
   the 23:59 job before the report is built, which is the pass that matters —
   `POST /api/downtime/reconcile?date=` and
   `scripts/backfill_downtime.py --date <day> --refresh` are the manual doors. Without
@@ -150,9 +152,29 @@ reads it.
 - Retention policy for old `reports/` folders and raw snapshots (prune after N days, or keep indefinitely?).
 
 ## Build order
-1. Draft the site config for all 22 groups by walking the ThingsBoard API — don't hand-transcribe the 22 lists. **One file per site**, `backend/config/sites/<site>.yaml`; `device_groups.yaml` now holds only shared defaults. One site per run, so a re-run can't disturb the other 21:
+1. **DONE 2026-09-04 — every site is onboarded.** 16 sites, 537 devices, 3350 keys
+   (the "22 groups" in the original plan was an estimate made before walking the API;
+   16 is the real number, and `--list-triggers` still shows 27 trigger devices because
+   some sites share one). **One file per site**, `backend/config/sites/<site>.yaml`;
+   `device_groups.yaml` holds only shared defaults. Confirm what is loaded with the
+   boot line (`config sync: {'groups': 16, ...}`) or `python -m scripts.inspect_db`.
+
+   | Site | Devices | | Site | Devices |
+   |---|---|---|---|---|
+   | Bangsar Shopping Centre | 30 | | MIMOS Admin | 31 |
+   | Bukit Tinggi Medical Centre | 6 | | MIMOS Fab | 2 |
+   | Computime | 15 | | NationGate | 70 |
+   | Fuji Electric | 81 | | Newcastle Univ. Medicine (NUMed) | 33 |
+   | G Hotel | 13 | | Robert Bosch | 37 |
+   | Jaya One | 55 | | Sanmina | 48 |
+   | Kerry | 33 | | Seletar | 33 |
+   | KPJAP | 33 | | Taylor | 17 |
+
+   To add or re-sync one, still one site per run so a re-run can't disturb the others:
    `python -m scripts.discover_device_groups --trigger NumedTrigger --name NUMed --write`
-   (`--list-triggers` first). **NUMed done 2026-08-31** — 33 sensors, `Robert Bosch Recovery`
+   (`--list-triggers` first). The onboarding history below is kept because each entry
+   records a live-data trap that will recur on the next site, not because work is left.
+   **NUMed done 2026-08-31** — 33 sensors, `Robert Bosch Recovery`
    excluded as another site's. **Trimmed to 28 on 2026-09-01**: `Numed`, `Numed Setpoints`,
    `Numed Flowmeter`, `Numed Recovery`, `Meatrol DPM` were system flags, not devices —
    their status keys had not been written in 4–225 days, and each was printing an
@@ -186,7 +208,12 @@ reads it.
    anyway on the user's call since the site is believed to be mid-commissioning; expect
    ACTIVE / 0.0 hrs everywhere until ThingsBoard's rule chain for `BTMCTriggers` starts
    writing current values. ThingsBoard-side, not fixable here.
-   19 sites to go.
+   **The remaining 13 sites were onboarded over 2026-09-01..04** via the discover
+   script. Two carry a caveat worth knowing: **MIMOS Fab has only 2 devices** (that is
+   what the trigger reports, not a truncated import), and **MIMOS Admin was renamed**
+   from the script's `MIMOS Ad` to `MIMOS Admin`. `site_label` / `system_type` are
+   still blank on both MIMOS sites — they print empty on the report's site page until
+   filled in.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.

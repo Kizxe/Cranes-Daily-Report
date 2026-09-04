@@ -49,18 +49,22 @@ class Settings(BaseSettings):
     snapshot_minute: int = 59
     # Downtime polling cadence (minutes). 0 = never poll on a timer.
     #
-    # Both timers are OFF (2026-09-03, user's call): the ThingsBoard instance had gone
-    # slow enough to time out a poll outright, and the loop was costing ~64 requests
-    # every 5 minutes, ~760 an hour, around the clock. So the app now touches TB only
-    # at 23:59 and when someone asks it to.
+    # BACK ON at 10 minutes (2026-09-04, user's call), after being off since
+    # 2026-09-03. What it costs now is measurable rather than guessed: the poll makes
+    # ONE batched read per trigger device, and all 16 sites are onboarded, so a poll is
+    # 16 requests covering all 537 devices — 96 an hour at this cadence, against ~192
+    # at the old 5-minute one. That is a fraction of the load that got the loop
+    # switched off, and it buys back intraday freshness: between nightly runs the
+    # dashboard and the site drill-down show current status instead of the last
+    # capture. Turning the loop on also restores the catch-up poll ~5s after boot, so
+    # a restart leaves a blind spot of seconds rather than a whole interval.
     #
-    # The report does not suffer for it. CURRENT STATUS is read from the 23:59
-    # snapshot, not from the poll, and the nightly job reconciles the whole day from
-    # TB's own history before rendering — which is what actually catches short
-    # outages; the poll only ever sampled them. What you lose is *intraday* freshness:
-    # between runs the dashboard and the drill-down show the last capture, not live
-    # status. POST /api/downtime/poll and POST /api/captures/run refresh on demand.
-    downtime_poll_minutes: int = 0
+    # Set to 0 to go quiet again: the report itself never depended on the poll.
+    # CURRENT STATUS is read from the 23:59 snapshot, and the nightly job reconciles
+    # the whole day from TB's own history before rendering — which is what actually
+    # catches short outages; the poll only ever sampled them. POST /api/downtime/poll
+    # and POST /api/captures/run refresh on demand either way.
+    downtime_poll_minutes: int = 10
     # How often today's events are rebuilt from ThingsBoard history. 0 disables it —
     # the nightly job reconciles the day anyway, right before the report is built.
     reconcile_minutes: int = 0

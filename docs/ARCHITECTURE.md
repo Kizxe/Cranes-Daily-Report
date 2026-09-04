@@ -286,8 +286,9 @@ still runs it. If the machine was **off** at 23:59, an OS-level cron entry hitti
 `downtime` only records changes while the process is up, and it *samples* — a drop that
 starts and ends inside one poll interval is never seen. Both holes are closed by
 `reconcile_service`, which reads the status key's full ThingsBoard history and replaces a
-day's rows with every transition TB recorded: hourly against today (`reconcile_minutes`),
-once more at the top of the 23:59 job before the report is built, and on demand via
+day's rows with every transition TB recorded: at the top of the 23:59 job before the
+report is built (the hourly pass, `reconcile_minutes`, is off — set it non-zero to have
+today rebuilt as it goes), and on demand via
 `POST /api/downtime/reconcile?date=` or
 `python -m scripts.backfill_downtime --date <day> --refresh` (rows tagged
 `source='reconcile'`). Without `--refresh` the script only fills days that have no events

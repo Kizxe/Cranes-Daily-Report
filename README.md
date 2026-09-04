@@ -1,7 +1,7 @@
 # Cranes Daily Report
 
-Localhost/LAN app that pulls device telemetry from ThingsBoard for 22
-device/alarm/trigger groups, snapshots every key daily at 23:59 (plus on demand),
+Localhost/LAN app that pulls device telemetry from ThingsBoard for all 16
+sites (537 devices), snapshots every key daily at 23:59 (plus on demand),
 detects active↔inactive downtime windows, takes a site remark + per-device recommendations,
 and renders a daily PDF into `reports/YYYY-MM-DD/`.
 
@@ -65,11 +65,14 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 On startup it creates the DB if missing, mirrors `backend/config/sites/*.yaml` into it,
 and starts two scheduled jobs: the **23:59 nightly** (capture + report) and a **status
-poll every 5 min** (plus a one-off catch-up poll ~5 s after boot, so a restart leaves
-no blind spot). Watch for this line — it tells you the config actually loaded:
+poll every 10 min** (plus a one-off catch-up poll ~5 s after boot, so a restart leaves
+no blind spot). The hourly reconcile timer is off — the nightly job reconciles the day
+right before building the report, which is the pass that matters. Watch for these two
+lines — the first says the config actually loaded, the second what is on a timer:
 
 ```
-INFO cranes: config sync: {'groups': 1, 'devices': 33, 'keys': 248}
+INFO cranes: config sync: {'groups': 16, 'devices': 532, 'keys': 3350}
+INFO cranes.scheduler: scheduler started: nightly 23:59 Asia/Kuala_Lumpur, downtime poll every 10 min, reconcile never
 ```
 
 Open **http://localhost:8000** (or `http://<this-pc-ip>:8000` from another machine on
@@ -110,7 +113,7 @@ python -m scripts.inspect_db
 
 **A restart is not free.** Downtime is only recorded while the process is up, so a
 status change during the gap is missed. The boot catch-up poll narrows it to seconds,
-and the hourly reconcile pass rebuilds today from ThingsBoard history anyway; for a
+and the nightly job rebuilds the whole day from ThingsBoard history anyway; for a
 longer outage rebuild that day with `scripts/backfill_downtime.py`. On the
 always-on PC, run it under `docker compose` with `restart: unless-stopped` rather than
 by hand.
@@ -287,7 +290,7 @@ Bind mounts keep `backend/data/`, `reports/`, `uploads/`, `backend/config/`,
 is set so the 23:59 job fires at local time.
 
 **Run it 24/7.** Downtime is recorded only while the process is up — the poll loop
-runs every 5 min, but nothing catches a status change that happens while the
+runs every 10 min, but nothing catches a status change that happens while the
 container is stopped. `docker compose` sets `restart: unless-stopped`; keep it on the
 always-on PC. For any stretch it *was* down, rebuild that day afterwards:
 
@@ -302,11 +305,11 @@ that already has events that day, so a real poll-recorded day is never overwritt
 and re-running is safe.
 
 **The poll misses short flaps — that is what the reconcile pass is for.** Polling every
-5 min only samples; a device that dropped and recovered in between left no trace. Every
-hour (and once at the top of the 23:59 job) the backend replaces today's events with
-every transition ThingsBoard's history holds, so ISSUE OCC. and the DOWNTIME EVENTS
-table match what the instance actually recorded. Set `RECONCILE_MINUTES=0` to turn it
-off; run it by hand for any day with:
+10 min only samples; a device that dropped and recovered in between left no trace. At the
+top of the 23:59 job the backend replaces the day's events with every transition
+ThingsBoard's history holds, so ISSUE OCC. and the DOWNTIME EVENTS table match what the
+instance actually recorded. The hourly version of that pass is off (`RECONCILE_MINUTES=0`)
+— set it non-zero to have today rebuilt as it goes. Run it by hand for any day with:
 
 ```bash
 curl -s -X POST "localhost:8000/api/downtime/reconcile?date=2026-09-01"
@@ -360,7 +363,9 @@ off at 23:59, add an OS-level cron / Task Scheduler entry as backup:
 
 ## Still needs live wiring
 
-1. 21 of the 22 sites — NUMed is done. One `discover_device_groups` run each.
+1. ~~Site onboarding~~ — **done 2026-09-04. All 16 sites, 537 devices** (the plan's
+   "22 groups" was a pre-API estimate). `site_label` / `system_type` are still blank on
+   MIMOS Admin and MIMOS Fab, so those print empty on the site page.
 2. Five NUMed sensors (DPM CH1/CH2, RTD CH1/CH2, UFM) have `forTotalUse_` frozen at
    `[0, 0]` on NumedTrigger, so they print 0.0 active / 0.0 affected even while
    reporting INACTIVE or NO DATA. The ThingsBoard dashboard shows the same zeros —

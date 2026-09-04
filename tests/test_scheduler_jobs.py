@@ -1,10 +1,11 @@
 """Which jobs the scheduler actually registers.
 
-The 5-minute poll and the hourly reconcile were switched off on 2026-09-03 — the
-ThingsBoard instance had slowed enough to time a poll out entirely, and the loop was
-costing ~760 requests an hour around the clock. The app now touches TB at 23:59 and
-on demand, so these tests pin down that the timers really are gone, that the nightly
-run is not, and that turning either back on is one setting.
+Both timers went off on 2026-09-03 when the ThingsBoard instance slowed enough to time
+a poll out. The downtime poll came back on 2026-09-04 at 10 minutes — one batched read
+per trigger device, 16 requests a poll for all 537 devices — while the hourly reconcile
+stayed off, since the nightly job reconciles the day anyway. These tests pin down both
+directions: what runs on a timer by default, and that either one is a single setting
+away from changing.
 
 `scheduler.scheduler` is a module-level AsyncIOScheduler that binds whichever loop is
 running when it starts, so these swap in a fresh one and stub out start() — the jobs
@@ -34,24 +35,35 @@ def jobs(monkeypatch):
     return _start
 
 
-def test_only_the_nightly_run_is_scheduled_by_default(jobs):
+def test_the_nightly_run_and_the_10_minute_poll_are_what_runs_by_default(jobs):
     registered = jobs()
+
+    assert set(registered) == {"nightly", "downtime", "downtime-catchup"}, \
+        f"unexpected timers: {set(registered) ^ {'nightly', 'downtime', 'downtime-catchup'}}"
+    assert "interval[0:10:00]" in registered["downtime"]
+
+
+def test_the_reconcile_stays_off_by_default(jobs):
+    """The nightly job reconciles the day right before the report is built, which is
+    the pass that matters — an hourly one is extra load for no report content."""
+    assert "reconcile" not in jobs()
+
+
+def test_the_poll_goes_away_with_one_setting(jobs):
+    """At 0 the app makes no ThingsBoard call of its own between nightly runs. The
+    catch-up goes with it — it exists to close the gap before the *next* poll, so with
+    no poll loop it is one more unasked-for round trip to a struggling instance."""
+    registered = jobs(downtime_poll_minutes=0)
 
     assert set(registered) == {"nightly"}, \
         f"something still runs on a timer: {set(registered) - {'nightly'}}"
 
 
-def test_no_boot_catchup_poll_when_polling_is_off(jobs):
-    """The catch-up exists to close the gap before the *next* poll. With no poll loop
-    it is just one more unasked-for round trip to a struggling instance."""
-    assert "downtime-catchup" not in jobs()
-
-
-def test_the_poll_comes_back_with_one_setting(jobs):
+def test_the_poll_cadence_follows_the_setting(jobs):
     registered = jobs(downtime_poll_minutes=5)
 
     assert "interval[0:05:00]" in registered["downtime"]
-    assert "downtime-catchup" in registered, "the catch-up should return with the loop"
+    assert "downtime-catchup" in registered, "the catch-up should stay with the loop"
 
 
 def test_the_reconcile_comes_back_with_one_setting(jobs):
