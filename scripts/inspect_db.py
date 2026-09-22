@@ -116,7 +116,8 @@ def site_detail(name: str, date: str) -> None:
     print("\n  status: what role='status' reported in the latest snapshot for that date.")
     print("  hrs from 'counter' = one day's slice of the trigger's forTotalUse_ counters;")
     print("  'events' = our own status_events (fallback when there's no previous day to")
-    print("  difference against). issues = the trigger's '<sensor> 1D' daily fault count.")
+    print("  difference against). issues = the day's non-active windows in status_events,")
+    print("  the same rows --device lists (not the trigger's '<sensor> 1D' key).")
 
 
 def device_detail(device_id: int, date: str) -> None:
