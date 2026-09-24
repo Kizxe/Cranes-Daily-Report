@@ -124,6 +124,18 @@ def _remarks(group_id: int, date: str) -> list[dict]:
         ).fetchall()]
 
 
+def _status_history(group_id: int, date: str) -> list[dict]:
+    """Visible non-ACTIVE intervals grouped under each device."""
+    rows = dt.status_interval_rows(group_id, date)
+    grouped: dict[int, dict] = {}
+    for row in rows:
+        group = grouped.setdefault(row["device_id"], {
+            "device_id": row["device_id"], "device": row["device"], "rows": []
+        })
+        group["rows"].append(row)
+    return list(grouped.values())
+
+
 def _is_draft(date: str) -> bool:
     """True when nothing was captured for this date."""
     with read_conn() as conn:
@@ -246,9 +258,10 @@ def _site_downtime(devices: list[dict], date: str) -> tuple[list[dict], list[dic
     return summary, listed, omitted
 
 
-def build_context(date: str) -> dict:
+def build_context(date: str, trigger: str = "scheduled") -> dict:
     groups = _groups()
     status_of = dt.current_status_map(date)
+    denominator_seconds = dt.report_denominator_seconds(date, trigger)
     site_rows = []
     site_details = []
 
@@ -259,6 +272,7 @@ def build_context(date: str) -> dict:
         rows = _remarks(g["id"], date)
         site_remarks = [r for r in rows if r["device_id"] is None]
         dev_remark = {r["device_id"]: r for r in rows if r["device_id"] is not None}
+        status_history = _status_history(g["id"], date)
 
         dev_ctx = []
         active_now = 0
@@ -266,7 +280,7 @@ def build_context(date: str) -> dict:
         for d in devices:
             status = status_of.get(d["id"], "UNKNOWN")
             sev = dt.severity(status)
-            summ = dt.day_summary(d["id"], date)
+            summ = dt.day_summary(d["id"], date, denominator_seconds)
             summ.pop("events", None)   # kept off the device — see _site_events
             if status in dt.ACTIVE_STATES:
                 active_now += 1
@@ -308,9 +322,11 @@ def build_context(date: str) -> dict:
             "anchor": anchor,
             "name": g["name"],
             "devices": len(devices),
-            # Device-hours, deliberately: the approved report prints 48.0 for a
-            # 2-device site that was down all day. It can exceed 24.
-            "no_data_hrs": round(sum(x["affected_hours"] for x in dev_ctx), 1),
+            # Site-level hours are the average per device, so this day-based metric
+            # cannot exceed 24 even when several devices are down simultaneously.
+            "no_data_hrs": round(
+                sum(x["affected_hours"] for x in dev_ctx) / total, 1
+            ),
             "active_pct": round(sum(x["active_pct"] for x in dev_ctx) / total, 1),
             "current_active": active_now,
             "status_breakdown": _fmt_status_breakdown([x["status"] for x in dev_ctx]),
@@ -337,6 +353,7 @@ def build_context(date: str) -> dict:
             "events": events,
             "events_truncated": omitted,
             "remarks": site_remarks,
+            "status_history": status_history,
         })
 
     total_devices = sum(s["devices"] for s in site_rows)
@@ -361,8 +378,8 @@ def build_context(date: str) -> dict:
     }
 
 
-def render_html(date: str) -> str:
-    ctx = build_context(date)
+def render_html(date: str, trigger: str = "scheduled") -> str:
+    ctx = build_context(date, trigger=trigger)
     return _env.get_template("daily_report.html").render(**ctx)
 
 
@@ -390,7 +407,7 @@ async def generate_report(date: str, trigger: str = "manual") -> dict:
     try:
         # Inside the try: with StrictUndefined a template typo raises, and the
         # unattended 23:59 job must record status='failed' rather than die silently.
-        ctx = build_context(date)
+        ctx = build_context(date, trigger=trigger)
         json_path.write_text(json.dumps(_snapshot_payload(ctx), indent=2, default=str))
         html = _env.get_template("daily_report.html").render(**ctx)
         (out_dir / "report.html").write_text(html)

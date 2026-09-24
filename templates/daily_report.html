@@ -175,6 +175,20 @@
        spills into the neighbouring column instead of wrapping. */
     overflow-wrap:anywhere;
   }
+  .history-card {
+    border:1px solid var(--line-2); border-radius:7px; padding:18px 25px 20px;
+    margin-top:22px;
+  }
+  .history-card .history-title {
+    font:700 11.3px/1 var(--mono); letter-spacing:.14em; color:var(--navy);
+    margin-bottom:10px;
+  }
+  .history-batch { margin-top:12px; }
+  .history-batch:first-of-type { margin-top:0; }
+  .history-poll {
+    background:var(--navy); color:#fff; padding:8px 10px;
+    font:700 10px/1 var(--mono); letter-spacing:.1em;
+  }
 
   .spill {
     display:inline-flex; align-items:center; gap:4px; border-radius:5px; padding:3px 7px;
@@ -183,6 +197,10 @@
   .spill.sev-ok { background:var(--ok-bg); color:var(--ok); }
   .spill.sev-warn { background:var(--warn-bg); color:var(--warn); }
   .spill.sev-bad { background:var(--bad-bg); color:var(--bad); }
+  .state-label { display:inline-block; border-radius:4px; padding:3px 6px; font:700 8.4px/1 var(--mono); letter-spacing:.04em; }
+  .state-started, .state-ongoing { background:var(--bad-bg); color:var(--bad); }
+  .state-extended { background:var(--warn-bg); color:var(--warn); }
+  .state-recovered { background:var(--ok-bg); color:var(--ok); }
   /* Sized down and nudged so the bullet's optical centre lines up with the text
      baseline instead of floating above it — flex alone left it a hair high. */
   .spill .dot { font-size:7px; transform:translateY(0.5px); }
@@ -298,6 +316,7 @@
   <div class="expect">Expected device reporting: {{ site.group.expected_report_hours }} hours</div>
   {% endif %}
 
+  {% if pg.first or pg.devices or pg.summary_start or pg.events_start %}
   <div class="health-card">
     <div class="tab">DEVICE HEALTH{% if not pg.first %} (CONT.){% endif %}</div>
 
@@ -335,11 +354,11 @@
       <table>
         <colgroup>
           <col style="width:108px"><col style="width:68px"><col style="width:88px">
-          <col style="width:46px"><col style="width:58px"><col style="width:40px"><col>
+          <col style="width:46px"><col style="width:70px"><col style="width:58px"><col style="width:40px"><col>
         </colgroup>
         <thead><tr>
           <th>DEVICE</th><th>TYPE</th><th>STATUS</th><th>ACTIVE HRS</th>
-          <th>AFFECTED HRS</th><th>ISSUE OCC.</th><th>REMARK</th>
+          <th>ACTIVE / OBSERVED</th><th>AFFECTED HRS</th><th>ISSUE OCC.</th><th>REMARK</th>
         </tr></thead>
         <tbody>
         {% for d in pg.devices %}
@@ -348,6 +367,7 @@
             <td>{{ d.device_type or "—" }}</td>
             <td><span class="spill sev-{{ d.severity }}"><span class="dot">●</span>{{ d.status }}</span></td>
             <td>{{ d.active_hours|hrs }}</td>
+            <td>{{ d.active_hours|hrs }} / {{ d.observation_hours|hrs }} hr</td>
             <td>{{ d.affected_hours|hrs }}</td>
             <td>{{ d.issue_occurrences }}</td>
             <td class="sev-{{ 'muted' if d.recommendation_auto else d.severity }}">{{ d.recommendation or "—" }}</td>
@@ -418,6 +438,31 @@
     </div>
     {% endif %}
   </div>
+    {% endif %}
+  {% if pg.history_start %}
+  <div class="history-card">
+    <div class="history-title">STATUS SUMMARY{% if not pg.first %} (CONTINUED){% endif %}</div>
+    {% for batch in pg.history_groups %}
+    <div class="history-batch">
+      <div class="history-poll">{{ batch.get('device') or (batch.get('rows') or [{}])[0].get('device', 'Unknown device') }}</div>
+      <table>
+        <colgroup><col style="width:90px"><col style="width:104px"><col style="width:104px"><col></colgroup>
+        <thead><tr><th>STATUS</th><th>INTERVAL START</th><th>RECOVERED AT</th><th>ELAPSED</th></tr></thead>
+        <tbody>
+        {% for h in batch.rows %}
+          <tr>
+            <td><span class="spill sev-{{ h.severity }}"><span class="dot">●</span>{{ h.status }}</span></td>
+            <td>{{ h.interval_start[11:16] if h.interval_start else "—" }}</td>
+            <td>{{ h.recovered_at[11:16] if h.recovered_at else "—" }}</td>
+            <td>{{ ((h.duration_seconds / 3600)|round(2)) ~ " hr" if h.duration_seconds is not none else "—" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
   {# The site-level remark is not repeated here — it already has a column of its own
      on the cover page, and an unbudgeted block down here overruns the footer. #}
   <div class="card-name">{{ site.group.name }}</div>

@@ -82,6 +82,16 @@ function deviceRows(devices) {
   }).join("");
 }
 
+function deviceTable(devices) {
+  return `<table>
+    <thead><tr>
+      <th>Device</th><th>Status</th>
+      <th class="num">Active h</th><th class="num">Affected h</th><th class="num">Issues</th>
+    </tr></thead>
+    <tbody class="all">${deviceRows(devices)}</tbody>
+  </table>`;
+}
+
 function siteBlock(group, devices) {
   const attention = devices.filter(d => d.severity !== "ok");
   const health = attention.some(d => d.severity === "bad") ? "ATTENTION" : "HEALTHY";
@@ -111,7 +121,7 @@ function siteBlock(group, devices) {
         <tbody class="attention">${deviceRows(shown)}</tbody>
         <tbody class="all" hidden>${deviceRows(devices)}</tbody>
       </table>` : `<p class="all-clear">All ${devices.length} devices active.</p>`}
-      ${rest > 0 ? `<button class="linkbtn" data-expand>Show all ${devices.length} devices</button>` : ""}
+      ${rest > 0 ? `<button class="linkbtn" data-expand>See all ${devices.length} devices</button>` : ""}
     </section>`;
 }
 
@@ -148,13 +158,26 @@ async function load() {
 
   sitesEl.querySelectorAll("[data-expand]").forEach(btn => {
     btn.onclick = () => {
-      const table = btn.closest(".site").querySelector("table");
+      const site = btn.closest(".site");
+      let table = site.querySelector("table");
+      if (!table) {
+        const index = groups.findIndex(g => g.id === +site.dataset.group);
+        site.querySelector(".all-clear").outerHTML = deviceTable(summaries[index].devices);
+        btn.textContent = "See less devices";
+        return;
+      }
+      if (!table.querySelector("tbody.attention")) {
+        const index = groups.findIndex(g => g.id === +site.dataset.group);
+        table.outerHTML = `<p class="all-clear">All ${summaries[index].devices.length} devices active.</p>`;
+        btn.textContent = `See all ${summaries[index].devices.length} devices`;
+        return;
+      }
       const showingAll = !table.querySelector("tbody.all").hidden;
       table.querySelector("tbody.all").hidden = showingAll;
       table.querySelector("tbody.attention").hidden = !showingAll;
       btn.textContent = showingAll
-        ? `Show all ${table.querySelectorAll("tbody.all tr:not(.cat)").length} devices`
-        : "Show only devices needing attention";
+        ? `See all ${table.querySelectorAll("tbody.all tr:not(.cat)").length} devices`
+        : "See less devices";
     };
   });
 }
@@ -186,6 +209,7 @@ load().catch(err => {
   document.getElementById("sites").innerHTML =
     `<p class="muted">Could not load: ${err.message}</p>`;
 });
+setInterval(() => Promise.all([load(), loadBanner()]).catch(() => {}), 10 * 60 * 1000);
 </script>
 </body>
 </html>

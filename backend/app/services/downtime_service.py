@@ -210,14 +210,23 @@ async def _poll_source(source_id: str, devices: list[dict]) -> int:
 
     now = _now_iso()
     changes = 0
+    samples = []
     for d in devices:
         points = data.get(d["status_key"]) or []
         if not points:
             continue
         status = normalize_status(str(points[0].get("value")))
+        samples.append((now, d["device_id"], status, "poll"))
         if record_status(d["device_id"], status, source="poll",
                          ts=_transition_ts(d, status, data, now)):
             changes += 1
+    if samples:
+        with get_conn() as conn:
+            conn.executemany(
+                "INSERT INTO status_samples (sample_ts, device_id, status, source) "
+                "VALUES (?, ?, ?, ?)",
+                samples,
+            )
     return changes
 
 
@@ -354,6 +363,124 @@ def _role_value(conn, device_id: int, role: str, date: str) -> str | None:
     return row["value"] if row else None
 
 
+def report_denominator_seconds(date: str, trigger: str = "scheduled") -> int:
+    """Return a full-day or latest-manual-capture denominator for active percent."""
+    if trigger != "manual":
+        return DAY_SECONDS
+    with read_conn() as conn:
+        row = conn.execute(
+            "SELECT capture_ts, trigger FROM snapshots WHERE capture_date = ? "
+            "ORDER BY capture_ts DESC LIMIT 1",
+            (date,),
+        ).fetchone()
+    if not row or row["trigger"] != "manual":
+        return DAY_SECONDS
+    start = datetime.fromisoformat(f"{date}T00:00:00").replace(tzinfo=TZ)
+    captured = datetime.fromisoformat(row["capture_ts"])
+    end = min(max(captured, start), start.replace(hour=23, minute=59, second=59))
+    return max(int((end - start).total_seconds()), 1)
+
+
+def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> list[dict]:
+    """Turn ten-minute samples into incident-only per-device status intervals.
+
+    ACTIVE samples are not emitted unless they close a non-ACTIVE incident. Repeated
+    non-ACTIVE samples extend the same incident and only the final duration is shown.
+    """
+    day_start = datetime.fromisoformat(date).replace(tzinfo=TZ).isoformat()
+    day_end = datetime.fromisoformat(date).replace(
+        tzinfo=TZ, hour=23, minute=59, second=59, microsecond=999999
+    ).isoformat()
+    with read_conn() as conn:
+        params: list = [group_id, day_start, day_end]
+        limit_sql = ""
+        if limit is not None:
+            limit_sql = (
+                " AND s.sample_ts IN (SELECT sample_ts FROM status_samples "
+                "WHERE sample_ts >= ? AND sample_ts <= ? ORDER BY sample_ts DESC LIMIT ?)"
+            )
+            params.extend([day_start, day_end, limit])
+        rows = conn.execute(
+            """
+            SELECT s.sample_ts, s.device_id, d.name AS device, s.status
+            FROM status_samples s
+            JOIN devices d ON d.id = s.device_id
+            WHERE d.group_id = ? AND s.sample_ts >= ? AND s.sample_ts <= ?
+            """ + limit_sql + " ORDER BY s.device_id, s.sample_ts, d.name",
+            params,
+        ).fetchall()
+
+    by_device: dict[int, list] = {}
+    for row in rows:
+        by_device.setdefault(row["device_id"], []).append(row)
+
+    active_states = ACTIVE_STATES
+    out: list[dict] = []
+    for samples in by_device.values():
+        incident: dict | None = None
+        for row in samples:
+            moment = datetime.fromisoformat(row["sample_ts"])
+            if row["status"] not in active_states:
+                if incident is None:
+                    with read_conn() as conn:
+                        transition = conn.execute(
+                            "SELECT start_ts FROM status_events "
+                            "WHERE device_id = ? AND status NOT IN (?, ?, ?, ?) "
+                            "AND start_ts <= ? AND (end_ts IS NULL OR end_ts >= ?) "
+                            "ORDER BY start_ts DESC LIMIT 1",
+                            (row["device_id"], "ACTIVE", "ONLINE", "OK", "UP",
+                             row["sample_ts"], row["sample_ts"]),
+                        ).fetchone()
+                    transition_start = (
+                        datetime.fromisoformat(transition["start_ts"])
+                        if transition else moment
+                    )
+                    incident = {
+                        "device_id": row["device_id"], "device": row["device"],
+                        "status": row["status"], "severity": severity(row["status"]),
+                        "start": transition_start,
+                    }
+                continue
+            if incident is not None:
+                out.append({
+                    "sample_ts": row["sample_ts"], "device_id": incident["device_id"],
+                    "device": incident["device"], "status": incident["status"],
+                    "severity": incident["severity"],
+                    "interval_start": incident["start"].isoformat(),
+                    "duration_seconds": max(int((moment - incident["start"]).total_seconds()), 0),
+                    "recovered_at": row["sample_ts"],
+                    "state": "RECOVERED",
+                })
+                incident = None
+        # An incident that never recovered during the selected day is intentionally
+        # omitted from the summary; the live Device Health status still shows it.
+    return sorted(out, key=lambda row: (row["device"], row["sample_ts"], row["device_id"]))
+
+
+def _sample_issue_occurrences(device_id: int, date: str) -> int | None:
+    """Count ACTIVE -> non-ACTIVE runs from the ten-minute samples when present."""
+    day_start = datetime.fromisoformat(date).replace(tzinfo=TZ).isoformat()
+    day_end = datetime.fromisoformat(date).replace(
+        tzinfo=TZ, hour=23, minute=59, second=59, microsecond=999999
+    ).isoformat()
+    with read_conn() as conn:
+        rows = conn.execute(
+            "SELECT status FROM status_samples WHERE device_id = ? "
+            "AND sample_ts >= ? AND sample_ts <= ? ORDER BY sample_ts",
+            (device_id, day_start, day_end),
+        ).fetchall()
+    if not rows:
+        return None
+    count = 0
+    previous_active = False
+    for row in rows:
+        is_active = row["status"] in ACTIVE_STATES
+        if not is_active and previous_active:
+            count += 1
+        previous_active = is_active
+    return count
+
+
 def _total_use(conn, device_id: int, date: str) -> tuple[float, float] | None:
     """(inactive_ms, active_ms) from forTotalUse_<sensor> — cumulative, not per-day."""
     raw = _role_value(conn, device_id, "total_use", date)
@@ -411,12 +538,19 @@ def counter_hours(device_id: int, date: str) -> dict | None:
     }
 
 
-def day_summary(device_id: int, date: str) -> dict:
+def day_summary(device_id: int, date: str, denominator_seconds: int | None = None) -> dict:
     events = downtime_for_date(device_id, date)
     covered = sum(e["seconds_in_day"] for e in events)
     active = sum(e["seconds_in_day"] for e in events if e["is_active"])
     affected = sum(e["seconds_in_day"] for e in events if not e["is_active"])
-    occurrences = sum(1 for e in events if not e["is_active"])
+    event_occurrences = sum(
+        1 for i, e in enumerate(events)
+        if not e["is_active"] and (i == 0 or events[i - 1]["is_active"])
+    )
+    downtime_events = [e for e in events if not e["is_active"]]
+    occurrences = _sample_issue_occurrences(device_id, date)
+    if occurrences is None:
+        occurrences = event_occurrences
 
     hours = {
         "active_hours": round(active / 3600, 1),
@@ -438,13 +572,31 @@ def day_summary(device_id: int, date: str) -> dict:
     # chain's own definition and only updates at capture time, so it sat at 2 while the
     # drill-down plainly showed 4 windows — the number on screen must match the list.
 
-    # Percentage of the DAY, not of the covered window. Dividing by `covered` would
-    # let a device with only 4h of events read 100% active.
-    active_pct = round(100 * hours["active_hours"] * 3600 / DAY_SECONDS, 1)
+    # Scheduled reports use the full day; an on-demand report uses the elapsed capture
+    # window. Dividing by `covered` would let a device with only 4h of events read 100%.
+    denominator = denominator_seconds or DAY_SECONDS
+    window_hours = denominator / 3600
+    if not downtime_events:
+        # No non-ACTIVE observation means the device worked for the whole window.
+        raw_active_hours = window_hours
+    else:
+        raw_active_hours = min(max(float(hours["active_hours"]), 0.0), window_hours)
+    active_hours = round(raw_active_hours, 1)
+    hours["active_hours"] = active_hours
+    hours["affected_hours"] = round(max(window_hours - active_hours, 0.0), 1)
+    hours["observation_hours"] = round(window_hours, 1)
+    active_pct = round(100 * raw_active_hours / window_hours, 1)
     return {
         **hours,
         "covered_hours": round(covered / 3600, 1),
         "active_pct": min(active_pct, 100.0),
         "issue_occurrences": occurrences,
+        "downtime_events": len(downtime_events),
+        "downtime_hours": round(
+            sum(e["seconds_in_day"] for e in downtime_events) / 3600, 2
+        ),
+        "longest_downtime_hours": round(
+            max((e["seconds_in_day"] for e in downtime_events), default=0) / 3600, 2
+        ),
         "events": events,
     }

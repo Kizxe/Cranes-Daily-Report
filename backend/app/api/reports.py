@@ -32,7 +32,7 @@ async def generate(date: str, allow_empty: bool = Query(default=False)):
 @router.get("/{date}/preview", response_class=HTMLResponse)
 def preview(date: str):
     """Render the report HTML without producing a PDF — fast design iteration."""
-    return report_service.render_html(date)
+    return report_service.render_html(date, trigger="manual")
 
 
 @router.get("/{date}/pdf")

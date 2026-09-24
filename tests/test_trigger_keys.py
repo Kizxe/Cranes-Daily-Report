@@ -120,6 +120,10 @@ async def test_poll_dates_the_event_from_the_trigger_timestamp(site, monkeypatch
             r["device_id"]: r
             for r in conn.execute("SELECT device_id, status, start_ts FROM status_events")
         }
+        samples = conn.execute(
+            "SELECT COUNT(*) AS n FROM status_samples"
+        ).fetchone()["n"]
+    assert samples == 2, "every polled device status must be retained as a sample"
     dpm = events[site["Numed_DPM_4"]]
     assert dpm["status"] == "INACTIVE", "active_=false must store as INACTIVE"
     assert dpm["start_ts"] == went_down.isoformat(), "event not dated from InactiveTs_"
@@ -145,6 +149,26 @@ async def test_future_transition_timestamp_falls_back_to_poll_time(site, monkeyp
             (site["Numed_DPM_4"],),
         ).fetchone()
     assert datetime.fromisoformat(row["start_ts"]) <= datetime.now(dt.TZ)
+
+
+def test_status_samples_mark_extensions_and_recovery(site):
+    did = site["Numed_DPM_4"]
+    with get_conn() as conn:
+        conn.executemany(
+            "INSERT INTO status_samples (sample_ts, device_id, status, source) VALUES (?, ?, ?, 'poll')",
+            [
+                ("2026-08-16T09:50:00+08:00", did, "ACTIVE"),
+                ("2026-08-16T10:00:00+08:00", did, "STATIC"),
+                ("2026-08-16T10:10:00+08:00", did, "STATIC"),
+                ("2026-08-16T10:20:00+08:00", did, "INACTIVE"),
+                ("2026-08-16T10:30:00+08:00", did, "ACTIVE"),
+            ],
+        )
+        rows = [r for r in dt.status_interval_rows(site["group_id"], "2026-08-16")
+            if r["device_id"] == did]
+    assert [r["state"] for r in rows] == ["STARTED", "EXTENDED", "STARTED", "RECOVERED"]
+    assert rows[-1]["duration_seconds"] == 30 * 60
+    assert dt._sample_issue_occurrences(did, "2026-08-16") == 1
 
 
 def test_each_site_loads_from_its_own_file(tmp_path, monkeypatch):
@@ -238,6 +262,7 @@ def test_day_hours_come_from_the_trigger_counters(site):
     assert s["source"] == "counter"
     assert s["active_hours"] == 22.0, "active hours must be the day's slice, not the total"
     assert s["affected_hours"] == 2.0
+    assert s["active_hours"] + s["affected_hours"] == 24.0
     assert s["issue_occurrences"] == 2, "ISSUE OCC. counts the windows on screen, not 1D"
 
 
@@ -252,6 +277,21 @@ def test_day_hours_fall_back_when_there_is_no_previous_day(site):
 
     assert dt.counter_hours(did, "2026-08-31") is None
     assert dt.day_summary(did, "2026-08-31")["source"] == "events"
+
+
+def test_manual_capture_uses_elapsed_time_as_active_percent_denominator(site):
+    """An on-demand noon capture must not divide its hours by a full 24-hour day."""
+    did = site["Numed RHT Wet Lab"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO snapshots (capture_ts, capture_date, trigger, device_id, key_name, value)"
+            " VALUES (?, ?, 'manual', ?, ?, ?)",
+            ("2026-08-31T12:00:00+08:00", "2026-08-31", did,
+             "forTotalUse_Numed RHT Wet Lab", "[0, 6]")
+        )
+
+    assert dt.report_denominator_seconds("2026-08-31", "manual") == 12 * 3600
+    assert dt.day_summary(did, "2026-08-31", 12 * 3600)["active_pct"] == 50.0
 
 
 def test_counter_reset_does_not_produce_negative_hours(site):
@@ -289,11 +329,11 @@ def test_stale_baseline_is_rejected_rather_than_printing_impossible_hours(site):
 
 
 def test_frozen_counters_still_come_from_the_counter(site):
-    """A [0,0] counter reports 0.0/0.0 — the counter is the source whenever it exists.
+    """A [0,0] counter has no active time, so the full day is affected time.
 
     UFM and both RTD channels are frozen at [0,0] on NumedTrigger while reporting
-    INACTIVE / NO DATA. The ThingsBoard dashboard shows 0 for them as well, so the
-    report follows the counter rather than substituting its own number.
+    INACTIVE / NO DATA. The report preserves the counter's active value and balances
+    it against the full reporting window.
     """
     did = site["Numed_DPM_4"]
     with get_conn() as conn:
@@ -306,7 +346,7 @@ def test_frozen_counters_still_come_from_the_counter(site):
 
     s = dt.day_summary(did, "2026-08-31")
     assert s["source"] == "counter"
-    assert (s["active_hours"], s["affected_hours"]) == (0.0, 0.0)
+    assert (s["active_hours"], s["affected_hours"]) == (0.0, 24.0)
 
 
 # --- a site is identified by its trigger device, not its name -------------------

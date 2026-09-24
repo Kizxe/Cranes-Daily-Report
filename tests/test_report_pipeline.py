@@ -39,6 +39,13 @@ def test_hours_and_issues_come_through_to_the_context():
     assert (d["active_hours"], d["affected_hours"], d["issue_occurrences"]) == (13.2, 4.4, 8)
 
 
+def test_site_no_data_hours_are_average_device_hours():
+    make_site("S", [device("A", active_h=0.0, affected_h=24.0),
+                     device("B", active_h=0.0, affected_h=24.0)])
+    site = report_service.build_context(DATE)["sites"][0]
+    assert site["no_data_hrs"] == 24.0
+
+
 def test_static_and_stalled_are_warnings_but_inactive_escalates_the_site():
     """The approved report prints a site with 1 Static + 1 Stalled as HEALTHY."""
     make_site("Warn Site", [device("A"), device("B", status="STATIC"),

@@ -64,6 +64,48 @@ def test_downtime_events_follow_the_date(client):
     assert client.get(f"/api/downtime/events/{did}?date=2026-08-30").json() == []
 
 
+def test_group_downtime_includes_device_health_summary(client):
+    did = make_site("S", [device("D1")])['D1']
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+            " VALUES (?, 'INACTIVE', '2026-08-16T09:00:00+08:00',"
+            " '2026-08-16T10:30:00+08:00', 'poll')", (did,)
+        )
+        group_id = conn.execute(
+            "SELECT group_id FROM devices WHERE id = ?", (did,)
+        ).fetchone()[0]
+    [row] = client.get(f"/api/downtime/groups/{group_id}?date=2026-08-16").json()["devices"]
+    assert (
+        row["downtime_events"], row["downtime_hours"], row["longest_downtime_hours"]
+    ) == (1, 1.5, 1.5)
+
+
+def test_group_status_samples_show_interval_rows(client):
+    did = make_site("S", [device("D1")])['D1']
+    with get_conn() as conn:
+        group_id = conn.execute(
+            "SELECT group_id FROM devices WHERE id = ?", (did,)
+        ).fetchone()[0]
+        conn.execute(
+            "INSERT INTO status_samples (sample_ts, device_id, status, source) "
+            "VALUES ('2026-08-16T10:00:00+08:00', ?, 'INACTIVE', 'poll')", (did,)
+        )
+    body = client.get(
+        f"/api/downtime/groups/{group_id}/samples?date=2026-08-16"
+    ).json()
+    assert body["rows"] == [{
+        "sample_ts": "2026-08-16T10:00:00+08:00",
+        "device_id": did,
+        "device": "D1",
+        "status": "INACTIVE",
+        "severity": "bad",
+        "interval_start": "2026-08-16T10:00:00+08:00",
+        "duration_seconds": 0,
+        "state": "ONGOING",
+    }]
+
+
 def test_a_window_spanning_midnight_is_clipped_to_the_picked_day(client):
     """The drill-down must never print another day's timestamps under the date picker."""
     did = make_site("S", [device("D1")])["D1"]

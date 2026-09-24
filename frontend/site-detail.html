@@ -35,14 +35,19 @@
   <table>
     <thead>
       <tr>
-        <th style="width:19%">Device</th><th style="width:9%">Status</th>
-        <th style="width:8%">Active Hrs</th><th style="width:9%">Affected Hrs</th>
-        <th style="width:8%">Active %</th><th style="width:7%">Issue Occ.</th>
+        <th style="width:17%">Device</th><th style="width:9%">Status</th>
+        <th style="width:8%">Active Hrs</th><th style="width:15%">Active / Observed</th>
+        <th style="width:9%">Affected Hrs</th><th style="width:8%">Active %</th>
+        <th style="width:7%">Issue Occ.</th>
         <th>Remark</th>
       </tr>
     </thead>
-    <tbody id="devices"><tr><td colspan="7" class="muted">Pick a group.</td></tr></tbody>
+    <tbody id="devices"><tr><td colspan="8" class="muted">Pick a group.</td></tr></tbody>
   </table>
+
+  <h2>Status Summary</h2>
+  <p class="muted">Each scheduled poll is appended here. A non-active interval is measured until the next ACTIVE sample.</p>
+  <div id="statusHistory"><p class="muted">No status polls recorded.</p></div>
 
   <h2>Site Remark</h2>
   <p class="muted">One line about the whole site — this is the REMARK column on page 1 of the report.</p>
@@ -73,10 +78,11 @@ async function loadAll() {
   const date = dateInput.value;
   if (!document.getElementById("group").value) return;
 
-  const [dt, recs, remarks] = await Promise.all([
+  const [dt, recs, remarks, history] = await Promise.all([
     api(`/downtime/groups/${gid()}?date=${date}`),
     api(`/remarks?group_id=${gid()}&report_date=${date}&scope=device`),
     api(`/remarks?group_id=${gid()}&report_date=${date}&scope=site`),
+    api(`/downtime/groups/${gid()}/samples?date=${date}&limit=200`),
   ]);
 
   const byDevice = Object.fromEntries(recs.map(r => [r.device_id, r]));
@@ -94,17 +100,30 @@ async function loadAll() {
              data-name="${d.device}">${d.device}</a></td>
       <td>${pill(d.status)}</td>
       <td class="num">${d.active_hours.toFixed(1)}</td>
+      <td class="num">${d.active_hours.toFixed(1)} / ${d.observation_hours.toFixed(1)} hr</td>
       <td class="num">${d.affected_hours.toFixed(1)}</td>
       <td class="num">${d.active_pct.toFixed(1)}%</td>
       <td class="num${d.issue_occurrences >= 5 ? " flag" : ""}">${d.issue_occurrences}</td>
       <td>${cell}</td>
     </tr>
-    <tr class="events-row" id="ev-${d.device_id}" hidden><td colspan="7"></td></tr>`;
-  }).join("") || `<tr><td colspan="7" class="muted">No devices.</td></tr>`;
+    <tr class="events-row" id="ev-${d.device_id}" hidden><td colspan="8"></td></tr>`;
+  }).join("") || `<tr><td colspan="8" class="muted">No devices.</td></tr>`;
 
   document.getElementById("remarks").innerHTML = remarks.map(r =>
     `<p>• ${r.body} <span class="muted">— ${r.author || "unattributed"}</span></p>`).join("")
     || `<p class="muted">No site remark yet.</p>`;
+
+  const formatHours = seconds => seconds == null ? "—" : `${(seconds / 3600).toFixed(2)} hr`;
+  const intervalsByDevice = {};
+  for (const row of history.rows) (intervalsByDevice[row.device_id] ||= { device: row.device, rows: [] }).rows.push(row);
+  document.getElementById("statusHistory").innerHTML = history.rows.length
+    ? Object.values(intervalsByDevice).map(group => `
+      <section class="status-sample">
+        <h3>${group.device}</h3>
+        <table class="status-history"><thead><tr><th>Status</th><th>Interval start</th><th>Recovered at</th><th>Elapsed</th></tr></thead><tbody>${
+          group.rows.map(r => `<tr><td>${pill(r.status)}</td><td>${r.interval_start ? r.interval_start.replace("T", " ").slice(0, 19) : "—"}</td><td>${r.recovered_at ? r.recovered_at.replace("T", " ").slice(0, 19) : "—"}</td><td class="num">${formatHours(r.duration_seconds)}</td></tr>`).join("")}</tbody></table>
+      </section>`).join("")
+    : `<p class="muted">No status samples recorded for ${date}.</p>`;
 }
 
 async function saveRecommendation(deviceId) {
@@ -185,6 +204,7 @@ document.getElementById("remarkForm").onsubmit = async (e) => {
 };
 
 loadGroups().catch(err => toast("Load failed: " + err.message));
+setInterval(() => loadAll().catch(err => toast("Refresh failed: " + err.message)), 10 * 60 * 1000);
 </script>
 </body>
 </html>

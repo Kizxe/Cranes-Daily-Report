@@ -70,6 +70,15 @@ td textarea:disabled { background: #f7f8fa; color: var(--muted); }
 .rec-save { margin-top: 5px; padding: 4px 10px; font-size: 11px; }
 .events-row td { background: #f7f8fa; }
 .events-row table { margin-top: 8px; }
+.status-history { font-size: 11px; }
+.status-sample { margin: 12px 0 18px; }
+.status-sample h3 { font-size: 11px; color: var(--navy); margin: 0 0 5px; }
+.status-history td { vertical-align: middle; }
+.status-history td:nth-child(3) { white-space: nowrap; color: var(--muted); }
+.state-label { display: inline-block; padding: 2px 6px; border-radius: 2px; font-size: 10px; font-weight: 700; }
+.state-started, .state-ongoing { background: #f7e2df; color: var(--bad); }
+.state-extended { background: #fbf1dd; color: var(--warn); }
+.state-recovered { background: #e4f3ea; color: var(--ok); }
 
 /* ---- dashboard --------------------------------------------------------- */
 .toolbar { display: flex; justify-content: space-between; align-items: center;

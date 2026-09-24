@@ -60,10 +60,11 @@ def group_downtime(group_id: int, date: str = Query(default_factory=_today)) -> 
     # One map for the whole group — the site-detail page needs status to decide which
     # recommendations are auto-filled, and it must agree with the report.
     status_of = downtime_service.current_status_map(date)
+    denominator_seconds = downtime_service.report_denominator_seconds(date, "manual")
     out = []
     for d in devices:
         status = status_of.get(d["id"], "UNKNOWN")
-        summ = downtime_service.day_summary(d["id"], date)
+        summ = downtime_service.day_summary(d["id"], date, denominator_seconds)
         summ.pop("events", None)
         out.append({
             "device_id": d["id"], "device": d["name"],
@@ -74,6 +75,14 @@ def group_downtime(group_id: int, date: str = Query(default_factory=_today)) -> 
             **summ,
         })
     return {"group_id": group_id, "date": date, "devices": out}
+
+
+@router.get("/groups/{group_id}/samples")
+def group_status_samples(group_id: int, date: str = Query(default_factory=_today),
+                         limit: int = Query(200, ge=1, le=2000)) -> dict:
+    """Non-ACTIVE intervals observed by each scheduled poll."""
+    return {"group_id": group_id, "date": date,
+            "rows": downtime_service.status_interval_rows(group_id, date, limit)}
 
 
 @router.get("/events/{device_id}")

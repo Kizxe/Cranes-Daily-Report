@@ -30,6 +30,7 @@ CONTENT_PX = 942        # USABLE_PX less 12px of slack
 FIRST_PAGE_CHROME_PX = 557   # site card + SUMMARY + DEVICE TYPE BREAKDOWN + one section
 CONT_PAGE_CHROME_PX = 189    # card padding + the italic site name + one section
 SECTION_PX = 78              # a SECOND section opened on a page that already has one
+HISTORY_SECTION_PX = 114     # the separate status-summary card margin, title, and table head
 
 ROW_BASE_PX = 11        # a row's vertical padding (5+5) + border
 ROW_LINE_PX = 14        # one wrapped line of the 9.2px/1.45 mono table body (13.34, rounded up)
@@ -45,6 +46,9 @@ REC_CHARS = 34          # the ~216px REMARK column (STATUS widened 80->88 on 202
                         # here — re-measure both together if either column moves again)
 EVENT_CHARS = 25        # the 160px DEVICE column of the LONGEST OUTAGES table
 SUMMARY_CHARS = 30      # the 190px DEVICE column of the DOWNTIME SUMMARY table
+HISTORY_DEVICE_CHARS = 24
+HISTORY_STATUS_CHARS = 10
+HISTORY_TIME_CHARS = 5
 
 # ---- SITES OVERVIEW, the cover table ------------------------------------------
 # It used to render every site in one go, which was fine at 3 sites and ran straight
@@ -113,6 +117,17 @@ def summary_px(row: dict) -> int:
     return ROW_BASE_PX + ROW_LINE_PX * _lines(row.get("device"), SUMMARY_CHARS)
 
 
+def history_row_px(row: dict) -> int:
+    """Height of one row in a timestamp-grouped status table."""
+    lines = max(
+        _lines(row.get("device"), HISTORY_DEVICE_CHARS),
+        _lines(row.get("status"), HISTORY_STATUS_CHARS),
+        _lines((row.get("interval_start") or "—")[11:16], HISTORY_TIME_CHARS),
+        _lines((row.get("recovered_at") or "—")[11:16], HISTORY_TIME_CHARS),
+    )
+    return ROW_BASE_PX + ROW_LINE_PX * lines
+
+
 def _new_page(site: dict, first: bool) -> dict:
     return {
         "kind": "site",
@@ -124,6 +139,8 @@ def _new_page(site: dict, first: bool) -> dict:
         "sites": [],
         "summary": [],
         "summary_start": False,
+        "history_groups": [],
+        "history_start": False,
         "events": [],
         "events_start": False,
     }
@@ -133,7 +150,8 @@ def _new_cover_page(kind: str) -> dict:
     return {
         "kind": kind, "number": 0, "anchor": None, "site": None,
         "first": True, "devices": [], "sites": [], "summary": [],
-        "summary_start": False, "events": [], "events_start": False,
+        "summary_start": False, "history_groups": [], "history_start": False,
+        "events": [], "events_start": False,
     }
 
 
@@ -230,6 +248,46 @@ def paginate(site_details: list[dict], sites: list[dict] | None = None,
             # recorded...") appears, if it fits.
             if used + SECTION_PX + EVENT_ROW_PX <= budget:
                 page["events_start"] = True
+
+        history_groups = site.get("status_history") or []
+        if history_groups:
+            # Give each poll timestamp its own page. This keeps the summary readable;
+            # only a single timestamp can continue when that one poll has many devices.
+            pages.append(page)
+            page = _new_page(site, first=False)
+            used = CONT_PAGE_CHROME_PX
+            page["history_start"] = True
+            for group in history_groups:
+                group_device = group.get("device") or (
+                    group.get("rows") or [{}]
+                )[0].get("device", "Unknown device")
+                group_height = HISTORY_SECTION_PX + 54 + sum(
+                    history_row_px(row) for row in group["rows"]
+                )
+                if page["history_groups"] and used + group_height > budget:
+                    pages.append(page)
+                    page = _new_page(site, first=False)
+                    used = CONT_PAGE_CHROME_PX
+                    page["history_start"] = True
+                current = None
+                for row in group["rows"]:
+                    row_height = history_row_px(row)
+                    needs_new_page = (
+                        (current is None and used + 54 + row_height > budget)
+                        or (current is not None and used + row_height > budget)
+                    )
+                    if needs_new_page:
+                        pages.append(page)
+                        page = _new_page(site, first=False)
+                        used = CONT_PAGE_CHROME_PX
+                        page["history_start"] = True
+                        current = None
+                    if current is None:
+                        current = {"device": group_device, "rows": []}
+                        page["history_groups"].append(current)
+                        used += HISTORY_SECTION_PX + 54
+                    current["rows"].append(row)
+                    used += row_height
 
         pages.append(page)
 

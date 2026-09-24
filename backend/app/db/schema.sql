@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS status_events (
 CREATE INDEX IF NOT EXISTS idx_status_events_device ON status_events(device_id, start_ts);
 CREATE INDEX IF NOT EXISTS idx_status_events_open ON status_events(device_id) WHERE end_ts IS NULL;
 
+-- 3b. Every scheduled status poll, including unchanged statuses --------------
+-- status_events stores transitions; this table preserves the 10-minute timeline
+-- shown in the site detail view.
+CREATE TABLE IF NOT EXISTS status_samples (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    sample_ts       TEXT NOT NULL,
+    device_id       INTEGER NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    status          TEXT NOT NULL,
+    source          TEXT NOT NULL DEFAULT 'poll'
+);
+CREATE INDEX IF NOT EXISTS idx_status_samples_device_ts ON status_samples(device_id, sample_ts);
+CREATE INDEX IF NOT EXISTS idx_status_samples_ts ON status_samples(sample_ts);
+
 -- 4. Manual remarks (site-level) -------------------------------------------
 -- device_id NULL = site-level remark (many per day, shown on page 1).
 -- device_id set = that device's engineer recommendation (at most one per day; the
