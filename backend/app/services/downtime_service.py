@@ -363,6 +363,22 @@ def _role_value(conn, device_id: int, role: str, date: str) -> str | None:
     return row["value"] if row else None
 
 
+def _non_active_interval_start(device_id: int, moment: datetime) -> datetime:
+    """When a sample reads non-ACTIVE, the outage began at the last transition — not at 00:00."""
+    active = tuple(ACTIVE_STATES)
+    with read_conn() as conn:
+        transition = conn.execute(
+            "SELECT start_ts FROM status_events "
+            "WHERE device_id = ? AND status NOT IN (?, ?, ?, ?) "
+            "AND start_ts <= ? AND (end_ts IS NULL OR end_ts >= ?) "
+            "ORDER BY start_ts DESC LIMIT 1",
+            (device_id, *active, moment.isoformat(), moment.isoformat()),
+        ).fetchone()
+    if transition:
+        return datetime.fromisoformat(transition["start_ts"])
+    return moment
+
+
 def report_denominator_seconds(date: str, trigger: str = "scheduled") -> int:
     """Return a full-day or latest-manual-capture denominator for active percent."""
     if trigger != "manual":
@@ -382,12 +398,15 @@ def report_denominator_seconds(date: str, trigger: str = "scheduled") -> int:
 
 
 def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> list[dict]:
-    """Turn ten-minute samples into incident-only per-device status intervals.
+    """One row per poll step while a device is in a non-ACTIVE incident.
 
-    ACTIVE samples are not emitted unless they close a non-ACTIVE incident. Repeated
-    non-ACTIVE samples extend the same incident and only the final duration is shown.
+    STARTED when the outage begins (or the reported status within it changes),
+    EXTENDED on repeated samples with the same status, RECOVERED when ACTIVE returns,
+    ONGOING when the day ends still down. interval_start is the last ACTIVE→non-ACTIVE
+    transition from status_events, including outages carried in from before 00:00.
     """
-    day_start = datetime.fromisoformat(date).replace(tzinfo=TZ).isoformat()
+    day_start_dt = datetime.fromisoformat(date).replace(tzinfo=TZ)
+    day_start = day_start_dt.isoformat()
     day_end = datetime.fromisoformat(date).replace(
         tzinfo=TZ, hour=23, minute=59, second=59, microsecond=999999
     ).isoformat()
@@ -416,44 +435,45 @@ def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> 
 
     active_states = ACTIVE_STATES
     out: list[dict] = []
+
+    def _emit(incident: dict, row, moment: datetime, state: str, *, recovered_at: str | None = None):
+        out.append({
+            "sample_ts": row["sample_ts"],
+            "device_id": incident["device_id"],
+            "device": incident["device"],
+            "status": incident["status"],
+            "severity": severity(incident["status"]),
+            "interval_start": incident["start"].isoformat(),
+            "duration_seconds": max(int((moment - incident["start"]).total_seconds()), 0),
+            **({"recovered_at": recovered_at} if recovered_at else {}),
+            "state": state,
+        })
+
     for samples in by_device.values():
         incident: dict | None = None
         for row in samples:
             moment = datetime.fromisoformat(row["sample_ts"])
             if row["status"] not in active_states:
                 if incident is None:
-                    with read_conn() as conn:
-                        transition = conn.execute(
-                            "SELECT start_ts FROM status_events "
-                            "WHERE device_id = ? AND status NOT IN (?, ?, ?, ?) "
-                            "AND start_ts <= ? AND (end_ts IS NULL OR end_ts >= ?) "
-                            "ORDER BY start_ts DESC LIMIT 1",
-                            (row["device_id"], "ACTIVE", "ONLINE", "OK", "UP",
-                             row["sample_ts"], row["sample_ts"]),
-                        ).fetchone()
-                    transition_start = (
-                        datetime.fromisoformat(transition["start_ts"])
-                        if transition else moment
-                    )
                     incident = {
                         "device_id": row["device_id"], "device": row["device"],
-                        "status": row["status"], "severity": severity(row["status"]),
-                        "start": transition_start,
+                        "status": row["status"],
+                        "start": _non_active_interval_start(row["device_id"], moment),
                     }
+                    _emit(incident, row, moment, "STARTED")
+                elif row["status"] != incident["status"]:
+                    incident["status"] = row["status"]
+                    _emit(incident, row, moment, "STARTED")
+                else:
+                    _emit(incident, row, moment, "EXTENDED")
                 continue
             if incident is not None:
-                out.append({
-                    "sample_ts": row["sample_ts"], "device_id": incident["device_id"],
-                    "device": incident["device"], "status": incident["status"],
-                    "severity": incident["severity"],
-                    "interval_start": incident["start"].isoformat(),
-                    "duration_seconds": max(int((moment - incident["start"]).total_seconds()), 0),
-                    "recovered_at": row["sample_ts"],
-                    "state": "RECOVERED",
-                })
+                _emit(incident, row, moment, "RECOVERED", recovered_at=row["sample_ts"])
                 incident = None
-        # An incident that never recovered during the selected day is intentionally
-        # omitted from the summary; the live Device Health status still shows it.
+        if incident is not None:
+            last = samples[-1]
+            last_moment = datetime.fromisoformat(last["sample_ts"])
+            _emit(incident, last, last_moment, "ONGOING")
     return sorted(out, key=lambda row: (row["device"], row["sample_ts"], row["device_id"]))
 
 
@@ -472,8 +492,10 @@ def _sample_issue_occurrences(device_id: int, date: str) -> int | None:
     if not rows:
         return None
     count = 0
-    previous_active = False
-    for row in rows:
+    if rows[0]["status"] not in ACTIVE_STATES:
+        count = 1
+    previous_active = rows[0]["status"] in ACTIVE_STATES
+    for row in rows[1:]:
         is_active = row["status"] in ACTIVE_STATES
         if not is_active and previous_active:
             count += 1
