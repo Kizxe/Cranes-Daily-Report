@@ -33,7 +33,8 @@ def make_site(name="Test Site", devices=(), *, date=DATE, remark=None,
     Hours are written as forTotalUse_ counter pairs on `date` and the day before, which
     is the path the report actually takes (downtime_service.counter_hours), so a test
     asserting 13.2 active hours gets exactly 13.2. `issues` becomes that many downtime
-    windows in status_events, because ISSUE OCC. is counted off the events themselves.
+    windows in status_events, each followed by an ACTIVE stretch, because ISSUE OCC.
+    counts ACTIVE -> non-ACTIVE runs and back-to-back windows would merge into one.
     """
     ids: dict[str, int] = {}
     prev = (datetime.fromisoformat(date) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -87,6 +88,11 @@ def make_site(name="Test Site", devices=(), *, date=DATE, remark=None,
                     "INSERT INTO status_events (device_id, status, start_ts, end_ts,"
                     " duration_seconds, source) VALUES (?, 'INACTIVE', ?, ?, 300, 'test')",
                     (did, start.isoformat(), end.isoformat()),
+                )
+                conn.execute(
+                    "INSERT INTO status_events (device_id, status, start_ts, end_ts,"
+                    " duration_seconds, source) VALUES (?, 'ACTIVE', ?, ?, 1500, 'test')",
+                    (did, end.isoformat(), (end + timedelta(minutes=25)).isoformat()),
                 )
             if down_now:
                 conn.execute(

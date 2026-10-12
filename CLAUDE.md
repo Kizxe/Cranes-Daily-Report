@@ -69,7 +69,18 @@ reads it.
   differences it against the previous day's capture — TB's own accounting, scoped to the day.
   `status_events` is the fallback only when there is no baseline to difference.
   `scripts/backfill_counters.py --date <yesterday>` recovers a missing baseline from TB history.
-  **ISSUE OCC. counts the day's downtime windows** (settled 2026-09-01 after going back and
+  **Balanced against the window** (2026-09-25, `fix-report-logic`): `day_summary` keeps the
+  counter's ACTIVE HRS but sets AFFECTED HRS = window − active, so the two always sum to 24h
+  (or to the elapsed time for an on-demand report — `report_denominator_seconds(date, "manual")`
+  divides by midnight→latest manual capture). A device with no non-ACTIVE window that day reads
+  fully active regardless of the counter. Site `no_data_hrs` is now the **average per device**
+  (can't exceed 24), not summed device-hours.
+  **ISSUE OCC. counts incidents — ACTIVE → non-ACTIVE runs** (changed 2026-09-25 on
+  `fix-report-logic`; supersedes the per-window count below). Back-to-back non-ACTIVE windows with
+  no ACTIVE window between are ONE occurrence. When `status_samples` (every 10-min poll result)
+  exist for the day they drive the count (`_sample_issue_occurrences`); otherwise status_events.
+  `downtime_events` / `downtime_hours` / `longest_downtime_hours` still give the raw window list.
+  *Previously:* ISSUE OCC. counted the day's downtime windows (settled 2026-09-01 after going back and
   forth): STATIC, STALLED, NO DATA and INACTIVE alike — exactly the rows the drill-down and
   the report list, so the number always equals the list under it. Counting windows only
   became safe once events were telemetry gaps; the trigger's `<sensor> 1D` key was tried in

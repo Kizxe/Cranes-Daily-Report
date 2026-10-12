@@ -445,7 +445,8 @@ def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> 
             "severity": severity(incident["status"]),
             "interval_start": incident["start"].isoformat(),
             "duration_seconds": max(int((moment - incident["start"]).total_seconds()), 0),
-            **({"recovered_at": recovered_at} if recovered_at else {}),
+            # Always present: the report template is StrictUndefined.
+            "recovered_at": recovered_at,
             "state": state,
         })
 

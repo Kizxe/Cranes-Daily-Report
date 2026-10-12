@@ -100,7 +100,22 @@ def test_two_silences_either_side_of_one_reading_stay_two_events():
 
 
 def test_two_outages_hours_apart_stay_two_events():
-    """Same status, but not contiguous — debouncing must not glue them together."""
+    """Same status with an ACTIVE stretch between — debouncing must not glue them together."""
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        for status, start, end in (("INACTIVE", "02:00:00", "03:00:00"),
+                                   ("ACTIVE", "03:00:00", "20:00:00"),
+                                   ("INACTIVE", "20:00:00", "21:00:00")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+    assert downtime_service.day_summary(did, day)["issue_occurrences"] == 2
+
+
+def test_non_active_windows_without_recovery_between_are_one_incident():
+    """ISSUE OCC. counts ACTIVE -> non-ACTIVE runs: no ACTIVE between, one incident."""
     did = _make_device()
     day = "2026-08-16"
     with get_conn() as conn:
@@ -109,13 +124,15 @@ def test_two_outages_hours_apart_stay_two_events():
                 "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
                 " VALUES (?, 'INACTIVE', ?, ?, 'test')",
                 (did, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
-    assert downtime_service.day_summary(did, day)["issue_occurrences"] == 2
+    summ = downtime_service.day_summary(did, day)
+    assert summ["issue_occurrences"] == 1
+    assert summ["downtime_events"] == 2, "the windows themselves are still all listed"
 
 
-def test_issue_occ_counts_every_non_active_window_on_screen():
-    """Anatomy Room, 2026-09-01: three NO DATA gaps plus a STATIC flag window. The
-    drill-down showed 4 while ISSUE OCC. said 2 (a stale trigger 1D snapshot) — the
-    number must be the count of the windows listed under it."""
+def test_issue_occ_counts_every_outage_not_the_stale_1d_key():
+    """Anatomy Room, 2026-09-01: three NO DATA gaps plus a STATIC flag window, each
+    followed by a recovery. ISSUE OCC. said 2 (a stale trigger 1D snapshot) — it must
+    count the outages, not the 1D key."""
     did = _make_device()
     day = "2026-08-16"
     windows = [("NO DATA", "04:27:32", "04:41:34"), ("NO DATA", "07:27:44", "07:38:36"),
@@ -127,11 +144,13 @@ def test_issue_occ_counts_every_non_active_window_on_screen():
         conn.execute("INSERT INTO snapshots (capture_ts, capture_date, trigger,"
                      " device_id, key_name, value) VALUES (?, ?, 'manual', ?, 'D 1D', '2')",
                      (f"{day}T11:29:00+08:00", day, did))
-        for status, start, end in windows:
-            conn.execute(
-                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
-                " VALUES (?, ?, ?, ?, 'test')",
-                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+        for i, (status, start, end) in enumerate(windows):
+            recovered = windows[i + 1][1] if i + 1 < len(windows) else "23:00:00"
+            for st, s, e in ((status, start, end), ("ACTIVE", end, recovered)):
+                conn.execute(
+                    "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                    " VALUES (?, ?, ?, ?, 'test')",
+                    (did, st, f"{day}T{s}+08:00", f"{day}T{e}+08:00"))
     assert downtime_service.day_summary(did, day)["issue_occurrences"] == 4
 
 

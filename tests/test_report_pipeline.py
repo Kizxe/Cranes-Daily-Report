@@ -36,12 +36,13 @@ def test_hours_and_issues_come_through_to_the_context():
     make_site("NUMed", [device("RHT-1", active_h=13.2, affected_h=4.4, issues=8)])
     site = report_service.build_context(DATE)["site_details"][0]
     d = site["devices"][0]
-    assert (d["active_hours"], d["affected_hours"], d["issue_occurrences"]) == (13.2, 4.4, 8)
+    # Affected balances the counter's active hours against the full day: 24 - 13.2.
+    assert (d["active_hours"], d["affected_hours"], d["issue_occurrences"]) == (13.2, 10.8, 8)
 
 
 def test_site_no_data_hours_are_average_device_hours():
-    make_site("S", [device("A", active_h=0.0, affected_h=24.0),
-                     device("B", active_h=0.0, affected_h=24.0)])
+    make_site("S", [device("A", status="INACTIVE", active_h=0.0, affected_h=24.0),
+                     device("B", status="INACTIVE", active_h=0.0, affected_h=24.0)])
     site = report_service.build_context(DATE)["sites"][0]
     assert site["no_data_hrs"] == 24.0
 
@@ -167,3 +168,16 @@ def test_the_summary_counts_every_window_while_the_list_keeps_the_worst(monkeypa
     assert "INACTIVE" in [e["status"] for e in site["events"]], "the outage must survive"
     # What is listed prints in device / time order, not in ranking order.
     assert [e["device"] for e in site["events"]] == ["A_RHT", "A_RHT", "Z_DPM"]
+
+
+def test_report_renders_with_an_outage_still_ongoing_in_the_poll_samples():
+    """2026-10-12: a sample with no recovery yet had no recovered_at key, and the
+    StrictUndefined template failed every generate and preview for the day."""
+    from backend.app.db.database import get_conn
+    did = make_site("S", [device("D1", status="INACTIVE")])["D1"]
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO status_samples (sample_ts, device_id, status, source)"
+            " VALUES (?, ?, 'INACTIVE', 'poll')", (f"{DATE}T10:00:00+08:00", did))
+    html = report_service.render_html(DATE)
+    assert "STATUS SUMMARY" in html and "RECOVERED AT" in html

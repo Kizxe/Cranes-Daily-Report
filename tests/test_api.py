@@ -94,7 +94,7 @@ def test_group_status_samples_show_interval_rows(client):
     body = client.get(
         f"/api/downtime/groups/{group_id}/samples?date=2026-08-16"
     ).json()
-    assert body["rows"] == [{
+    row = {
         "sample_ts": "2026-08-16T10:00:00+08:00",
         "device_id": did,
         "device": "D1",
@@ -102,8 +102,10 @@ def test_group_status_samples_show_interval_rows(client):
         "severity": "bad",
         "interval_start": "2026-08-16T10:00:00+08:00",
         "duration_seconds": 0,
-        "state": "ONGOING",
-    }]
+        "recovered_at": None,
+    }
+    # One sample both opens the incident and, as the day's last, leaves it ongoing.
+    assert body["rows"] == [{**row, "state": "STARTED"}, {**row, "state": "ONGOING"}]
 
 
 def test_a_window_spanning_midnight_is_clipped_to_the_picked_day(client):

@@ -164,7 +164,10 @@ def test_status_samples_mark_extensions_and_recovery(site):
                 ("2026-08-16T10:30:00+08:00", did, "ACTIVE"),
             ],
         )
-        rows = [r for r in dt.status_interval_rows(site["group_id"], "2026-08-16")
+        group_id = conn.execute(
+            "SELECT group_id FROM devices WHERE id = ?", (did,)
+        ).fetchone()["group_id"]
+    rows = [r for r in dt.status_interval_rows(group_id, "2026-08-16")
             if r["device_id"] == did]
     assert [r["state"] for r in rows] == ["STARTED", "EXTENDED", "STARTED", "RECOVERED"]
     assert rows[-1]["duration_seconds"] == 30 * 60
@@ -251,12 +254,14 @@ def test_day_hours_come_from_the_trigger_counters(site):
     # Two downtime windows on the day, while the trigger's own 1D key claims 7 faults.
     # The windows win: they are what the drill-down and the report print, and the 1D
     # snapshot only updates at capture time — the number must match the list under it.
-    for start, end in (("2026-08-31T02:00:00+08:00", "2026-08-31T03:00:00+08:00"),
-                       ("2026-08-31T20:00:00+08:00", "2026-08-31T21:00:00+08:00")):
+    for status, start, end in (
+            ("INACTIVE", "2026-08-31T02:00:00+08:00", "2026-08-31T03:00:00+08:00"),
+            ("ACTIVE", "2026-08-31T03:00:00+08:00", "2026-08-31T20:00:00+08:00"),
+            ("INACTIVE", "2026-08-31T20:00:00+08:00", "2026-08-31T21:00:00+08:00")):
         with get_conn() as conn:
             conn.execute(
                 "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
-                " VALUES (?, 'INACTIVE', ?, ?, 'test')", (did, start, end))
+                " VALUES (?, ?, ?, ?, 'test')", (did, status, start, end))
 
     s = dt.day_summary(did, "2026-08-31")
     assert s["source"] == "counter"
@@ -289,6 +294,13 @@ def test_manual_capture_uses_elapsed_time_as_active_percent_denominator(site):
             ("2026-08-31T12:00:00+08:00", "2026-08-31", did,
              "forTotalUse_Numed RHT Wet Lab", "[0, 6]")
         )
+        # No baseline to difference, so hours come from events: 6h up, then down to noon.
+        for status, start, end in (("ACTIVE", "00:00:00", "06:00:00"),
+                                   ("INACTIVE", "06:00:00", "12:00:00")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"2026-08-31T{start}+08:00", f"2026-08-31T{end}+08:00"))
 
     assert dt.report_denominator_seconds("2026-08-31", "manual") == 12 * 3600
     assert dt.day_summary(did, "2026-08-31", 12 * 3600)["active_pct"] == 50.0
