@@ -1,7 +1,7 @@
 """Delete devices that are no longer in the site config.
 
-    python -m scripts.prune_devices --site NUMed              # dry run, lists them
-    python -m scripts.prune_devices --site NUMed --apply
+    python -m scripts.prune_devices --site "Newcastle University Medicine Malaysia"   # dry run, lists them
+    python -m scripts.prune_devices --site "Newcastle University Medicine Malaysia" --apply
     python -m scripts.prune_devices --name "Numed Setpoints" --apply
 
 `config_sync` upserts and never deletes, so a device removed from
@@ -59,6 +59,12 @@ def _targets(site: str | None, names: list[str]) -> list[dict]:
     return rows
 
 
+def _site_exists(site: str) -> bool:
+    with read_conn() as conn:
+        return conn.execute("SELECT 1 FROM device_groups WHERE name = ? COLLATE NOCASE",
+                            (site,)).fetchone() is not None
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -69,6 +75,13 @@ def main() -> None:
     ap.add_argument("--apply", action="store_true",
                     help="actually delete (default is a dry run)")
     args = ap.parse_args()
+
+    if args.site and not _site_exists(args.site):
+        # A short name like "NUMed" matches nothing once the site is renamed — and the
+        # old message then said "nothing to prune" while 5 stale devices sat there.
+        print(f"no site named {args.site!r} — use the full name, e.g. "
+              "\"Newcastle University Medicine Malaysia\"")
+        raise SystemExit(1)
 
     rows = _targets(args.site, args.name)
     if not rows:

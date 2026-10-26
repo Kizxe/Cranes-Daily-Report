@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     # three extra pages. Nothing is lost — the summary counts every window, and
     # GET /api/downtime/events/{device_id} still has them one by one.
     report_longest_events: int = 10
+    # STATUS SUMMARY lists every status change per device, but a flapping sensor logs
+    # ~45 a day — the PDF keeps each device's longest N (in time order) and prints
+    # "+M more". The site-detail page shows them all. 0/None = no cap.
+    report_status_changes_per_device: int = 10
     # Debounce. The reconcile pass reads every transition ThingsBoard recorded, and the
     # sensors chatter: on NUMed, 2026-09-01 held 491 non-active windows with a median
     # length of 38s — STATIC/STALLED blips a few seconds long. A window shorter than

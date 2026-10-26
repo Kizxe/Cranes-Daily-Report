@@ -151,27 +151,28 @@ async def test_future_transition_timestamp_falls_back_to_poll_time(site, monkeyp
     assert datetime.fromisoformat(row["start_ts"]) <= datetime.now(dt.TZ)
 
 
-def test_status_samples_mark_extensions_and_recovery(site):
+def test_a_run_of_non_active_windows_is_one_outage_row(site):
+    """STATIC flowing straight into INACTIVE is one outage: one STATUS SUMMARY row,
+    one ISSUE OCC. — the report never lists a poll per row again."""
     did = site["Numed_DPM_4"]
+    day = "2026-08-16"
     with get_conn() as conn:
-        conn.executemany(
-            "INSERT INTO status_samples (sample_ts, device_id, status, source) VALUES (?, ?, ?, 'poll')",
-            [
-                ("2026-08-16T09:50:00+08:00", did, "ACTIVE"),
-                ("2026-08-16T10:00:00+08:00", did, "STATIC"),
-                ("2026-08-16T10:10:00+08:00", did, "STATIC"),
-                ("2026-08-16T10:20:00+08:00", did, "INACTIVE"),
-                ("2026-08-16T10:30:00+08:00", did, "ACTIVE"),
-            ],
-        )
+        for status, start, end in (("ACTIVE", "09:00:00", "10:00:00"),
+                                   ("STATIC", "10:00:00", "10:20:00"),
+                                   ("INACTIVE", "10:20:00", "10:30:00"),
+                                   ("ACTIVE", "10:30:00", "12:00:00")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
         group_id = conn.execute(
             "SELECT group_id FROM devices WHERE id = ?", (did,)
         ).fetchone()["group_id"]
-    rows = [r for r in dt.status_interval_rows(group_id, "2026-08-16")
-            if r["device_id"] == did]
-    assert [r["state"] for r in rows] == ["STARTED", "EXTENDED", "STARTED", "RECOVERED"]
-    assert rows[-1]["duration_seconds"] == 30 * 60
-    assert dt._sample_issue_occurrences(did, "2026-08-16") == 1
+    [row] = [r for r in dt.status_interval_rows(group_id, day) if r["device_id"] == did]
+    assert row["status"] == "STATIC / INACTIVE"
+    assert row["start"][11:16] == "10:00" and row["recovered_at"][11:16] == "10:30"
+    assert row["hours_today"] == 0.5
+    assert dt.day_summary(did, day)["issue_occurrences"] == 1
 
 
 def test_each_site_loads_from_its_own_file(tmp_path, monkeypatch):

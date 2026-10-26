@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Family Mart Radia — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger Family Mart Radia Cranes Trigger --name Family Mart Radia --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (Family Mart Radia Cranes Trigger) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Family Mart Radia
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: Family Mart Radia Cranes Trigger
+  tb_device_id: 0a7efe90-b0da-11f1-acb2-9dc05e2d3b86
+devices:
+- name: AIREM 3-Phase Equipment
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AIREM 3-Phase Equipment
+    role: status
+    source: trigger
+  - key_name: activeTs_AIREM 3-Phase Equipment
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AIREM 3-Phase Equipment
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AIREM 3-Phase Equipment
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AIREM 3-Phase Equipment
+    role: total_use
+    source: trigger
+- name: AIREM Single-Phase Equipment
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_AIREM Single-Phase Equipment
+    role: status
+    source: trigger
+  - key_name: activeTs_AIREM Single-Phase Equipment
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_AIREM Single-Phase Equipment
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_AIREM Single-Phase Equipment
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_AIREM Single-Phase Equipment
+    role: total_use
+    source: trigger
+- name: ECOWITT
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_ECOWITT
+    role: status
+    source: trigger
+  - key_name: activeTs_ECOWITT
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_ECOWITT
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_ECOWITT
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_ECOWITT
+    role: total_use
+    source: trigger

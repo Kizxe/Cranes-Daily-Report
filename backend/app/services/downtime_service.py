@@ -363,22 +363,6 @@ def _role_value(conn, device_id: int, role: str, date: str) -> str | None:
     return row["value"] if row else None
 
 
-def _non_active_interval_start(device_id: int, moment: datetime) -> datetime:
-    """When a sample reads non-ACTIVE, the outage began at the last transition — not at 00:00."""
-    active = tuple(ACTIVE_STATES)
-    with read_conn() as conn:
-        transition = conn.execute(
-            "SELECT start_ts FROM status_events "
-            "WHERE device_id = ? AND status NOT IN (?, ?, ?, ?) "
-            "AND start_ts <= ? AND (end_ts IS NULL OR end_ts >= ?) "
-            "ORDER BY start_ts DESC LIMIT 1",
-            (device_id, *active, moment.isoformat(), moment.isoformat()),
-        ).fetchone()
-    if transition:
-        return datetime.fromisoformat(transition["start_ts"])
-    return moment
-
-
 def report_denominator_seconds(date: str, trigger: str = "scheduled") -> int:
     """Return a full-day or latest-manual-capture denominator for active percent."""
     if trigger != "manual":
@@ -397,111 +381,152 @@ def report_denominator_seconds(date: str, trigger: str = "scheduled") -> int:
     return max(int((end - start).total_seconds()), 1)
 
 
-def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> list[dict]:
-    """One row per poll step while a device is in a non-ACTIVE incident.
+def _incidents(events: list[dict]) -> list[dict]:
+    """Fold a day's events into outages: each run of non-ACTIVE windows is one incident.
 
-    STARTED when the outage begins (or the reported status within it changes),
-    EXTENDED on repeated samples with the same status, RECOVERED when ACTIVE returns,
-    ONGOING when the day ends still down. interval_start is the last ACTIVE→non-ACTIVE
-    transition from status_events, including outages carried in from before 00:00.
+    This is the unit both ISSUE OCC. and the report's STATUS SUMMARY count, so the
+    number printed for a device always equals the rows listed under it. A run only
+    ends at an ACTIVE window — a STATIC flag that flows straight into NO DATA is one
+    outage, not two.
     """
-    day_start_dt = datetime.fromisoformat(date).replace(tzinfo=TZ)
-    day_start = day_start_dt.isoformat()
-    day_end = datetime.fromisoformat(date).replace(
-        tzinfo=TZ, hour=23, minute=59, second=59, microsecond=999999
-    ).isoformat()
-    with read_conn() as conn:
-        params: list = [group_id, day_start, day_end]
-        limit_sql = ""
-        if limit is not None:
-            limit_sql = (
-                " AND s.sample_ts IN (SELECT sample_ts FROM status_samples "
-                "WHERE sample_ts >= ? AND sample_ts <= ? ORDER BY sample_ts DESC LIMIT ?)"
-            )
-            params.extend([day_start, day_end, limit])
-        rows = conn.execute(
-            """
-            SELECT s.sample_ts, s.device_id, d.name AS device, s.status
-            FROM status_samples s
-            JOIN devices d ON d.id = s.device_id
-            WHERE d.group_id = ? AND s.sample_ts >= ? AND s.sample_ts <= ?
-            """ + limit_sql + " ORDER BY s.device_id, s.sample_ts, d.name",
-            params,
-        ).fetchall()
-
-    by_device: dict[int, list] = {}
-    for row in rows:
-        by_device.setdefault(row["device_id"], []).append(row)
-
-    active_states = ACTIVE_STATES
     out: list[dict] = []
-
-    def _emit(incident: dict, row, moment: datetime, state: str, *, recovered_at: str | None = None):
-        out.append({
-            "sample_ts": row["sample_ts"],
-            "device_id": incident["device_id"],
-            "device": incident["device"],
-            "status": incident["status"],
-            "severity": severity(incident["status"]),
-            "interval_start": incident["start"].isoformat(),
-            "duration_seconds": max(int((moment - incident["start"]).total_seconds()), 0),
-            # Always present: the report template is StrictUndefined.
-            "recovered_at": recovered_at,
-            "state": state,
-        })
-
-    for samples in by_device.values():
-        incident: dict | None = None
-        for row in samples:
-            moment = datetime.fromisoformat(row["sample_ts"])
-            if row["status"] not in active_states:
-                if incident is None:
-                    incident = {
-                        "device_id": row["device_id"], "device": row["device"],
-                        "status": row["status"],
-                        "start": _non_active_interval_start(row["device_id"], moment),
-                    }
-                    _emit(incident, row, moment, "STARTED")
-                elif row["status"] != incident["status"]:
-                    incident["status"] = row["status"]
-                    _emit(incident, row, moment, "STARTED")
-                else:
-                    _emit(incident, row, moment, "EXTENDED")
-                continue
-            if incident is not None:
-                _emit(incident, row, moment, "RECOVERED", recovered_at=row["sample_ts"])
-                incident = None
-        if incident is not None:
-            last = samples[-1]
-            last_moment = datetime.fromisoformat(last["sample_ts"])
-            _emit(incident, last, last_moment, "ONGOING")
-    return sorted(out, key=lambda row: (row["device"], row["sample_ts"], row["device_id"]))
+    current: dict | None = None
+    for e in events:
+        if e["is_active"]:
+            current = None
+            continue
+        if current is None:
+            current = {
+                "statuses": [e["status"]],
+                "start": e["start"], "raw_start": e.get("raw_start", e["start"]),
+                "carried_in": e.get("carried_in", False), "seconds_in_day": 0,
+            }
+            out.append(current)
+        elif e["status"] not in current["statuses"]:
+            current["statuses"].append(e["status"])
+        current["seconds_in_day"] += e["seconds_in_day"]
+        current.update(end=e["end"], raw_end=e.get("raw_end", e["end"]),
+                       carried_out=e.get("carried_out", False),
+                       ongoing=e.get("ongoing", False))
+    return out
 
 
-def _sample_issue_occurrences(device_id: int, date: str) -> int | None:
-    """Count ACTIVE -> non-ACTIVE runs from the ten-minute samples when present."""
-    day_start = datetime.fromisoformat(date).replace(tzinfo=TZ).isoformat()
-    day_end = datetime.fromisoformat(date).replace(
-        tzinfo=TZ, hour=23, minute=59, second=59, microsecond=999999
-    ).isoformat()
+def status_interval_rows(group_id: int, date: str, limit: int | None = None) -> list[dict]:
+    """One row per outage on `date`, for every device in the group.
+
+    Built from the same debounced, day-clipped events as ISSUE OCC. and the hours, so
+    the report's STATUS SUMMARY, the site-detail list and the device table agree. An
+    outage carried in from an earlier day keeps its original start (`raw_start`) but
+    only counts the hours that fall on `date`.
+    """
     with read_conn() as conn:
-        rows = conn.execute(
-            "SELECT status FROM status_samples WHERE device_id = ? "
-            "AND sample_ts >= ? AND sample_ts <= ? ORDER BY sample_ts",
-            (device_id, day_start, day_end),
+        devices = conn.execute(
+            "SELECT id, name FROM devices WHERE group_id = ? ORDER BY sort_order, name",
+            (group_id,),
         ).fetchall()
-    if not rows:
-        return None
-    count = 0
-    if rows[0]["status"] not in ACTIVE_STATES:
-        count = 1
-    previous_active = rows[0]["status"] in ACTIVE_STATES
-    for row in rows[1:]:
-        is_active = row["status"] in ACTIVE_STATES
-        if not is_active and previous_active:
-            count += 1
-        previous_active = is_active
-    return count
+    out: list[dict] = []
+    for d in devices:
+        for inc in _incidents(downtime_for_date(d["id"], date)):
+            status = inc["statuses"][-1]
+            out.append({
+                "device_id": d["id"],
+                "device": d["name"],
+                "status": " / ".join(inc["statuses"]),
+                "severity": severity(status),
+                "start": inc["start"],
+                "raw_start": inc["raw_start"],
+                "carried_in": inc["carried_in"],
+                # None while it's still down at the end of the day (or now, on today).
+                "recovered_at": None if inc["carried_out"] else inc["end"],
+                "ongoing": inc["ongoing"],
+                "hours_today": round(inc["seconds_in_day"] / 3600, 2),
+            })
+            if limit is not None and len(out) >= limit:
+                return out
+    return out
+
+
+def status_summary_rows(group_id: int, date: str) -> list[dict]:
+    """The report's STATUS SUMMARY: one row per device that went down on `date`.
+
+    One row per outage was tried first (2026-10-12) and ran to 110 pages on a full day —
+    KPJAP sensors flap 70-80 times a day. So each device gets one line: when it first
+    went down, whether it came back, how many outages (= its ISSUE OCC.) and the hours
+    down today. Worst first. The per-outage list stays in the site-detail drill-down.
+    """
+    by_device: dict[int, list[dict]] = {}
+    for r in status_interval_rows(group_id, date):
+        by_device.setdefault(r["device_id"], []).append(r)
+    out = []
+    for incidents in by_device.values():
+        first, last = incidents[0], incidents[-1]
+        out.append({
+            "device_id": first["device_id"],
+            "device": first["device"],
+            "status": last["status"],
+            "severity": last["severity"],
+            "first_start": first["start"],
+            "first_raw_start": first["raw_start"],
+            "carried_in": first["carried_in"],
+            "recovered_at": last["recovered_at"],
+            "ongoing": last["ongoing"],
+            "outages": len(incidents),
+            "hours_today": round(sum(i["hours_today"] for i in incidents), 2),
+        })
+    return sorted(out, key=lambda r: (-r["hours_today"], -r["outages"], r["device"]))
+
+
+def status_change_rows(group_id: int, date: str, per_device: int | None = None) -> list[dict]:
+    """The report's STATUS SUMMARY: every non-ACTIVE window, grouped under its device.
+
+    One row per status change — INACTIVE, then STALLED, then STATIC each get a line —
+    with the device name printed on its first row only. Devices worst first (hours down
+    today). A full day holds ~2,500 windows (KPJAP sensors flip ~45 times each), so the
+    PDF passes `per_device`: the longest N windows are kept, shown in time order, and a
+    `kind: "more"` row says how many were left out. The website passes None for all.
+    """
+    with read_conn() as conn:
+        devices = conn.execute(
+            "SELECT id, name FROM devices WHERE group_id = ? ORDER BY sort_order, name",
+            (group_id,),
+        ).fetchall()
+    blocks = []
+    for d in devices:
+        down = [e for e in downtime_for_date(d["id"], date) if not e["is_active"]]
+        if down:
+            blocks.append((d, down, sum(e["seconds_in_day"] for e in down)))
+    blocks.sort(key=lambda b: (-b[2], -len(b[1]), b[0]["name"]))
+
+    out: list[dict] = []
+    for d, down, _ in blocks:
+        shown = down
+        if per_device is not None and len(down) > per_device:
+            keep = sorted(down, key=lambda e: -e["seconds_in_day"])[:per_device]
+            shown = [e for e in down if any(e is k for k in keep)]
+        for i, e in enumerate(shown):
+            out.append({
+                "kind": "change",
+                "device_id": d["id"],
+                "device": d["name"],
+                "show_device": i == 0,
+                "status": e["status"],
+                "severity": severity(e["status"]),
+                "start": e["start"],
+                "raw_start": e.get("raw_start", e["start"]),
+                "carried_in": e.get("carried_in", False),
+                # None while it's still down at the end of the day (or now, on today).
+                "end": None if e.get("carried_out") else e["end"],
+                "ongoing": e.get("ongoing", False),
+                "hours": round(e["seconds_in_day"] / 3600, 2),
+            })
+        hidden = [e for e in down if not any(e is s for s in shown)]
+        if hidden:
+            out.append({
+                "kind": "more", "device_id": d["id"], "device": d["name"],
+                "show_device": False, "hidden": len(hidden),
+                "hidden_hours": round(sum(e["seconds_in_day"] for e in hidden) / 3600, 2),
+            })
+    return out
 
 
 def _total_use(conn, device_id: int, date: str) -> tuple[float, float] | None:
@@ -566,14 +591,9 @@ def day_summary(device_id: int, date: str, denominator_seconds: int | None = Non
     covered = sum(e["seconds_in_day"] for e in events)
     active = sum(e["seconds_in_day"] for e in events if e["is_active"])
     affected = sum(e["seconds_in_day"] for e in events if not e["is_active"])
-    event_occurrences = sum(
-        1 for i, e in enumerate(events)
-        if not e["is_active"] and (i == 0 or events[i - 1]["is_active"])
-    )
     downtime_events = [e for e in events if not e["is_active"]]
-    occurrences = _sample_issue_occurrences(device_id, date)
-    if occurrences is None:
-        occurrences = event_occurrences
+    # One per outage — exactly the rows status_interval_rows lists for this device.
+    occurrences = len(_incidents(events))
 
     hours = {
         "active_hours": round(active / 3600, 1),
@@ -599,7 +619,15 @@ def day_summary(device_id: int, date: str, denominator_seconds: int | None = Non
     # window. Dividing by `covered` would let a device with only 4h of events read 100%.
     denominator = denominator_seconds or DAY_SECONDS
     window_hours = denominator / 3600
-    if not downtime_events:
+    if hours["source"] == "events":
+        # Only recorded downtime counts as affected; time no event covers is treated
+        # as active, the same assumption as a device with no downtime at all. Taking
+        # active from ACTIVE events instead turned every uncovered stretch into
+        # downtime: BTMC OT3 went quiet at 07:38 on 2026-10-13, but with no ACTIVE
+        # event before it (the host was asleep, so nothing was polled) the dashboard
+        # printed 11.0 affected hours for a 3.4-hour outage.
+        raw_active_hours = window_hours - min(affected / 3600, window_hours)
+    elif not downtime_events:
         # No non-ACTIVE observation means the device worked for the whole window.
         raw_active_hours = window_hours
     else:

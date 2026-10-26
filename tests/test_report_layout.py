@@ -111,6 +111,17 @@ async def test_wide_site_paginates_without_dropping_devices():
 
 
 # --- DEVICE TYPE BREAKDOWN: repeated downtime counts as attention -------------
+def test_status_summary_is_one_table_not_a_page_per_device():
+    """2026-10-12: Robert Bosch's 32 down devices took 11 pages, one header each."""
+    make_site("Big", [device(f"Dev {i:02d}", status="INACTIVE") for i in range(40)])
+    ctx = report_service.build_context(DATE)
+    history_pages = [p for p in ctx["pages"] if p.get("history")]
+    assert sum(len(p["history"]) for p in history_pages) == 40
+    assert len(history_pages) <= 3
+    assert not history_pages[0]["history_cont"], "first page is not '(CONTINUED)'"
+    assert all(p["history_cont"] for p in history_pages[1:])
+
+
 from backend.app.config import settings as _settings  # noqa: E402
 from backend.app.services.report_service import _needs_attention, _type_breakdown  # noqa: E402
 
@@ -210,13 +221,15 @@ async def test_sites_overview_paginates_past_the_cover():
     configured and ran clean off the bottom of page 1 at 16 — the rows printed
     straight through the footer rule.
     """
-    for i in range(16):
+    # 30, not 16: rows lost the health pill on 2026-10-13 and 16 one-line names now
+    # genuinely fit on the cover.
+    for i in range(30):
         make_site(f"Site {i:02d}", [device(f"RHT {i}")], sort_order=i)
 
     ctx = report_service.build_context(DATE)
     covers = [p for p in ctx["pages"] if p["kind"] in ("cover", "cover-cont")]
 
-    assert len(covers) > 1, "16 sites still claim to fit on the cover alone"
+    assert len(covers) > 1, "30 sites still claim to fit on the cover alone"
     assert covers[0]["kind"] == "cover"
     assert all(p["kind"] == "cover-cont" for p in covers[1:])
 
@@ -241,3 +254,25 @@ async def test_single_site_still_fits_one_cover_page():
 
     assert [p["kind"] for p in ctx["pages"]].count("cover-cont") == 0
     assert ctx["pages"][0]["cover_last"] is True
+
+
+def test_a_device_whose_changes_run_onto_a_new_page_is_named_again():
+    from backend.app.db.database import get_conn
+    ids = make_site("Flappy", [device("Flapper", status="INACTIVE")])
+    with get_conn() as conn:
+        for m in range(0, 60 * 20, 20):       # 60 ten-minute outages, all kept
+            a, b = divmod(m, 60), divmod(m + 10, 60)
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, 'INACTIVE', ?, ?, 'test')",
+                (ids["Flapper"], f"{DATE}T{a[0]:02d}:{a[1]:02d}:00+08:00",
+                 f"{DATE}T{b[0]:02d}:{b[1]:02d}:00+08:00"))
+    old = _settings.report_status_changes_per_device
+    _settings.report_status_changes_per_device = None
+    try:
+        ctx = report_service.build_context(DATE)
+    finally:
+        _settings.report_status_changes_per_device = old
+    history_pages = [p for p in ctx["pages"] if p.get("history")]
+    assert len(history_pages) >= 2
+    assert all(p["history"][0]["show_device"] for p in history_pages)

@@ -1,0 +1,104 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# QL Ragum Kitchen — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger QL Ragum Kitchen Cranes Trigger --name QL Ragum Kitchen --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (QL Ragum Kitchen Cranes Trigger) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: QL Ragum Kitchen
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: QL Ragum Kitchen Cranes Trigger
+  tb_device_id: fb45cbc0-b66a-11f1-b8f4-93a0463a9f49
+devices:
+- name: Ecowitt Gateway 1 (QL Kawat)
+  device_type: Other
+  tb_device_id: 5c394470-9b72-11f1-9490-85a518ecea8d
+  keys:
+  - key_name: active_Ecowitt Gateway 1 (QL Kawat)
+    role: status
+    source: trigger
+  - key_name: activeTs_Ecowitt Gateway 1 (QL Kawat)
+    role: active_ts
+    source: trigger
+  - key_name: forTotalUse_Ecowitt Gateway 1 (QL Kawat)
+    role: total_use
+    source: trigger
+  - key_name: OutTemp
+    role: heartbeat
+- name: Ecowitt Ragum
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Ecowitt Ragum
+    role: status
+    source: trigger
+  - key_name: activeTs_Ecowitt Ragum
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Ecowitt Ragum
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Ecowitt Ragum
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Ecowitt Ragum
+    role: total_use
+    source: trigger
+- name: Logistic Room
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Logistic Room
+    role: status
+    source: trigger
+  - key_name: activeTs_Logistic Room
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Logistic Room
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Logistic Room
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Logistic Room
+    role: total_use
+    source: trigger
+- name: Outdoor RHT
+  device_type: RHT
+  tb_device_id: null
+  keys:
+  - key_name: active_Outdoor RHT
+    role: status
+    source: trigger
+  - key_name: activeTs_Outdoor RHT
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Outdoor RHT
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Outdoor RHT
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Outdoor RHT
+    role: total_use
+    source: trigger

@@ -125,15 +125,18 @@ def _remarks(group_id: int, date: str) -> list[dict]:
 
 
 def _status_history(group_id: int, date: str) -> list[dict]:
-    """Visible non-ACTIVE intervals grouped under each device."""
-    rows = dt.status_interval_rows(group_id, date)
-    grouped: dict[int, dict] = {}
-    for row in rows:
-        group = grouped.setdefault(row["device_id"], {
-            "device_id": row["device_id"], "device": row["device"], "rows": []
-        })
-        group["rows"].append(row)
-    return list(grouped.values())
+    """The site's STATUS SUMMARY rows — every status change, grouped by device."""
+    rows = dt.status_change_rows(group_id, date, settings.report_status_changes_per_device)
+    for r in rows:
+        if r["kind"] != "change":
+            continue
+        # A carried-in window shows when it really began, with the date, so "17:29"
+        # can't be read as today when it was three weeks ago.
+        r["started_label"] = (f"since {r['raw_start'][5:10]} {r['raw_start'][11:16]}"
+                              if r["carried_in"] else r["start"][11:16])
+        r["end_label"] = (r["end"][11:16] if r["end"]
+                          else "ongoing" if r["ongoing"] else "after 23:59")
+    return rows
 
 
 def _is_draft(date: str) -> bool:
@@ -335,7 +338,11 @@ def build_context(date: str, trigger: str = "scheduled") -> dict:
             "remark_severity": remark_sev,
         })
 
-        health_pct = round(100 * active_now / total)
+        # Share of the window the site's devices were up: total active hours over
+        # devices x window hours — the same figure as the cover's ACTIVE %. It used to
+        # be a head count at capture time, so a site whose devices dropped for hours
+        # but were back by 23:59 printed 100%.
+        health_pct = site_rows[-1]["active_pct"]
         site_details.append({
             "anchor": anchor,
             "group": g,

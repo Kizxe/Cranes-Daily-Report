@@ -76,3 +76,13 @@ def test_naming_a_device_targets_it_even_though_the_config_still_lists_it():
     make_site("NUMed", [device("Keep"), device("Flag")])
     _write_site("NUMed", ["Keep", "Flag"])
     assert [r["name"] for r in prune_devices._targets("NUMed", ["Flag"])] == ["Flag"]
+
+
+def test_an_unknown_site_name_is_an_error_not_nothing_to_prune(monkeypatch, capsys):
+    """`--site NUMed` silently matched nothing after the site was renamed, and the
+    script reported 'nothing to prune' over five stale devices."""
+    make_site("Newcastle University Medicine Malaysia", [device("D1")])
+    monkeypatch.setattr("sys.argv", ["prune_devices", "--site", "NUMed"])
+    with pytest.raises(SystemExit):
+        prune_devices.main()
+    assert "no site named 'NUMed'" in capsys.readouterr().out

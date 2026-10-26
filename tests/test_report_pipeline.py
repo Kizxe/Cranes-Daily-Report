@@ -170,14 +170,19 @@ def test_the_summary_counts_every_window_while_the_list_keeps_the_worst(monkeypa
     assert [e["device"] for e in site["events"]] == ["A_RHT", "A_RHT", "Z_DPM"]
 
 
-def test_report_renders_with_an_outage_still_ongoing_in_the_poll_samples():
-    """2026-10-12: a sample with no recovery yet had no recovered_at key, and the
+def test_report_renders_with_an_outage_still_ongoing():
+    """2026-10-12: an outage with no recovery yet had no recovered_at key, and the
     StrictUndefined template failed every generate and preview for the day."""
-    from backend.app.db.database import get_conn
-    did = make_site("S", [device("D1", status="INACTIVE")])["D1"]
-    with get_conn() as conn:
-        conn.execute(
-            "INSERT INTO status_samples (sample_ts, device_id, status, source)"
-            " VALUES (?, ?, 'INACTIVE', 'poll')", (f"{DATE}T10:00:00+08:00", did))
+    make_site("S", [device("D1", status="INACTIVE")])   # open event from 12:00
     html = report_service.render_html(DATE)
-    assert "STATUS SUMMARY" in html and "RECOVERED AT" in html
+    assert "STATUS SUMMARY" in html and "ongoing" in html
+
+
+def test_device_health_is_the_share_of_active_hours_not_a_head_count():
+    """One device up 23 of 24 hours is 95.8% healthy, even though it is ACTIVE now."""
+    make_site("S", [device("A", active_h=23.0, affected_h=1.0, issues=1),
+                    device("B", active_h=24.0, affected_h=0.0)])
+    site = report_service.build_context(DATE)["site_details"][0]
+    assert site["current_active"] == 2
+    assert site["device_health_pct"] == round((95.8 + 100.0) / 2, 1)   # 97.9
+    assert site["device_health_severity"] == "ok"

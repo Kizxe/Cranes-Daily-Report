@@ -77,8 +77,16 @@ reads it.
   (can't exceed 24), not summed device-hours.
   **ISSUE OCC. counts incidents — ACTIVE → non-ACTIVE runs** (changed 2026-09-25 on
   `fix-report-logic`; supersedes the per-window count below). Back-to-back non-ACTIVE windows with
-  no ACTIVE window between are ONE occurrence. When `status_samples` (every 10-min poll result)
-  exist for the day they drive the count (`_sample_issue_occurrences`); otherwise status_events.
+  no ACTIVE window between are ONE occurrence. Counted by `downtime_service._incidents` over the
+  day's debounced `downtime_for_date` events — the same incidents the report's **STATUS SUMMARY**
+  lists one row each (`status_interval_rows`), so ISSUE OCC. always equals the rows under it.
+  **STATUS SUMMARY lists every status change** (2026-10-13, user's layout): one row per
+  non-ACTIVE window, device name on its first row only (`status_change_rows`), devices worst
+  first. The PDF keeps each device's `report_status_changes_per_device` (10) longest windows in
+  time order plus a "+N shorter changes not shown" row; site-detail shows them all. So an
+  INACTIVE→STALLED→STATIC run is 3 rows but 1 ISSUE OCC. Cost: 2026-10-12 went 58 → 97 pages.
+  `status_samples` (every 10-min poll result) is still recorded but drives nothing (2026-10-12:
+  driving the summary off it printed a row per poll — 63 of a 112-page report).
   `downtime_events` / `downtime_hours` / `longest_downtime_hours` still give the raw window list.
   *Previously:* ISSUE OCC. counted the day's downtime windows (settled 2026-09-01 after going back and
   forth): STATIC, STALLED, NO DATA and INACTIVE alike — exactly the rows the drill-down and
@@ -191,7 +199,10 @@ reads it.
    their status keys had not been written in 4–225 days, and each was printing an
    all-day INACTIVE window in the report. Removed from `sites/numed.yaml` and from the DB
    with `python -m scripts.prune_devices --site NUMed --apply` (config_sync upserts and
-   never deletes, so the YAML edit alone leaves the rows behind). **`RTD CH1`, `RTD CH2`
+   never deletes, so the YAML edit alone leaves the rows behind). **`--site` takes the
+   group's full name** — `"Newcastle University Medicine Malaysia"` since the rename; the
+   short name now errors instead of silently matching nothing. The five flags had come
+   back in the DB by 2026-10-12 and were pruned again then. **`RTD CH1`, `RTD CH2`
    and `UFM` stay** — they are real channels whose counters are frozen at [0,0] by the
    rule chain, which is a ThingsBoard-side problem the report should keep showing.
    **KPJAP done 2026-09-01** — 34 devices, hand-authored (not via the discover script)
@@ -225,6 +236,19 @@ reads it.
    from the script's `MIMOS Ad` to `MIMOS Admin`. `site_label` / `system_type` are
    still blank on both MIMOS sites — they print empty on the report's site page until
    filled in.
+   **3 EMS sites added 2026-10-13 (19 sites, 552 devices)** via the discover script:
+   `Family Mart Radia` (3), `QL Kawat Kitchen` (13), `QL Ragum Kitchen` (4) — the two QL
+   kitchens are one location with a trigger each. Kept on the user's call although 7
+   sensors were 8–25 days stale (they read ACTIVE off their frozen `active_ = true`, so
+   they look healthy, not down); the two Ecowitt gateways look cross-labelled (Kawat's
+   trigger names "(QL Ragum)" and vice versa). Each trigger also carries `forTotalUse_`
+   counters for sensors with no `active_` key (Family Mart: 16 counters vs 3 rostered;
+   `Compressor Kawat 1–4`, `Compressor Ragum`) — left out because the roster is `active_`;
+   they'd read UNKNOWN. `site_label` / `system_type` blank on all three.
+   **Royal Plaza added 2026-10-13 (20 sites, 561 devices)** — 9 walk-in chillers/freezers off
+   `Royal Plaza Cranes Triggers`. Fully stale like BTMC: every `active_` ~10 days old, every
+   `forTotalUse_` at `[0,0]`, so all read ACTIVE. `Walk In Frezeer` is TB's spelling — kept so
+   the keys match.
 2. ThingsBoard client + manual capture endpoint + `snapshots` table + a dashboard page showing live pulled values. Prove the connection before anything else.
 3. Downtime detection: polling loop + `status_events` + a way to view a device's downtime list for a date.
 4. Site remark + per-device engineer recommendation forms.

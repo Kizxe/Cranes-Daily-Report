@@ -152,6 +152,86 @@ def test_issue_occ_counts_every_outage_not_the_stale_1d_key():
                     " VALUES (?, ?, ?, ?, 'test')",
                     (did, st, f"{day}T{s}+08:00", f"{day}T{e}+08:00"))
     assert downtime_service.day_summary(did, day)["issue_occurrences"] == 4
+    assert len(downtime_service.status_interval_rows(_group_of(did), day)) == 4, \
+        "ISSUE OCC. must equal the STATUS SUMMARY rows listed for the device"
+
+
+def _group_of(did):
+    with get_conn() as conn:
+        return conn.execute("SELECT group_id FROM devices WHERE id = ?",
+                            (did,)).fetchone()["group_id"]
+
+
+def test_a_carried_in_outage_keeps_its_real_start_but_counts_only_today():
+    """GuardHouse printed ELAPSED 7632 hr and an undated '11:20' — weeks of outage
+    passed off as today. The row now says when it began and counts today's hours."""
+    from backend.app.services import report_service
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+            " VALUES (?, 'INACTIVE', '2026-08-10T17:29:00+08:00', ?, 'test')",
+            (did, f"{day}T03:00:00+08:00"))
+    [row] = downtime_service.status_interval_rows(_group_of(did), day)
+    assert row["carried_in"] and row["raw_start"].startswith("2026-08-10")
+    assert row["hours_today"] == 3.0
+    [labelled] = report_service._status_history(_group_of(did), day)
+    assert labelled["started_label"] == "since 08-10 17:29"
+    assert labelled["end_label"] == "03:00"
+
+
+def test_status_summary_is_one_row_per_device_with_its_outage_count():
+    """KPJAP sensors flap 70-80 times a day; a row per outage ran to 110 pages."""
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        for status, start, end in (("INACTIVE", "01:00:00", "01:30:00"),
+                                   ("ACTIVE", "01:30:00", "05:00:00"),
+                                   ("INACTIVE", "05:00:00", "06:00:00"),
+                                   ("ACTIVE", "06:00:00", "20:00:00"),
+                                   ("STATIC", "20:00:00", "21:00:00"),
+                                   ("ACTIVE", "21:00:00", "23:00:00")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+    [row] = downtime_service.status_summary_rows(_group_of(did), day)
+    assert row["outages"] == 3 == downtime_service.day_summary(did, day)["issue_occurrences"]
+    assert row["first_start"][11:16] == "01:00" and row["recovered_at"][11:16] == "21:00"
+    assert row["status"] == "STATIC" and row["hours_today"] == 2.5
+
+
+def test_time_no_event_covers_is_not_counted_as_downtime():
+    """BTMC OT3, 2026-10-13: it went quiet at 07:38, the host slept through the
+    morning so no ACTIVE event was written before that, and the dashboard printed
+    11.0 affected hours for what was a 3.4-hour outage."""
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+            " VALUES (?, 'INACTIVE', ?, ?, 'poll')",
+            (did, f"{day}T07:38:00+08:00", f"{day}T11:02:00+08:00"))
+    s = downtime_service.day_summary(did, day, 11 * 3600)   # an 11:00 manual capture
+    assert s["source"] == "events"
+    assert s["affected_hours"] == 3.4
+    assert s["active_hours"] == 7.6
+
+
+def test_a_sub_threshold_blip_is_not_listed_or_counted():
+    did = _make_device()
+    day = "2026-08-16"
+    with get_conn() as conn:
+        for status, start, end in (("ACTIVE", "00:00:00", "10:00:00"),
+                                   ("INACTIVE", "10:00:00", "10:01:00"),
+                                   ("ACTIVE", "10:01:00", "12:00:00")):
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{start}+08:00", f"{day}T{end}+08:00"))
+    assert downtime_service.status_interval_rows(_group_of(did), day) == []
+    assert downtime_service.day_summary(did, day)["issue_occurrences"] == 0
 
 
 def test_a_backdated_transition_never_overlaps_the_open_event():
@@ -210,3 +290,43 @@ def test_nightly_run_closes_out_the_day_it_was_scheduled_for():
     assert _at("2026-09-01T00:03:21") == "2026-08-31"     # the real misfire we hit
     assert _at("2026-09-01T00:58:00") == "2026-08-31"     # still inside the grace hour
     assert _at("2026-08-31T23:58:59") == "2026-08-30"     # a hair early belongs to the day before
+
+
+def _windows(did, day, spans):
+    """Insert back-to-back windows: [(status, 'HH:MM', 'HH:MM'), ...]."""
+    with get_conn() as conn:
+        for status, a, b in spans:
+            conn.execute(
+                "INSERT INTO status_events (device_id, status, start_ts, end_ts, source)"
+                " VALUES (?, ?, ?, ?, 'test')",
+                (did, status, f"{day}T{a}:00+08:00", f"{day}T{b}:00+08:00"))
+
+
+def test_status_summary_lists_every_change_with_the_device_named_once():
+    """User's layout (2026-10-13): Hot Kitchen Freezer | INACTIVE / INACTIVE / STALLED / STATIC."""
+    did = _make_device()
+    day = "2026-08-16"
+    _windows(did, day, [("INACTIVE", "01:00", "01:30"), ("ACTIVE", "01:30", "02:00"),
+                        ("INACTIVE", "02:00", "02:20"), ("STALLED", "02:20", "02:40"),
+                        ("STATIC", "02:40", "03:00"), ("ACTIVE", "03:00", "23:59")])
+    rows = downtime_service.status_change_rows(_group_of(did), day)
+    assert [r["status"] for r in rows] == ["INACTIVE", "INACTIVE", "STALLED", "STATIC"]
+    assert [r["show_device"] for r in rows] == [True, False, False, False]
+    assert rows[0]["end"].startswith(f"{day}T01:30")
+
+
+def test_pdf_caps_each_device_to_its_longest_changes_in_time_order():
+    did = _make_device()
+    day = "2026-08-16"
+    spans = []
+    for h in range(6):                       # 6 outages, the 03:00 and 05:00 ones longest
+        mins = 50 if h in (3, 5) else 10
+        spans += [("INACTIVE", f"{h:02d}:00", f"{h:02d}:{mins}"),
+                  ("ACTIVE", f"{h:02d}:{mins}", f"{h + 1:02d}:00")]
+    _windows(did, day, spans)
+    rows = downtime_service.status_change_rows(_group_of(did), day, per_device=2)
+    changes = [r for r in rows if r["kind"] == "change"]
+    assert [r["start"][11:16] for r in changes] == ["03:00", "05:00"]
+    assert changes[0]["show_device"]
+    [more] = [r for r in rows if r["kind"] == "more"]
+    assert more["hidden"] == 4 and more["hidden_hours"] == round(40 / 60, 2)

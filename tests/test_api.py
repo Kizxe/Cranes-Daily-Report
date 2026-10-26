@@ -81,31 +81,33 @@ def test_group_downtime_includes_device_health_summary(client):
     ) == (1, 1.5, 1.5)
 
 
-def test_group_status_samples_show_interval_rows(client):
+def test_group_status_rows_list_every_change_under_its_device(client):
     did = make_site("S", [device("D1")])['D1']
     with get_conn() as conn:
         group_id = conn.execute(
             "SELECT group_id FROM devices WHERE id = ?", (did,)
         ).fetchone()[0]
         conn.execute(
-            "INSERT INTO status_samples (sample_ts, device_id, status, source) "
-            "VALUES ('2026-08-16T10:00:00+08:00', ?, 'INACTIVE', 'poll')", (did,)
+            "INSERT INTO status_events (device_id, status, start_ts, source)"
+            " VALUES (?, 'INACTIVE', '2026-08-16T10:00:00+08:00', 'poll')", (did,)
         )
     body = client.get(
         f"/api/downtime/groups/{group_id}/samples?date=2026-08-16"
     ).json()
-    row = {
-        "sample_ts": "2026-08-16T10:00:00+08:00",
+    assert body["rows"] == [{
+        "kind": "change",
         "device_id": did,
         "device": "D1",
+        "show_device": True,
         "status": "INACTIVE",
         "severity": "bad",
-        "interval_start": "2026-08-16T10:00:00+08:00",
-        "duration_seconds": 0,
-        "recovered_at": None,
-    }
-    # One sample both opens the incident and, as the day's last, leaves it ongoing.
-    assert body["rows"] == [{**row, "state": "STARTED"}, {**row, "state": "ONGOING"}]
+        "start": "2026-08-16T10:00:00+08:00",
+        "raw_start": "2026-08-16T10:00:00+08:00",
+        "carried_in": False,
+        "end": None,                # still open
+        "ongoing": True,
+        "hours": 14.0,              # 10:00 -> end of that day, never beyond it
+    }]
 
 
 def test_a_window_spanning_midnight_is_clipped_to_the_picked_day(client):

@@ -79,10 +79,10 @@ def group_downtime(group_id: int, date: str = Query(default_factory=_today)) -> 
 
 @router.get("/groups/{group_id}/samples")
 def group_status_samples(group_id: int, date: str = Query(default_factory=_today),
-                         limit: int = Query(200, ge=1, le=2000)) -> dict:
-    """Non-ACTIVE intervals observed by each scheduled poll."""
+                         limit: int = Query(2000, ge=1, le=10000)) -> dict:
+    """STATUS SUMMARY for the site: every status change, grouped by device (uncapped)."""
     return {"group_id": group_id, "date": date,
-            "rows": downtime_service.status_interval_rows(group_id, date, limit)}
+            "rows": downtime_service.status_change_rows(group_id, date)[:limit]}
 
 
 @router.get("/events/{device_id}")

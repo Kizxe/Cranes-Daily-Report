@@ -71,7 +71,8 @@ def test_severity_mapping():
 
 
 def test_active_pct_is_a_share_of_the_day_not_of_covered_time():
-    """6h active out of 12h of recorded events is 25% of the day, not 50% of covered."""
+    """6h down in a day with only 12h of recorded events: 18h active (75% of the day),
+    not 50% of the covered 12h — and the uncovered 12h is not called downtime."""
     g = _group_with_devices()
     with get_conn() as conn:
         for status, start, end in (("ACTIVE", "00:00:00", "06:00:00"),
@@ -82,7 +83,7 @@ def test_active_pct_is_a_share_of_the_day_not_of_covered_time():
                 (g["D1"], status, f"{DATE}T{start}+08:00", f"{DATE}T{end}+08:00"),
             )
     summ = dt.day_summary(g["D1"], DATE)
-    assert summ["active_hours"] == 6.0
-    assert summ["affected_hours"] == 18.0, "affected balances active against the day"
+    assert summ["affected_hours"] == 6.0, "only recorded downtime is affected"
+    assert summ["active_hours"] == 18.0
     assert summ["covered_hours"] == 12.0
-    assert 24.9 < summ["active_pct"] < 25.1
+    assert 74.9 < summ["active_pct"] < 75.1

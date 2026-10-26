@@ -1,0 +1,203 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Royal Plaza — one site of the 22. GENERATED, do not hand-transcribe:
+#
+#     python -m scripts.discover_device_groups --trigger Royal Plaza Cranes Triggers --name Royal Plaza --write
+#
+# A re-run rewrites only this file and preserves site_label / system_type /
+# sort_order / expected_report_hours, which don't exist in ThingsBoard and are
+# filled in by hand. Every other site lives in its own file beside this one.
+#
+# Status does NOT come from the sensor's own device. This site's trigger device
+# (Royal Plaza Cranes Triggers) computes status for every sensor and writes it back as one key per
+# sensor: active_<sensor> (bool), deviceStatus_<sensor> (ACTIVE/STATIC/NO DATA),
+# deviceSeverity_<sensor>, activeTs_/InactiveTs_<sensor> (transition epoch ms),
+# IssueOcc_<sensor>, "<sensor> 1D", ActiveInActive_<sensor>. `source: trigger` on a
+# key means "read it off that device"; config_sync stores it as tb_source_device_id.
+#
+# Exactly one key per device carries role: status — deviceStatus_ when the sensor
+# has one, else the active_ boolean (normalised true/false -> ACTIVE/INACTIVE).
+#
+# Edit this file, then restart or:  curl -X POST localhost:8000/api/config/reload
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Royal Plaza
+kind: device
+tb_group_id: null
+site_label: null
+system_type: null
+expected_report_hours: 24
+trigger:
+  device_name: Royal Plaza Cranes Triggers
+  tb_device_id: 737790f0-a73f-11f1-a339-0d1c9f1fa2d5
+devices:
+- name: Walk In Chiller 1
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 1
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 1
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 1
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 1
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 1
+    role: total_use
+    source: trigger
+- name: Walk In Chiller 2
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 2
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 2
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 2
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 2
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 2
+    role: total_use
+    source: trigger
+- name: Walk In Chiller 3
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 3
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 3
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 3
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 3
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 3
+    role: total_use
+    source: trigger
+- name: Walk In Chiller 4
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 4
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 4
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 4
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 4
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 4
+    role: total_use
+    source: trigger
+- name: Walk In Chiller 5
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 5
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 5
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 5
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 5
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 5
+    role: total_use
+    source: trigger
+- name: Walk In Chiller 6
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Chiller 6
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Chiller 6
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Chiller 6
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Chiller 6
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Chiller 6
+    role: total_use
+    source: trigger
+- name: Walk In Frezeer 10
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Frezeer 10
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Frezeer 10
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Frezeer 10
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Frezeer 10
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Frezeer 10
+    role: total_use
+    source: trigger
+- name: Walk In Frezeer 11
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Frezeer 11
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Frezeer 11
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Frezeer 11
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Frezeer 11
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Frezeer 11
+    role: total_use
+    source: trigger
+- name: Walk In Frezeer 9
+  device_type: Other
+  tb_device_id: null
+  keys:
+  - key_name: active_Walk In Frezeer 9
+    role: status
+    source: trigger
+  - key_name: activeTs_Walk In Frezeer 9
+    role: active_ts
+    source: trigger
+  - key_name: InactiveTs_Walk In Frezeer 9
+    role: inactive_ts
+    source: trigger
+  - key_name: ActiveInActive_Walk In Frezeer 9
+    role: uptime_split
+    source: trigger
+  - key_name: forTotalUse_Walk In Frezeer 9
+    role: total_use
+    source: trigger
