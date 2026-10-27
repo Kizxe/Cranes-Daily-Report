@@ -8,6 +8,9 @@ How the built system actually fits together — directory map, the trigger-devic
 where each report number comes from: `docs/ARCHITECTURE.md`
 (shareable page: https://claude.ai/code/artifact/9cb3f082-1fa1-44e8-a76e-c5b32e9d30cb)
 
+ECC rules under `.claude/rules/ecc/` are general defaults; where they conflict with this file
+(coverage targets, agent use, formatters, immutability), this file wins.
+
 ## What this is
 A localhost app that pulls device telemetry from ThingsBoard for all 16 sites (537 devices — the plan's "22 groups" was a pre-API estimate), snapshots every key daily at 23:59 (plus on-demand via an "Import Data" button), detects active↔inactive downtime windows, takes a site remark plus a per-device engineer recommendation, and renders a daily PDF report (matching an already-approved design system: JetBrains Mono, Source Serif 4) saved into `reports/YYYY-MM-DD/` so it's just a folder someone can open.
 
@@ -26,6 +29,15 @@ Runs containerized on a local PC, reachable over the LAN (not just localhost on 
 - PDF render: Playwright (Chromium) — HTML template → PDF
 - PDF import: pdfplumber / pypdf
 - Containerized: single Docker container (`mcr.microsoft.com/playwright/python:...` base — ships Chromium deps preinstalled)
+
+## Commands
+From the repo root; no linter/formatter is set up (none in `backend/requirements.txt` or `.venv`).
+```
+.venv/bin/pytest                                                          # tests (pytest.ini: testpaths = tests)
+.venv/bin/uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000   # dev server
+docker compose up -d                                                      # containerized run
+```
+Day-to-day operation (stop/restart, regenerate a report, backfills): `README.md`.
 
 ## Folder structure
 ```
